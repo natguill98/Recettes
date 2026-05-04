@@ -253,12 +253,17 @@ function renderClients() {
   document.getElementById('count-clients').textContent=sorted.length+' client'+(sorted.length!==1?'s':'');
   const g=document.getElementById('clients-grid');
   if(!sorted.length){g.innerHTML='<div class="empty">Aucun client trouvé</div>';return;}
-  g.innerHTML=sorted.map(([name,count])=>`
-    <div class="client-card" onclick="openClient(this.dataset.client)" data-client="${name.replace(/"/g,'&quot;')}">
+  g.innerHTML=sorted.map(([name,count],i)=>`
+    <div class="client-card" data-idx="${i}">
       <div class="client-initial">${initials(name)}</div>
       <div class="client-name">${name}</div>
       <div class="client-count">${count} recette${count!==1?'s':''}</div>
     </div>`).join('');
+  // Attach events after render
+  const clientNames = sorted.map(([name])=>name);
+  g.querySelectorAll('.client-card').forEach((card,i)=>{
+    card.addEventListener('click', ()=>openClient(clientNames[i]));
+  });
 }
 
 // --------
