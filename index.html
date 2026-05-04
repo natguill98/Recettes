@@ -21,24 +21,24 @@
   body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
   /* LOGIN */
-  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .login-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 36px 32px; width: 100%; max-width: 380px; }
-  .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; justify-content: center; }
-  .login-logo-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .login-logo-icon svg { width: 20px; height: 20px; fill: white; }
-  .login-title { font-size: 17px; font-weight: 600; color: var(--text); }
-  .login-subtitle { font-size: 13px; color: var(--text-3); text-align: center; margin-bottom: 24px; }
-  .login-fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
-  .login-fg label { font-size: 12px; font-weight: 500; color: var(--text-2); }
-  .login-fg input { padding: 9px 12px; font-size: 14px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); }
-  .login-fg input:focus { outline: none; border-color: var(--blue-mid); box-shadow: 0 0 0 3px rgba(55,138,221,0.1); }
-  .login-btn { width: 100%; padding: 10px; font-size: 14px; font-weight: 500; background: var(--blue); color: white; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 6px; }
-  .login-btn:hover { background: #0C447C; }
-  .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .login-err { font-size: 12px; color: var(--red); background: var(--red-light); padding: 8px 12px; border-radius: var(--radius); margin-bottom: 14px; display: none; }
+  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:36px 32px; width:100%; max-width:380px; }
+  .login-logo { display:flex; align-items:center; gap:10px; margin-bottom:28px; justify-content:center; }
+  .login-logo-icon { width:36px; height:36px; background:var(--blue); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .login-logo-icon svg { width:20px; height:20px; fill:white; }
+  .login-title { font-size:17px; font-weight:600; }
+  .login-subtitle { font-size:13px; color:var(--text-3); text-align:center; margin-bottom:24px; }
+  .login-fg { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+  .login-fg label { font-size:12px; font-weight:500; color:var(--text-2); }
+  .login-fg input { padding:9px 12px; font-size:14px; border:0.5px solid var(--border-strong); border-radius:var(--radius); background:var(--surface); color:var(--text); }
+  .login-fg input:focus { outline:none; border-color:var(--blue-mid); box-shadow:0 0 0 3px rgba(55,138,221,0.1); }
+  .login-btn { width:100%; padding:10px; font-size:14px; font-weight:500; background:var(--blue); color:white; border:none; border-radius:var(--radius); cursor:pointer; margin-top:6px; }
+  .login-btn:hover { background:#0C447C; }
+  .login-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .login-err { font-size:12px; color:var(--red); background:var(--red-light); padding:8px 12px; border-radius:var(--radius); margin-bottom:14px; display:none; }
 
   /* APP */
-  .app { display: none; }
+  .app { display:none; }
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:var(--surface); border-bottom:0.5px solid var(--border); position:sticky; top:0; z-index:100; }
   .topbar-left { display:flex; align-items:center; gap:10px; }
   .logo { width:30px; height:30px; background:var(--blue); border-radius:7px; display:flex; align-items:center; justify-content:center; }
@@ -51,39 +51,68 @@
   .role-prod { background:var(--green-light); color:var(--green); border:0.5px solid #639922; }
   .logout-btn { font-size:12px; color:var(--text-3); background:none; border:0.5px solid var(--border); border-radius:var(--radius); padding:4px 10px; cursor:pointer; }
   .logout-btn:hover { color:var(--red); border-color:var(--red); }
+
+  /* TABS */
   .tabs { display:flex; background:var(--surface); border-bottom:0.5px solid var(--border); padding:0 20px; }
-  .tab { font-size:13px; padding:10px 14px; color:var(--text-2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-0.5px; background:none; border-top:none; border-left:none; border-right:none; }
+  .tab { font-size:13px; padding:10px 14px; color:var(--text-2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-0.5px; background:none; border-top:none; border-left:none; border-right:none; white-space:nowrap; }
   .tab.active { color:var(--blue); border-bottom-color:var(--blue); font-weight:500; }
-  .content { max-width:860px; margin:0 auto; padding:20px; }
+
+  /* BREADCRUMB */
+  .breadcrumb { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-3); margin-bottom:16px; flex-wrap:wrap; }
+  .breadcrumb .crumb { cursor:pointer; color:var(--blue); }
+  .breadcrumb .crumb:hover { text-decoration:underline; }
+  .breadcrumb .sep { color:var(--text-3); }
+  .breadcrumb .current { color:var(--text-2); font-weight:500; }
+
+  .content { max-width:900px; margin:0 auto; padding:20px; }
+
+  /* SEARCH */
   .toolbar { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
   .search-wrap { flex:1; min-width:200px; position:relative; }
   .search-wrap input { width:100%; padding:8px 12px 8px 34px; font-size:13px; border:0.5px solid var(--border-strong); border-radius:var(--radius); background:var(--surface); color:var(--text); }
   .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-3); font-size:14px; pointer-events:none; }
   select.filter { font-size:13px; padding:8px 12px; border:0.5px solid var(--border-strong); border-radius:var(--radius); background:var(--surface); color:var(--text); cursor:pointer; }
-  .grid { display:grid; gap:10px; }
-  .card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:14px 16px; cursor:pointer; transition:border-color 0.15s; }
-  .card:hover { border-color:var(--border-strong); }
-  .card.active { border:1.5px solid var(--blue-mid); }
-  .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
-  .card-name { font-size:14px; font-weight:600; }
-  .card-sub { font-size:12px; color:var(--text-2); margin-top:2px; }
-  .badges { display:flex; flex-direction:column; gap:4px; align-items:flex-end; }
+  .count-label { font-size:12px; color:var(--text-3); margin-bottom:10px; }
+
+  /* CLIENTS GRID */
+  .clients-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px; }
+  .client-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; cursor:pointer; transition:border-color 0.15s, box-shadow 0.15s; }
+  .client-card:hover { border-color:var(--blue-mid); box-shadow:0 2px 8px rgba(24,95,165,0.08); }
+  .client-initial { width:40px; height:40px; background:var(--blue-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--blue); margin-bottom:10px; }
+  .client-name { font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .client-count { font-size:12px; color:var(--text-3); }
+
+  /* PRODUITS LIST */
+  .produits-list { display:grid; gap:10px; }
+  .produit-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .produit-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; }
+  .produit-header:hover { background:var(--bg); }
+  .produit-name { font-size:14px; font-weight:600; color:var(--text); }
+  .produit-meta { display:flex; align-items:center; gap:8px; }
+  .produit-count { font-size:12px; color:var(--text-3); }
+  .produit-chevron { font-size:14px; color:var(--text-3); transition:transform 0.2s; }
+  .produit-chevron.open { transform:rotate(90deg); }
+  .produit-body { display:none; border-top:0.5px solid var(--border); }
+  .produit-body.open { display:block; }
+  .couleur-row { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:0.5px solid var(--border); cursor:pointer; transition:background 0.1s; }
+  .couleur-row:last-child { border-bottom:none; }
+  .couleur-row:hover { background:var(--bg); }
+  .couleur-left { display:flex; flex-direction:column; gap:2px; }
+  .couleur-name { font-size:13px; font-weight:500; color:var(--text); }
+  .couleur-sub { font-size:11px; color:var(--text-3); }
+  .couleur-right { display:flex; align-items:center; gap:8px; }
   .badge { font-size:11px; padding:2px 8px; border-radius:20px; }
   .badge-pepin { background:var(--blue-light); color:var(--blue); }
   .badge-inter { background:#EAF3DE; color:#3B6D11; }
   .badge-devoe { background:#FAEEDA; color:#BA7517; }
   .badge-disolac { background:#FBEAF0; color:#993556; }
   .badge-qty { background:var(--gray-light); color:var(--gray); }
-  .chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
-  .chip { font-size:11px; background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius); padding:2px 8px; color:var(--text-2); }
-  .prix-row { display:flex; gap:12px; margin-top:10px; padding-top:10px; border-top:0.5px solid var(--border); flex-wrap:wrap; align-items:center; }
-  .prix-item { font-size:12px; }
-  .prix-item span:first-child { color:var(--text-2); }
-  .prix-item span:last-child { font-weight:500; }
-  .date-badge { margin-left:auto; font-size:11px; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+  .date-badge { font-size:11px; padding:2px 8px; border-radius:20px; white-space:nowrap; }
   .date-fresh { background:var(--green-light); color:var(--green); }
   .date-old { background:var(--amber-light); color:var(--amber); }
   .date-stale { background:var(--red-light); color:var(--red); }
+
+  /* DETAIL */
   .detail { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
   .detail-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
   .detail-title { font-size:18px; font-weight:600; }
@@ -107,6 +136,8 @@
   .prix-card .lbl { font-size:11px; color:var(--gray); margin-bottom:2px; }
   .prix-card .val { font-size:15px; font-weight:600; color:var(--amber); }
   .hidden-box { background:var(--gray-light); border:0.5px dashed var(--border-strong); border-radius:var(--radius); padding:12px; margin-top:16px; text-align:center; font-size:12px; color:var(--text-3); }
+
+  /* FORM */
   .form-wrap { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
   .form-title { font-size:15px; font-weight:600; margin-bottom:16px; }
   .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
@@ -126,13 +157,12 @@
   .btn { font-size:13px; padding:8px 16px; border-radius:var(--radius); cursor:pointer; border:0.5px solid var(--border-strong); background:var(--surface); color:var(--text); }
   .btn-primary { background:var(--blue); color:white; border-color:var(--blue); font-weight:500; }
   .btn-primary:hover { background:#0C447C; }
-  .btn-back { font-size:13px; padding:7px 14px; border-radius:var(--radius); cursor:pointer; border:0.5px solid var(--border); background:var(--surface); color:var(--text-2); margin-bottom:12px; }
+
   .empty { text-align:center; padding:48px; color:var(--text-3); font-size:13px; }
   .loading { text-align:center; padding:48px; color:var(--text-3); font-size:13px; }
   .toast { position:fixed; bottom:24px; right:24px; background:#1a1a18; color:white; font-size:13px; padding:10px 18px; border-radius:var(--radius); z-index:999; display:none; }
-  .toast.show { display:block; animation: fadeup .2s ease; }
-  @keyframes fadeup { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-  .count-label { font-size:12px; color:var(--text-3); margin-bottom:10px; }
+  .toast.show { display:block; animation:fadeup .2s ease; }
+  @keyframes fadeup { from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);} }
   .err { font-size:12px; color:var(--red); background:var(--red-light); padding:8px 12px; border-radius:var(--radius); margin-bottom:12px; display:none; }
 </style>
 </head>
@@ -142,21 +172,13 @@
 <div class="login-wrap" id="login-wrap">
   <div class="login-box">
     <div class="login-logo">
-      <div class="login-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a1 1 0 00-1.41 0L9 12.25 11.75 15l8.96-8.96a1 1 0 000-1.41z"/></svg>
-      </div>
+      <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a1 1 0 00-1.41 0L9 12.25 11.75 15l8.96-8.96a1 1 0 000-1.41z"/></svg></div>
       <span class="login-title">Pépin Peinture</span>
     </div>
     <div class="login-subtitle">Connectez-vous pour accéder aux recettes</div>
     <div class="login-err" id="login-err"></div>
-    <div class="login-fg">
-      <label>Courriel</label>
-      <input type="email" id="login-email" placeholder="votre@courriel.com" autocomplete="email"/>
-    </div>
-    <div class="login-fg">
-      <label>Mot de passe</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
-    </div>
+    <div class="login-fg"><label>Courriel</label><input type="email" id="login-email" placeholder="votre@courriel.com"/></div>
+    <div class="login-fg"><label>Mot de passe</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Se connecter</button>
   </div>
 </div>
@@ -165,9 +187,7 @@
 <div class="app" id="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="logo">
-        <svg viewBox="0 0 24 24"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a1 1 0 00-1.41 0L9 12.25 11.75 15l8.96-8.96a1 1 0 000-1.41z"/></svg>
-      </div>
+      <div class="logo"><svg viewBox="0 0 24 24"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a1 1 0 00-1.41 0L9 12.25 11.75 15l8.96-8.96a1 1 0 000-1.41z"/></svg></div>
       <span class="app-title">Pépin Peinture</span>
     </div>
     <div class="topbar-right">
@@ -178,33 +198,49 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" id="tab-liste" onclick="showView('liste',this)">Recettes</button>
-    <button class="tab" id="tab-ajouter" style="display:none;" onclick="showView('ajouter',this)">+ Ajouter</button>
-    <button class="tab" id="tab-detail" style="display:none;" onclick="showView('detail',this)">Fiche</button>
+    <button class="tab active" id="tab-clients" onclick="showMainTab('clients')">Recettes</button>
+    <button class="tab" id="tab-ajouter" onclick="showMainTab('ajouter')">+ Ajouter</button>
+    <button class="tab" id="tab-detail" style="display:none;" onclick="showMainTab('detail')">Fiche</button>
   </div>
 
   <div class="content">
-    <div id="view-liste">
+
+    <!-- VUE CLIENTS -->
+    <div id="view-clients">
       <div class="toolbar">
         <div class="search-wrap">
           <span class="search-icon">⌕</span>
-          <input type="text" id="search" placeholder="Client, couleur, numéro..." oninput="filterAndRender()"/>
+          <input type="text" id="search-client" placeholder="Rechercher un client..." oninput="renderClients()"/>
         </div>
-        <select class="filter" id="filter-marque" onchange="filterAndRender()">
+      </div>
+      <div class="count-label" id="count-clients"></div>
+      <div class="clients-grid" id="clients-grid"></div>
+    </div>
+
+    <!-- VUE PRODUITS DU CLIENT -->
+    <div id="view-produits" style="display:none;">
+      <div class="breadcrumb" id="breadcrumb-produits"></div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search-produit" placeholder="Rechercher une couleur..." oninput="renderProduits()"/>
+        </div>
+        <select class="filter" id="filter-marque-produit" onchange="renderProduits()">
           <option value="">Toutes les marques</option>
           <option>Pépin</option><option>International</option><option>Devoe</option><option>Disolac</option>
         </select>
       </div>
-      <div class="count-label" id="count-label"></div>
-      <div class="err" id="list-err"></div>
-      <div class="grid" id="grid"></div>
+      <div class="count-label" id="count-produits"></div>
+      <div class="produits-list" id="produits-list"></div>
     </div>
 
+    <!-- VUE DETAIL RECETTE -->
     <div id="view-detail" style="display:none;">
-      <button class="btn-back" onclick="showView('liste',document.getElementById('tab-liste'))">&larr; Retour</button>
+      <div class="breadcrumb" id="breadcrumb-detail"></div>
       <div class="detail" id="detail-panel"></div>
     </div>
 
+    <!-- VUE AJOUTER -->
     <div id="view-ajouter" style="display:none;">
       <div class="form-wrap">
         <div class="form-title">Nouvelle recette client</div>
@@ -216,7 +252,7 @@
           <div class="fg"><label>Marque *</label>
             <select id="f-marque"><option value="">Choisir...</option><option>Pépin</option><option>International</option><option>Devoe</option><option>Disolac</option></select>
           </div>
-          <div class="fg"><label>Produit</label><input id="f-produit" placeholder="Ex: Northane"/></div>
+          <div class="fg"><label>Produit</label><input id="f-produit" placeholder="Ex: Northane, Intergard 345"/></div>
           <div class="fg"><label>Numéro de base</label><input id="f-base" placeholder="Ex: NT4291C"/></div>
           <div class="fg"><label>Quantité</label>
             <select id="f-qty"><option>Gallon</option><option>Pinte</option><option>Canette</option><option>5 gallons</option></select>
@@ -240,11 +276,12 @@
           </div>
         </div>
         <div class="form-actions">
-          <button class="btn" onclick="showView('liste',document.getElementById('tab-liste'))">Annuler</button>
+          <button class="btn" onclick="showMainTab('clients')">Annuler</button>
           <button class="btn btn-primary" id="save-btn" onclick="saveRecette()">Sauvegarder</button>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -258,6 +295,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let currentRole = null;
 let allRecettes = [];
+let selectedClient = null;
 let selectedId = null;
 
 // ── AUTH ──────────────────────────────────────────────────────────────
@@ -267,136 +305,220 @@ async function doLogin() {
   const errEl = document.getElementById('login-err');
   const btn   = document.getElementById('login-btn');
   errEl.style.display = 'none';
-  if (!email || !pass) { errEl.textContent = 'Veuillez entrer votre courriel et mot de passe.'; errEl.style.display = 'block'; return; }
-  btn.textContent = 'Connexion...'; btn.disabled = true;
+  if (!email||!pass) { errEl.textContent='Veuillez entrer votre courriel et mot de passe.'; errEl.style.display='block'; return; }
+  btn.textContent='Connexion...'; btn.disabled=true;
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { errEl.textContent = 'Courriel ou mot de passe incorrect.'; errEl.style.display = 'block'; btn.textContent = 'Se connecter'; btn.disabled = false; return; }
+  if (error) { errEl.textContent='Courriel ou mot de passe incorrect.'; errEl.style.display='block'; btn.textContent='Se connecter'; btn.disabled=false; return; }
   await initApp(data.user);
 }
 
 async function doLogout() {
   await sb.auth.signOut();
-  currentUser = null; currentRole = null; allRecettes = []; selectedId = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-wrap').style.display = 'flex';
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-pass').value = '';
-  document.getElementById('login-btn').textContent = 'Se connecter';
-  document.getElementById('login-btn').disabled = false;
+  currentUser=null; currentRole=null; allRecettes=[]; selectedClient=null; selectedId=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-btn').textContent='Se connecter';
+  document.getElementById('login-btn').disabled=false;
 }
 
 async function initApp(user) {
   currentUser = user;
-  const { data: profile } = await sb.from('profiles').select('role, nom').eq('id', user.id).single();
+  const { data: profile } = await sb.from('profiles').select('role,nom').eq('id',user.id).single();
   currentRole = profile?.role || 'production';
   const nom = profile?.nom || user.email;
   document.getElementById('user-name').textContent = nom;
   const pill = document.getElementById('role-pill');
-  pill.textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
-  pill.className = 'role-pill ' + (currentRole==='admin'?'role-admin':currentRole==='comptoir'?'role-comptoir':'role-prod');
-  // Onglet Ajouter seulement pour admin et comptoir
-  document.getElementById('tab-ajouter').style.display = ['admin','comptoir'].includes(currentRole) ? '' : 'none';
-  // Section prix dans formulaire
-  document.getElementById('prix-section').style.display = ['admin','comptoir'].includes(currentRole) ? '' : 'none';
-  document.getElementById('login-wrap').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
+  pill.textContent = currentRole.charAt(0).toUpperCase()+currentRole.slice(1);
+  pill.className = 'role-pill '+(currentRole==='admin'?'role-admin':currentRole==='comptoir'?'role-comptoir':'role-prod');
+  // Prix seulement pour admin et comptoir
+  document.getElementById('prix-section').style.display = canSeePrix()?'':'none';
+  document.getElementById('login-wrap').style.display='none';
+  document.getElementById('app').style.display='block';
   await loadRecettes();
+  showMainTab('clients');
 }
 
-// Vérifier session existante au chargement
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (session?.user) initApp(session.user);
-});
+sb.auth.getSession().then(({data:{session}})=>{ if(session?.user) initApp(session.user); });
 
 // ── HELPERS ───────────────────────────────────────────────────────────
-function ageDays(d) { return d ? Math.floor((Date.now()-new Date(d))/86400000) : 9999; }
+function canSeePrix() { return ['admin','comptoir'].includes(currentRole); }
+function ageDays(d) { return d?Math.floor((Date.now()-new Date(d))/86400000):9999; }
 function fmtDate(s) {
-  if (!s) return '—';
-  const [y,m,d] = s.split('-');
-  const mo = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  if(!s) return '—';
+  const [y,m,d]=s.split('-');
+  const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
   return `${parseInt(d)} ${mo[parseInt(m)-1]}. ${y}`;
 }
 function dateBadge(dateStr) {
-  if (!dateStr) return '';
-  const d = ageDays(dateStr);
-  const cls = d<=90?'date-fresh':d<=365?'date-old':'date-stale';
-  return `<span class="date-badge ${cls}">● Prix du ${fmtDate(dateStr)}</span>`;
+  if(!dateStr) return '';
+  const d=ageDays(dateStr);
+  const cls=d<=90?'date-fresh':d<=365?'date-old':'date-stale';
+  return `<span class="date-badge ${cls}">● ${fmtDate(dateStr)}</span>`;
 }
 function marqueClass(m) {
   return {'Pépin':'badge-pepin','International':'badge-inter','Devoe':'badge-devoe','Disolac':'badge-disolac'}[m]||'badge-qty';
 }
-function showView(name, tabEl) {
-  ['liste','detail','ajouter'].forEach(v => document.getElementById('view-'+v).style.display = v===name?'':'none');
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  if (tabEl) tabEl.classList.add('active');
+function initials(name) {
+  return name.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
 }
-function toast(msg, dur=2200) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), dur);
+function toast(msg,dur=2200) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
 }
-function canSeePrix() { return ['admin','comptoir'].includes(currentRole); }
+
+// ── NAVIGATION ────────────────────────────────────────────────────────
+function showMainTab(name) {
+  const views = ['clients','produits','detail','ajouter'];
+  views.forEach(v=>document.getElementById('view-'+v).style.display=v===name?'':'none');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(name==='clients'||name==='produits'||name==='detail') document.getElementById('tab-clients').classList.add('active');
+  if(name==='ajouter') document.getElementById('tab-ajouter').classList.add('active');
+  document.getElementById('tab-detail').style.display = name==='detail'?'':'none';
+}
 
 // ── DATA ──────────────────────────────────────────────────────────────
 async function loadRecettes() {
-  document.getElementById('grid').innerHTML = '<div class="loading">Chargement des recettes...</div>';
-  const { data, error } = await sb.from('recettes').select('*, colorants(*), prix(*)').order('created_at', {ascending: false});
-  if (error) { document.getElementById('list-err').textContent = 'Erreur: '+error.message; document.getElementById('list-err').style.display='block'; return; }
-  allRecettes = data || [];
-  filterAndRender();
+  const {data,error} = await sb.from('recettes').select('*, colorants(*), prix(*)').order('client');
+  if(error) return;
+  allRecettes = data||[];
+  renderClients();
 }
 
-function filterAndRender() {
-  const q = (document.getElementById('search').value||'').toLowerCase();
-  const marque = document.getElementById('filter-marque').value;
-  const filtered = allRecettes.filter(r => {
-    const match = !q || r.client.toLowerCase().includes(q) || r.couleur.toLowerCase().includes(q) || (r.numero_couleur||'').toLowerCase().includes(q);
-    return match && (!marque || r.marque===marque);
+// ── VUE CLIENTS ───────────────────────────────────────────────────────
+function renderClients() {
+  const q = (document.getElementById('search-client').value||'').toLowerCase();
+  const clients = {};
+  allRecettes.forEach(r=>{
+    if(!q || r.client.toLowerCase().includes(q)) {
+      if(!clients[r.client]) clients[r.client]=0;
+      clients[r.client]++;
+    }
   });
-  document.getElementById('count-label').textContent = filtered.length+' recette'+(filtered.length!==1?'s':'')+' affichée'+(filtered.length!==1?'s':'');
-  const g = document.getElementById('grid');
-  if (!filtered.length) { g.innerHTML='<div class="empty">Aucune recette trouvée</div>'; return; }
-  g.innerHTML = filtered.map(r => {
-    const p = r.prix?.[0];
-    const colorants = (r.colorants||[]).sort((a,b)=>a.ordre-b.ordre);
-    const prixHTML = canSeePrix() && p ? `
-      <div class="prix-row">
-        ${p.prix_gallon?`<div class="prix-item"><span>Gallon&nbsp;</span><span>${parseFloat(p.prix_gallon).toFixed(2)} $</span></div>`:''}
-        ${p.prix_pinte?`<div class="prix-item"><span>Pinte&nbsp;</span><span>${parseFloat(p.prix_pinte).toFixed(2)} $</span></div>`:''}
-        <div class="prix-item"><span>Cost&nbsp;</span><span>${(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+parseFloat(p.cost_catalyseur||0)).toFixed(2)} $</span></div>
-        ${dateBadge(p.date_prix)}
-      </div>` : '';
-    return `<div class="card${selectedId===r.id?' active':''}" onclick="openDetail('${r.id}')">
-      <div class="card-top">
-        <div><div class="card-name">${r.couleur}</div><div class="card-sub">${r.client}${r.numero_couleur?' &nbsp;·&nbsp; #'+r.numero_couleur:''}</div></div>
-        <div class="badges">
-          <span class="badge ${marqueClass(r.marque)}">${r.marque}</span>
-          <span class="badge badge-qty">${r.quantite||'Gallon'}</span>
+  const sorted = Object.entries(clients).sort((a,b)=>a[0].localeCompare(b[0]));
+  document.getElementById('count-clients').textContent = sorted.length+' client'+(sorted.length!==1?'s':'');
+  const g = document.getElementById('clients-grid');
+  if(!sorted.length){g.innerHTML='<div class="empty">Aucun client trouvé</div>';return;}
+  g.innerHTML = sorted.map(([name,count])=>`
+    <div class="client-card" onclick="openClient('${name.replace(/'/g,"\\'")}')">
+      <div class="client-initial">${initials(name)}</div>
+      <div class="client-name">${name}</div>
+      <div class="client-count">${count} recette${count!==1?'s':''}</div>
+    </div>`).join('');
+}
+
+// ── VUE PRODUITS DU CLIENT ────────────────────────────────────────────
+function openClient(clientName) {
+  selectedClient = clientName;
+  document.getElementById('search-produit').value='';
+  document.getElementById('filter-marque-produit').value='';
+  renderProduits();
+  showMainTab('produits');
+}
+
+function renderProduits() {
+  const q = (document.getElementById('search-produit').value||'').toLowerCase();
+  const marque = document.getElementById('filter-marque-produit').value;
+
+  // Breadcrumb
+  document.getElementById('breadcrumb-produits').innerHTML = `
+    <span class="crumb" onclick="showMainTab('clients')">Recettes</span>
+    <span class="sep">›</span>
+    <span class="current">${selectedClient}</span>`;
+
+  // Filtrer les recettes du client
+  const recettesClient = allRecettes.filter(r => {
+    const matchClient = r.client === selectedClient;
+    const matchQ = !q || r.couleur.toLowerCase().includes(q) || (r.numero_couleur||'').toLowerCase().includes(q) || (r.produit||'').toLowerCase().includes(q);
+    const matchMarque = !marque || r.marque===marque;
+    return matchClient && matchQ && matchMarque;
+  });
+
+  // Grouper par produit
+  const produits = {};
+  recettesClient.forEach(r=>{
+    const key = r.produit || '(Sans produit)';
+    if(!produits[key]) produits[key]=[];
+    produits[key].push(r);
+  });
+
+  const sorted = Object.entries(produits).sort((a,b)=>a[0].localeCompare(b[0]));
+  const total = recettesClient.length;
+  document.getElementById('count-produits').textContent = `${total} recette${total!==1?'s':''} · ${sorted.length} produit${sorted.length!==1?'s':''}`;
+
+  const list = document.getElementById('produits-list');
+  if(!sorted.length){list.innerHTML='<div class="empty">Aucune recette trouvée</div>';return;}
+
+  list.innerHTML = sorted.map(([produit,recettes],pi)=>{
+    const rows = recettes.map(r=>{
+      const p = r.prix?.[0];
+      const prixBadge = canSeePrix()&&p ? dateBadge(p.date_prix) : '';
+      const prixInfo = canSeePrix()&&p&&p.prix_gallon ? `<span style="font-size:12px;font-weight:500;color:var(--amber);">${parseFloat(p.prix_gallon).toFixed(2)} $</span>` : '';
+      return `<div class="couleur-row" onclick="openDetail('${r.id}')">
+        <div class="couleur-left">
+          <div class="couleur-name">${r.couleur}</div>
+          <div class="couleur-sub">${r.numero_couleur?'#'+r.numero_couleur+' · ':''}${r.quantite||'Gallon'} · ${r.marque}</div>
+        </div>
+        <div class="couleur-right">
+          ${prixInfo}
+          ${prixBadge}
+          <span style="color:var(--text-3);font-size:14px;">›</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="produit-card">
+      <div class="produit-header" onclick="toggleProduit(${pi})">
+        <div class="produit-name">${produit}</div>
+        <div class="produit-meta">
+          <span class="produit-count">${recettes.length} couleur${recettes.length!==1?'s':''}</span>
+          <span class="produit-chevron open" id="chevron-${pi}">›</span>
         </div>
       </div>
-      <div class="chips">${colorants.map(c=>`<span class="chip">${c.nom}</span>`).join('')}</div>
-      ${prixHTML}
+      <div class="produit-body open" id="body-${pi}">${rows}</div>
     </div>`;
   }).join('');
 }
 
-async function openDetail(id) {
+function toggleProduit(pi) {
+  const body = document.getElementById('body-'+pi);
+  const chev = document.getElementById('chevron-'+pi);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  chev.classList.toggle('open',!isOpen);
+}
+
+// ── DETAIL RECETTE ────────────────────────────────────────────────────
+function openDetail(id) {
   selectedId = id;
-  document.getElementById('tab-detail').style.display='';
-  showView('detail', document.getElementById('tab-detail'));
-  filterAndRender();
   const r = allRecettes.find(x=>x.id===id);
-  if (!r) return;
+  if(!r) return;
   const p = r.prix?.[0];
   const colorants = (r.colorants||[]).sort((a,b)=>a.ordre-b.ordre);
-  const total = p ? (parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+parseFloat(p.cost_catalyseur||0)) : 0;
+  const total = p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+parseFloat(p.cost_catalyseur||0)):0;
   const d = ageDays(p?.date_prix);
   const ageTxt = d<=90?'Récent':d<=365?'À vérifier':'À mettre à jour';
   const ageCls = d<=90?'date-fresh':d<=365?'date-old':'date-stale';
+
+  // Breadcrumb
+  document.getElementById('breadcrumb-detail').innerHTML = `
+    <span class="crumb" onclick="showMainTab('clients')">Recettes</span>
+    <span class="sep">›</span>
+    <span class="crumb" onclick="openClient('${r.client.replace(/'/g,"\\'")}')"> ${r.client}</span>
+    <span class="sep">›</span>
+    <span class="crumb" onclick="openClient('${r.client.replace(/'/g,"\\'")}')"> ${r.produit||'Sans produit'}</span>
+    <span class="sep">›</span>
+    <span class="current">${r.couleur}</span>`;
+
   document.getElementById('detail-panel').innerHTML = `
     <div class="detail-head">
       <div><div class="detail-title">${r.couleur}</div><div class="detail-sub">${r.client}${r.numero_couleur?' &nbsp;·&nbsp; #'+r.numero_couleur:''}</div></div>
-      <div class="badges"><span class="badge ${marqueClass(r.marque)}">${r.marque}</span><span class="badge badge-qty">${r.quantite||'Gallon'}</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+        <span class="badge ${marqueClass(r.marque)}">${r.marque}</span>
+        <span class="badge badge-qty">${r.quantite||'Gallon'}</span>
+      </div>
     </div>
     <div class="section-title">Informations générales</div>
     <div class="info-grid">
@@ -411,7 +533,7 @@ async function openDetail(id) {
       <thead><tr><th>Colorant</th><th style="text-align:right;">Quantité</th><th>Unité</th></tr></thead>
       <tbody>${colorants.map((c,i)=>`<tr style="${i%2===1?'background:var(--bg);':''}"><td><strong>${c.nom}</strong></td><td class="qty">${c.quantite||''}</td><td class="unit">${c.unite||''}</td></tr>`).join('')}</tbody>
     </table>
-    ${canSeePrix() && p ? `
+    ${canSeePrix()&&p?`
     <div class="prix-box">
       <div class="prix-box-head">
         <span class="prix-box-title">Prix — comptoir seulement</span>
@@ -429,15 +551,18 @@ async function openDetail(id) {
         ${p.prix_pinte?`<div class="prix-card"><div class="lbl">Prix pinte</div><div class="val">${parseFloat(p.prix_pinte).toFixed(2)} $</div></div>`:''}
         ${p.prix_canette?`<div class="prix-card"><div class="lbl">Prix canette</div><div class="val">${parseFloat(p.prix_canette).toFixed(2)} $</div></div>`:''}
       </div>
-    </div>` : canSeePrix() ? '' : `<div class="hidden-box">Prix non disponibles — vue Production</div>`}
+    </div>`:!canSeePrix()?`<div class="hidden-box">Prix non disponibles — vue Production</div>`:''}
   `;
+
+  document.getElementById('tab-detail').style.display='';
+  showMainTab('detail');
 }
 
 // ── FORMULAIRE ────────────────────────────────────────────────────────
 function addCRow(nom='',qty='',unit='OZ') {
-  const row = document.createElement('div');
-  row.className = 'crow';
-  row.innerHTML = `
+  const row=document.createElement('div');
+  row.className='crow';
+  row.innerHTML=`
     <input type="text" placeholder="Ex: STX42, 307LB..." class="c-nom" value="${nom}"/>
     <input type="text" placeholder="Ex: 2.5" class="c-qty" value="${qty}"/>
     <select class="c-unit">${['OZ','GR','1/48','1/64','1/128'].map(u=>`<option${u===unit?' selected':''}>${u}</option>`).join('')}</select>
@@ -446,48 +571,48 @@ function addCRow(nom='',qty='',unit='OZ') {
 }
 
 async function saveRecette() {
-  const client = document.getElementById('f-client').value.trim();
-  const couleur = document.getElementById('f-couleur').value.trim();
-  const marque = document.getElementById('f-marque').value;
-  const errEl = document.getElementById('form-err');
+  const client=document.getElementById('f-client').value.trim();
+  const couleur=document.getElementById('f-couleur').value.trim();
+  const marque=document.getElementById('f-marque').value;
+  const errEl=document.getElementById('form-err');
   errEl.style.display='none';
-  if (!client||!couleur||!marque) { errEl.textContent='Client, couleur et marque sont requis.'; errEl.style.display='block'; return; }
-  const btn = document.getElementById('save-btn');
-  btn.textContent='Sauvegarde...'; btn.disabled=true;
-  const { data: rec, error: recErr } = await sb.from('recettes').insert({
-    client, couleur,
-    numero_couleur: document.getElementById('f-num').value.trim()||null,
+  if(!client||!couleur||!marque){errEl.textContent='Client, couleur et marque sont requis.';errEl.style.display='block';return;}
+  const btn=document.getElementById('save-btn');
+  btn.textContent='Sauvegarde...';btn.disabled=true;
+  const {data:rec,error:recErr}=await sb.from('recettes').insert({
+    client,couleur,
+    numero_couleur:document.getElementById('f-num').value.trim()||null,
     marque,
-    produit: document.getElementById('f-produit').value.trim()||null,
-    numero_base: document.getElementById('f-base').value.trim()||null,
-    quantite: document.getElementById('f-qty').value,
-    oke: document.getElementById('f-oke').value.trim()||null,
-    notes: document.getElementById('f-notes').value.trim()||null,
+    produit:document.getElementById('f-produit').value.trim()||null,
+    numero_base:document.getElementById('f-base').value.trim()||null,
+    quantite:document.getElementById('f-qty').value,
+    oke:document.getElementById('f-oke').value.trim()||null,
+    notes:document.getElementById('f-notes').value.trim()||null,
   }).select().single();
-  if (recErr) { errEl.textContent='Erreur: '+recErr.message; errEl.style.display='block'; btn.textContent='Sauvegarder'; btn.disabled=false; return; }
-  const colorants = [];
-  document.querySelectorAll('#cform .crow').forEach((row,i) => {
-    const nom = row.querySelector('.c-nom').value.trim();
-    if (nom) colorants.push({recette_id:rec.id, nom, quantite:row.querySelector('.c-qty').value.trim(), unite:row.querySelector('.c-unit').value, ordre:i});
+  if(recErr){errEl.textContent='Erreur: '+recErr.message;errEl.style.display='block';btn.textContent='Sauvegarder';btn.disabled=false;return;}
+  const colorants=[];
+  document.querySelectorAll('#cform .crow').forEach((row,i)=>{
+    const nom=row.querySelector('.c-nom').value.trim();
+    if(nom) colorants.push({recette_id:rec.id,nom,quantite:row.querySelector('.c-qty').value.trim(),unite:row.querySelector('.c-unit').value,ordre:i});
   });
-  if (colorants.length) await sb.from('colorants').insert(colorants);
+  if(colorants.length) await sb.from('colorants').insert(colorants);
   const cb=parseFloat(document.getElementById('f-cb').value)||0;
   const cc=parseFloat(document.getElementById('f-cc').value)||0;
   const ccat=parseFloat(document.getElementById('f-ccat').value)||0;
   const pg=parseFloat(document.getElementById('f-pg').value)||null;
   const pp=parseFloat(document.getElementById('f-pp').value)||null;
   const pc=parseFloat(document.getElementById('f-pc').value)||null;
-  if (cb||cc||ccat||pg||pp||pc) {
-    await sb.from('prix').insert({recette_id:rec.id, cost_base:cb, cost_colorant:cc, cost_catalyseur:ccat, prix_gallon:pg, prix_pinte:pp, prix_canette:pc, date_prix:new Date().toISOString().slice(0,10)});
+  if(cb||cc||ccat||pg||pp||pc){
+    await sb.from('prix').insert({recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:pg,prix_pinte:pp,prix_canette:pc,date_prix:new Date().toISOString().slice(0,10)});
   }
   toast('Recette sauvegardée!');
-  btn.textContent='Sauvegarder'; btn.disabled=false;
+  btn.textContent='Sauvegarder';btn.disabled=false;
   ['f-client','f-couleur','f-num','f-produit','f-base','f-oke','f-notes','f-cb','f-cc','f-ccat','f-pg','f-pp','f-pc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-marque').value='';
   document.getElementById('cform').innerHTML='';
   addCRow();
   await loadRecettes();
-  showView('liste', document.getElementById('tab-liste'));
+  showMainTab('clients');
 }
 
 addCRow();
