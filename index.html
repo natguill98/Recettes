@@ -445,7 +445,7 @@ let cameraStream = null;
 // Marges par défaut (chargées depuis Supabase si disponibles)
 let marges = { Pépin: 0.60, Disolac: 0.60, International: 0.55, Devoe: 0.55 };
 
-// ── AUTH ──────────────────────────────────────────────────────────────
+// --------
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-pass').value;
@@ -490,7 +490,7 @@ async function initApp(user) {
 
 sb.auth.getSession().then(({data:{session}})=>{ if(session?.user) initApp(session.user); });
 
-// ── HELPERS ───────────────────────────────────────────────────────────
+// --------
 function canSeePrix() { return ['admin','comptoir'].includes(currentRole); }
 function ageDays(d) { return d?Math.floor((Date.now()-new Date(d))/86400000):9999; }
 function fmtDate(s) {
@@ -515,7 +515,7 @@ function toast(msg,dur=2200) {
   setTimeout(()=>t.classList.remove('show'),dur);
 }
 
-// ── FORMULES PRIX ─────────────────────────────────────────────────────
+// --------
 function calcPrix(marque, costTotal) {
   const div = marges[marque]||0.60;
   const gallon = costTotal / div;
@@ -542,7 +542,7 @@ function updatePrixPreview() {
   }
 }
 
-// ── MARGES SUPABASE ───────────────────────────────────────────────────
+// --------
 async function loadMarges() {
   const {data} = await sb.from('parametres').select('*').eq('type','marge');
   if(data&&data.length) {
@@ -583,7 +583,7 @@ async function saveCouts() {
   toast('Marges mises à jour!');
 }
 
-// ── COLOUR DETECTION ──────────────────────────────────────────────────
+// --------
 function setColourMethod(method, btn) {
   document.querySelectorAll('.colour-method-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -661,7 +661,7 @@ function captureColour() {
   toast('Couleur capturée : '+hex.toUpperCase());
 }
 
-// ── NAVIGATION ────────────────────────────────────────────────────────
+// --------
 function showMainTab(name) {
   ['clients','produits','detail','ajouter','couts'].forEach(v=>document.getElementById('view-'+v).style.display=v===name?'':'none');
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -672,7 +672,7 @@ function showMainTab(name) {
   if(name==='couts') loadCoutsBasesTable();
 }
 
-// ── DATA ──────────────────────────────────────────────────────────────
+// --------
 async function loadRecettes() {
   const {data,error} = await sb.from('recettes').select('*, colorants(*), prix(*)').order('client');
   if(error) return;
@@ -680,7 +680,7 @@ async function loadRecettes() {
   renderClients();
 }
 
-// ── VUE CLIENTS ───────────────────────────────────────────────────────
+// --------
 function renderClients() {
   const q=(document.getElementById('search-client').value||'').toLowerCase();
   const clients={};
@@ -697,7 +697,7 @@ function renderClients() {
     </div>`).join('');
 }
 
-// ── VUE PRODUITS ──────────────────────────────────────────────────────
+// --------
 function openClient(name) {
   selectedClient=name;
   document.getElementById('search-produit').value='';
@@ -759,7 +759,7 @@ function toggleProduit(pi) {
   chev.classList.toggle('open');
 }
 
-// ── DETAIL ────────────────────────────────────────────────────────────
+// --------
 function openDetail(id) {
   selectedId=id;
   const r=allRecettes.find(x=>x.id===id);
@@ -833,7 +833,7 @@ function openDetail(id) {
   showMainTab('detail');
 }
 
-// ── COUTS BASES TABLE ─────────────────────────────────────────────────
+// --------
 function loadCoutsBasesTable() {
   // Résumé des costs par marque depuis les recettes existantes
   const byMarque={};
@@ -859,7 +859,7 @@ function loadCoutsBasesTable() {
   }).join('');
 }
 
-// ── FORMULAIRE ────────────────────────────────────────────────────────
+// --------
 function addCRow(nom='',qty='',unit='OZ') {
   const row=document.createElement('div');
   row.className='crow';
