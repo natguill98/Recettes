@@ -254,7 +254,7 @@ function renderClients() {
   const g=document.getElementById('clients-grid');
   if(!sorted.length){g.innerHTML='<div class="empty">Aucun client trouvé</div>';return;}
   g.innerHTML=sorted.map(([name,count])=>`
-    <div class="client-card" onclick="openClient(${JSON.stringify(name)})">
+    <div class="client-card" onclick="openClient(this.dataset.client)" data-client="${name.replace(/"/g,'&quot;')}">
       <div class="client-initial">${initials(name)}</div>
       <div class="client-name">${name}</div>
       <div class="client-count">${count} recette${count!==1?'s':''}</div>
@@ -340,9 +340,9 @@ function openDetail(id) {
   document.getElementById('breadcrumb-detail').innerHTML=`
     <span class="crumb" onclick="showMainTab('clients')">Recettes</span>
     <span class="sep">›</span>
-    <span class="crumb" onclick="openClient(${JSON.stringify(r.client)})">${r.client}</span>
+    <span class="crumb" onclick="openClient(this.dataset.client)" data-client="${r.client.replace(/"/g,'&quot;')}">${r.client}</span>
     <span class="sep">›</span>
-    <span class="crumb" onclick="openClient(${JSON.stringify(r.client)})">${r.produit||'Sans produit'}</span>
+    <span class="crumb" onclick="openClient(this.dataset.client)" data-client="${r.client.replace(/"/g,'&quot;')}">${r.produit||'Sans produit'}</span>
     <span class="sep">›</span>
     <span class="current">${r.couleur}</span>`;
   document.getElementById('detail-panel').innerHTML=`
