@@ -641,9 +641,11 @@ function openDetail(id){
   Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div>'+(r.couleur_hex?'<div style="font-family:monospace;font-size:12px;color:var(--tx3)">'+r.couleur_hex.toUpperCase()+'</div>':'')+'</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
   var eb=document.createElement('div');eb.className='ebar';
   var be=document.createElement('button');be.className='be';be.textContent='Modifier';
-  (function(rid){be.addEventListener('click',function(){openEdit(rid);});})(id);
+  be.dataset.rid=id;
+  be.addEventListener('click',function(){openEdit(this.dataset.rid);});
   var bx=document.createElement('button');bx.className='bx';bx.textContent='Supprimer';
-  (function(rid){bx.addEventListener('click',function(){confirmDel(rid);});})(id);
+  bx.dataset.rid=id;
+  bx.addEventListener('click',function(){confirmDel(this.dataset.rid);});
   eb.appendChild(be);eb.appendChild(bx);Q('detpan').appendChild(eb);
   Q('tdetail').style.display='';showView('detail');
 }
@@ -965,13 +967,14 @@ function calcColTotal(){
     if(mode==='gr'){
       var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       if(cp.poids_gr_gal&&cp.poids_gr_gal>0){
-        // cost = (gr / poids_gr_gal) * cout_gallon * 1.03 (3% perte)
-        tot += (gr / parseFloat(cp.poids_gr_gal)) * parseFloat(cp.cout_gallon) * 1.03;
-      } else {
-        totalOz=gr/29.5735;
-        tot+=totalOz*coutParOz;
+        // cout/gr = cout_gallon / poids_gr_gal
+        // cost = grammes * cout_gallon / poids_gr_gal
+        var coutGr = parseFloat(cp.cout_gallon) / parseFloat(cp.poids_gr_gal);
+        tot += gr * coutGr;
+      } else if(cp.cout_gr) {
+        tot += gr * parseFloat(cp.cout_gr);
       }
-      totalOz=0; // already added above
+      totalOz=0;
     }else if(mode==='pepin'){
       var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       var f48=parseFloat((row.querySelector('.c48')||{value:0}).value)||0;
@@ -984,9 +987,9 @@ function calcColTotal(){
     }
     if(totalOz>0)tot+=totalOz*coutParOz;
   });
-  // Synthane: add fixed costs (temps d'homme + can/misc)
-  if(isSynthane()&&tot>0){
-    tot += 10 + 7.25; // temps d'homme + can/misc
+  // Synthane: add fixed costs (temps d'homme 10$ + can/misc 7.25$)
+  if(isSynthane()){
+    tot += 17.25;
   }
   var cc=Q('fcc'),hint=Q('col-hint');
   if(cc&&tot>0){
