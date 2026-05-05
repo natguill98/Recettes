@@ -558,6 +558,7 @@ async function initApp(user) {
   document.getElementById('login-wrap').style.display='none';
   document.getElementById('app').style.display='block';
   await loadMarges();
+  await loadCatalogues();
   await loadRecettes();
   showMainTab('clients');
 }
@@ -747,6 +748,13 @@ function showMainTab(name) {
 }
 
 // --------
+async function loadCatalogues() {
+  var r1 = await sb.from('bases').select('*').order('produit');
+  allBases = r1.data || [];
+  var r2 = await sb.from('colorants_prix').select('*').order('nom');
+  allColorantsPrix = r2.data || [];
+}
+
 async function loadRecettes() {
   const {data:recs, error} = await sb.from('recettes').select('*, colorants(*)').order('client');
   if(error) return;
