@@ -264,7 +264,7 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="fg"><label>Produit</label><input id="fprod" autocomplete="off"><div class="acl" id="ac-p"></div></div>
           <div class="fg"><label>Code base</label><input id="fbase" autocomplete="off" placeholder="Ex: AAA100"><div class="acl" id="ac-b"></div></div>
           <div class="fg"><label>Quantite</label>
-            <select id="fqty"><option>Gallon</option><option>3 gallons</option><option>5 gallons</option><option>Pinte</option><option>Canette</option></select>
+            <select id="fqty"><option>Gallon</option><option>3 gallons</option><option>5 gallons</option><option>Pinte</option></select>
           </div>
           <div class="fg"><label>Date de creation</label><input type="date" id="fdate"></div>
           <div class="fg full">
@@ -311,7 +311,7 @@ table.ct tr:last-child td{border-bottom:none}
             <div class="pcards">
               <div class="pc hi"><div class="pl">Prix gallon</div><div class="pv" id="pgal">-</div></div>
               <div class="pc"><div class="pl">Prix pinte</div><div class="pv" id="ppinte">-</div></div>
-              <div class="pc"><div class="pl">Prix canette</div><div class="pv" id="pcan">-</div></div>
+              
             </div>
             <div class="fbox" id="fform"></div>
           </div>
@@ -400,7 +400,7 @@ table.ct tr:last-child td{border-bottom:none}
       <div class="fg"><label>Produit</label><input id="eprod"></div>
       <div class="fg"><label>Code base</label><input id="ebase"></div>
       <div class="fg"><label>Quantite</label>
-        <select id="eqty"><option>Gallon</option><option>3 gallons</option><option>5 gallons</option><option>Pinte</option><option>Canette</option></select>
+        <select id="eqty"><option>Gallon</option><option>3 gallons</option><option>5 gallons</option><option>Pinte</option></select>
       </div>
       <div class="fg full"><label>Notes</label><textarea id="enotes"></textarea></div>
     </div>
@@ -783,18 +783,30 @@ function autofillBase(){
   }else{if(hint)hint.textContent='';}
 }
 Q('fprod').addEventListener('blur',function(){setTimeout(function(){autofillBase();updateCformHeader();},300);});
-Q('fprod').addEventListener('input',function(){setTimeout(updateCformHeader,100);});
+Q('fprod').addEventListener('input',function(){setTimeout(function(){updateCformHeader();updateQtyOptions();updatePrev();},100);});
 Q('fbase').addEventListener('blur',function(){setTimeout(autofillBase,300);});
 Q('fqty').addEventListener('change',function(){autofillBase();updatePrev();});
 Q('fm').addEventListener('change',function(){
   updatePrev();
   updateCformHeader();
+  updateQtyOptions();
 });
 Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
 Q('fccat').addEventListener('input',updatePrev);
 
 // PRIX PREVIEW
+function isSynthane(){
+  return Q('fm').value==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0;
+}
+function updateQtyOptions(){
+  var sel=Q('fqty');if(!sel)return;
+  var cur=sel.value,syn=isSynthane();
+  sel.innerHTML='<option>Gallon</option><option>3 gallons</option><option>5 gallons</option>'+(syn?'<option>Pinte</option>':'');
+  var found=false;
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){found=true;break;}}
+  if(found)sel.value=cur;
+}
 function updatePrev(){
   var m=Q('fm').value,cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0,tot=cb+cc+ccat;
   var qty=Q('fqty').value;
@@ -803,11 +815,13 @@ function updatePrev(){
   var p=calcPrix(m,tot);
   prev.style.display='block';
   var qtyLabel=qty==='3 gallons'?'3 gal':qty==='5 gallons'?'5 gal':'gallon';
-  var pgalEl=Q('pgal'),ppEl=Q('ppinte'),pcEl=Q('pcan');
+  var pgalEl=Q('pgal'),ppEl=Q('ppinte');
   if(pgalEl)pgalEl.textContent=p.gal.toFixed(2)+' $';
-  if(ppEl)ppEl.textContent=p.pinte.toFixed(2)+' $';
-  if(pcEl)pcEl.textContent=p.can.toFixed(2)+' $';
-  // Update label
+  var pinteCard=ppEl?ppEl.closest('.pc'):null;
+  if(pinteCard){
+    if(isSynthane()){pinteCard.style.display='';if(ppEl)ppEl.textContent=p.pinte.toFixed(2)+' $';}
+    else{pinteCard.style.display='none';}
+  }
   var lbl=prev.querySelector('.pprevt');
   if(lbl)lbl.textContent='Prix calcules pour '+qtyLabel;
   Q('fform').textContent='Formule '+m+' : '+tot.toFixed(2)+' $ / '+p.div+' = '+p.gal.toFixed(2)+' $/'+qtyLabel+' - Marge '+p.mg+'%';
