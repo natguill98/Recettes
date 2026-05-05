@@ -191,6 +191,7 @@ table.ct tr:last-child td{border-bottom:none}
 .toast{position:fixed;bottom:24px;right:24px;background:#1a2a3a;color:#fff;font-size:13px;padding:10px 18px;border-radius:var(--r);z-index:999;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
 .toast.on{display:block}
 .info-badge{font-size:11px;color:var(--blue);background:var(--blue-l);padding:2px 8px;border-radius:20px;margin-left:6px}
+.syn-hide{display:none}
 </style>
 </head>
 <body>
@@ -302,9 +303,10 @@ table.ct tr:last-child td{border-bottom:none}
         <div id="psec">
           <div class="stit" style="margin-top:20px">Couts</div>
           <div class="fg2">
-            <div class="fg"><label>Cost base ($) <span class="info-badge" id="base-hint"></span></label><input type="number" id="fcb" placeholder="0.00" step="0.01"></div>
+            <div class="fg" id="fg-cb"><label>Cost base ($) <span class="info-badge" id="base-hint"></span></label><input type="number" id="fcb" placeholder="0.00" step="0.01"></div>
             <div class="fg"><label>Cost colorant ($) <span class="info-badge" id="col-hint"></span></label><input type="number" id="fcc" placeholder="0.00" step="0.01"></div>
-            <div class="fg full"><label>Cost catalyseur ($)</label><input type="number" id="fccat" placeholder="0.00" step="0.01"></div>
+            <div class="fg full" id="fg-ccat"><label>Cost catalyseur ($)</label><input type="number" id="fccat" placeholder="0.00" step="0.01"></div>
+            <div class="fg full"><label>Date des prix</label><input type="date" id="fdateprix"></div>
           </div>
           <div class="pprev" id="pprev">
             <div class="pprevt">Prix calcules automatiquement</div>
@@ -476,6 +478,7 @@ function initApp(u){
     Q('psec').style.display=canP()?'':'none';
     Q('tcouts').style.display=canP()?'':'none';
     Q('fdate').value=new Date().toISOString().slice(0,10);
+    if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
     Q('app').style.display='block';
     loadMarges();
@@ -638,7 +641,7 @@ function openDetail(id){
   if(canP()&&p){
     prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span></div></div><div class="pcards"><div class="pc"><div class="pl">Cost base</div><div class="pv">'+parseFloat(p.cost_base||0).toFixed(2)+' $</div></div><div class="pc"><div class="pl">Cost colorant</div><div class="pv">'+parseFloat(p.cost_colorant||0).toFixed(2)+' $</div></div><div class="pc"><div class="pl">Cost catalyseur</div><div class="pv">'+parseFloat(p.cost_catalyseur||0).toFixed(2)+' $</div></div><div class="pc hi"><div class="pl">Total cost</div><div class="pv">'+total.toFixed(2)+' $</div></div>'+(pc?'<div class="pc hi"><div class="pl">Prix gallon</div><div class="pv">'+pc.gal.toFixed(2)+' $</div></div><div class="pc"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div><div class="pc"><div class="pl">Prix canette</div><div class="pv">'+pc.can.toFixed(2)+' $</div></div>':'')+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+total.toFixed(2)+' $ / '+pc.div+' = '+pc.gal.toFixed(2)+' $/gal - Marge '+pc.mg+'%</div>':'')+'</div>';
   }else if(!canP()){prixHTML='<div class="hbox">Prix non disponibles - vue Production</div>';}
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div>'+(r.couleur_hex?'<div style="font-family:monospace;font-size:12px;color:var(--tx3)">'+r.couleur_hex.toUpperCase()+'</div>':'')+'</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
+  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div>'+'</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
   var eb=document.createElement('div');eb.className='ebar';
   var be=document.createElement('button');be.className='be';be.textContent='Modifier';
   be.dataset.rid=id;
@@ -822,6 +825,11 @@ function updateQtyOptions(){
   var found=false;
   for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){found=true;break;}}
   if(found)sel.value=cur;
+  // Hide/show cost base and catalyseur for Synthane
+  var fcb=Q('fg-cb'),fccat=Q('fg-ccat');
+  if(fcb)fcb.style.display=syn?'none':'';
+  if(fccat)fccat.style.display=syn?'none':'';
+  if(syn){if(Q('fcb'))Q('fcb').value='';if(Q('fccat'))Q('fccat').value='';}
 }
 function updatePrev(){
   var m=Q('fm').value,cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0,tot=cb+cc+ccat;
@@ -1039,12 +1047,14 @@ Q('savebtn').addEventListener('click',function(){
     });
     var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
     var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0,tot=cb+cc+ccat;
-    var p2=(canP()&&tot>0)?(function(){var p=calcPrix(marque,tot);return sb.from('prix').insert({recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:date});}()):Promise.resolve();
+    var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:date;
+    var p2=(canP()&&tot>0)?(function(){var p=calcPrix(marque,tot);return sb.from('prix').insert({recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:datePrix});}()):Promise.resolve();
     Promise.all([p1,p2]).then(function(){
       toast('Recette sauvegardee!');btn.textContent='Sauvegarder';btn.disabled=false;
       curHex='#cccccc';updateHex('#cccccc');
-      ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fccat'].forEach(function(id){var el=Q(id);if(el)el.value='';});
+      ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fccat','fdateprix'].forEach(function(id){var el=Q(id);if(el)el.value='';});if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
       Q('fm').value='';Q('fdate').value=new Date().toISOString().slice(0,10);
+    if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
       Q('cform').innerHTML='';Q('pprev').style.display='none';
       var bh=Q('base-hint'),ch=Q('col-hint');
       if(bh)bh.textContent='';if(ch)ch.textContent='';
