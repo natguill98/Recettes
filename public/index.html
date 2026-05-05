@@ -783,13 +783,25 @@ function autofillBase(){
   }else{if(hint)hint.textContent='';}
 }
 Q('fprod').addEventListener('blur',function(){setTimeout(function(){autofillBase();updateCformHeader();},300);});
-Q('fprod').addEventListener('input',function(){setTimeout(function(){updateCformHeader();updateQtyOptions();updatePrev();},100);});
+Q('fprod').addEventListener('input',function(){
+  setTimeout(function(){
+    updateCformHeader();
+    updateQtyOptions();
+    // Clear cost base if Synthane (no base product)
+    if(isSynthane()){
+      Q('fcb').value='';
+      var hint=Q('base-hint');if(hint)hint.textContent='';
+    }
+    updatePrev();
+  },100);
+});
 Q('fbase').addEventListener('blur',function(){setTimeout(autofillBase,300);});
 Q('fqty').addEventListener('change',function(){autofillBase();updatePrev();});
 Q('fm').addEventListener('change',function(){
-  updatePrev();
   updateCformHeader();
   updateQtyOptions();
+  if(isSynthane()){Q('fcb').value='';var hint=Q('base-hint');if(hint)hint.textContent='';}
+  updatePrev();
 });
 Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
