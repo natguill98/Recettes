@@ -727,7 +727,7 @@ function renderProduits() {
   if(!sorted.length){list.innerHTML='<div class="empty">Aucune recette trouvee</div>';return;}
   list.innerHTML=sorted.map(([produit,recs],pi)=>{
     const rows=recs.map(r=>{
-      const p=r.prix?.[0];
+      const p=(r.prix||[]).filter(x=>x!==null)[0]||null;
       const swatch=r.couleur_hex?`<div class="couleur-swatch" style="background:${r.couleur_hex};"></div>`:'';
       const prixInfo=canSeePrix()&&p&&p.prix_gallon?`<span style="font-size:12px;font-weight:600;color:var(--amber);">${parseFloat(p.prix_gallon).toFixed(2)} $</span>`:'';
       const db=canSeePrix()&&p?dateBadge(p.date_prix):'';
@@ -764,7 +764,7 @@ function openDetail(id) {
   selectedId=id;
   const r=allRecettes.find(x=>x.id===id);
   if(!r) return;
-  const p=r.prix?.[0];
+  const p=(r.prix||[]).filter(x=>x!==null)[0]||null;
   const colorants=(r.colorants||[]).sort((a,b)=>a.ordre-b.ordre);
   const total=p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+parseFloat(p.cost_catalyseur||0)):0;
   const d=ageDays(p?.date_prix);
@@ -838,7 +838,7 @@ function loadCoutsBasesTable() {
   // Resume des costs par marque depuis les recettes existantes
   const byMarque={};
   allRecettes.forEach(r=>{
-    const p=r.prix?.[0];
+    const p=(r.prix||[]).filter(x=>x!==null)[0]||null;
     if(p&&parseFloat(p.cost_base||0)>0){
       const k=r.marque;
       if(!byMarque[k]) byMarque[k]={total:0,count:0};
