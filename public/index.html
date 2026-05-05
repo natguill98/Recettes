@@ -361,7 +361,7 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="cs">
           <div class="cst">Couts des colorants</div>
           <div class="csd">Entrez le prix au gallon. Le cost colorant se calculera automatiquement ($/gal divise par 128 = $/oz).</div>
-          <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>Poids gr/gal (STX)</span><span></span></div>
+          <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span></span></div>
           <div id="crows"></div>
           <button class="addbtn" id="addcol">+ Ajouter un colorant</button>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
@@ -967,12 +967,15 @@ function calcColTotal(){
     var totalOz=0;
     if(mode==='gr'){
       var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
-      if(cp.poids_gr_gal&&parseFloat(cp.poids_gr_gal)>0&&coutGal>0){
-        var coutGr=coutGal/parseFloat(cp.poids_gr_gal);
-        tot+=gr*coutGr;
+      var coutGr=0;
+      if(cp.cout_gr_direct&&parseFloat(cp.cout_gr_direct)>0){
+        coutGr=parseFloat(cp.cout_gr_direct);
+      } else if(cp.poids_gr_gal&&parseFloat(cp.poids_gr_gal)>0&&coutGal>0){
+        coutGr=coutGal/parseFloat(cp.poids_gr_gal);
       } else if(cp.cout_gr&&parseFloat(cp.cout_gr)>0){
-        tot+=gr*parseFloat(cp.cout_gr);
+        coutGr=parseFloat(cp.cout_gr);
       }
+      if(coutGr>0)tot+=gr*coutGr;
       totalOz=0;
     }else if(mode==='pepin'){
       var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
@@ -1127,14 +1130,14 @@ function loadCP(){
 }
 function renderCP(){
   var c=Q('crows');if(!c)return;c.innerHTML='';
-  allCP.forEach(function(c2){addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.poids_gr_gal);});
+  allCP.forEach(function(c2){addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct);});
 }
 function addCPRow(id,nom,coutGal,poids){
   id=id||'';nom=nom||'';coutGal=coutGal||'';poids=poids||'';
   var row=document.createElement('div');row.className='crow3';row.dataset.id=id;
   var n=document.createElement('input');n.type='text';n.className='cpn';n.placeholder='Ex: GVA 902';n.value=nom;
   var g=document.createElement('input');g.type='number';g.className='cpg';g.placeholder='$/gal';g.step='0.01';g.value=coutGal;
-  var p=document.createElement('input');p.type='number';p.className='cpp';p.placeholder='gr/gal';p.step='0.01';p.value=poids;
+  var p=document.createElement('input');p.type='number';p.className='cpp';p.placeholder='0.0000';p.step='0.0001';p.value=poids;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){if(id)sb.from('colorants_prix').delete().eq('id',id);row.remove();});
   row.appendChild(n);row.appendChild(g);row.appendChild(p);row.appendChild(btn);
@@ -1147,7 +1150,7 @@ Q('savecols').addEventListener('click',function(){
     var id=row.dataset.id,nom=row.querySelector('.cpn').value.trim(),coutGal=parseFloat(row.querySelector('.cpg').value)||null;
     var poids=parseFloat(row.querySelector('.cpp').value)||null;
     if(!nom)return;
-    var data={nom:nom,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids};
+    var data={nom:nom,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids,cout_gr_direct:poids};
     if(id)proms.push(sb.from('colorants_prix').update(data).eq('id',id));
     else proms.push(sb.from('colorants_prix').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
   });
