@@ -785,7 +785,10 @@ function autofillBase(){
 Q('fprod').addEventListener('blur',function(){setTimeout(autofillBase,300);});
 Q('fbase').addEventListener('blur',function(){setTimeout(autofillBase,300);});
 Q('fqty').addEventListener('change',function(){autofillBase();updatePrev();});
-Q('fm').addEventListener('change',function(){updatePrev();});
+Q('fm').addEventListener('change',function(){
+  updatePrev();
+  updateCformHeader();
+});
 Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
 Q('fccat').addEventListener('input',updatePrev);
@@ -836,7 +839,12 @@ function updateCformHeader(){
 }
 function validate128(inp,inp64){
   var v=parseInt(inp.value)||0;
-  if(v>1){inp.value=0;inp64.value=(parseInt(inp64.value)||0)+1;calcColTotal();}
+  if(v>1){
+    var extra=Math.floor(v/2);
+    inp.value=v%2;
+    inp64.value=(parseInt(inp64.value)||0)+extra;
+    calcColTotal();
+  }
 }
 function addCRow(nom,oz,f2,f3){
   nom=nom||'';oz=oz||'';f2=f2||'';f3=f3||'';
