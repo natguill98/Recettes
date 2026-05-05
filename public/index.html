@@ -1023,12 +1023,18 @@ function calcColTotal(){
     }else if(mode==='pepin'){
       var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       var f48=parseFloat((row.querySelector('.c48')||{value:0}).value)||0;
-      totalOz=oz+(f48/48);
+      // Pepin: divise par 126 (pas 128), colonne 1/48 = valeur/64 dans calcul
+      var coutPepin=coutGal/126;
+      tot+=(oz+(f48/64))*coutPepin;
+      totalOz=0;
     }else{
       var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       var f64=parseFloat((row.querySelector('.c64')||{value:0}).value)||0;
       var f128=parseFloat((row.querySelector('.c128')||{value:0}).value)||0;
-      totalOz=oz+(f64/64)+(f128/128);
+      // Inter/Devoe: divise par 126 comme Pepin
+      var coutInter=coutGal/126;
+      tot+=(oz+(f64/64)+(f128/128))*coutInter;
+      totalOz=0;
     }
     if(totalOz>0)tot+=totalOz*coutParOz;
   });
