@@ -19,7 +19,7 @@
     --text: #1a1a18; --text-2: #5f5e5a; --text-3: #888780;
     --radius: 8px; --radius-lg: 12px;
   }
-  body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
 
   /* LOGIN */
   .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background: linear-gradient(135deg, #1a2a3a 0%, #2d4a6a 100%); }
@@ -77,15 +77,15 @@
   .client-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; cursor:pointer; transition:all 0.15s; }
   .client-card:hover { border-color:var(--blue-mid); box-shadow:0 2px 12px rgba(26,143,209,0.12); transform:translateY(-1px); }
   .client-initial { width:42px; height:42px; background:linear-gradient(135deg,var(--blue),#0d6fa8); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:white; margin-bottom:10px; }
-  .client-name { font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
-  .client-count { font-size:12px; color:var(--text-3); }
+  .client-name { font-size:16px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .client-count { font-size:13px; color:var(--text-3); }
 
   /* PRODUITS */
   .produits-list { display:grid; gap:10px; }
   .produit-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
   .produit-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; }
   .produit-header:hover { background:var(--bg); }
-  .produit-name { font-size:14px; font-weight:600; }
+  .produit-name { font-size:15px; font-weight:600; }
   .produit-meta { display:flex; align-items:center; gap:8px; }
   .produit-count { font-size:12px; color:var(--text-3); }
   .produit-chevron { font-size:14px; color:var(--text-3); transition:transform 0.2s; display:inline-block; }
@@ -98,7 +98,7 @@
   .couleur-swatch { width:28px; height:28px; border-radius:6px; border:0.5px solid var(--border-strong); flex-shrink:0; }
   .couleur-left { display:flex; align-items:center; gap:10px; flex:1; }
   .couleur-info { display:flex; flex-direction:column; gap:2px; }
-  .couleur-name { font-size:13px; font-weight:500; }
+  .couleur-name { font-size:14px; font-weight:500; }
   .couleur-sub { font-size:11px; color:var(--text-3); }
   .couleur-right { display:flex; align-items:center; gap:8px; }
   .badge { font-size:11px; padding:2px 8px; border-radius:20px; }
@@ -211,7 +211,7 @@
     <div class="login-logo-wrap">
       <img src="https://raw.githubusercontent.com/natguill98/pepin-recettes/main/Wallpaper_Techno.png" class="login-logo-img" alt="Technocolor"/>
     </div>
-    <div class="login-subtitle">Connectez-vous pour acc?der aux recettes</div>
+    <div class="login-subtitle">Connectez-vous pour accéder aux recettes</div>
     <div class="login-err" id="login-err"></div>
     <div class="login-fg"><label>Courriel</label><input type="email" id="login-email" placeholder="votre@courriel.com"/></div>
     <div class="login-fg"><label>Mot de passe</label><input type="password" id="login-pass" placeholder="????????" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -228,14 +228,14 @@
     <div class="topbar-right">
       <span class="role-pill" id="role-pill"></span>
       <span class="user-name" id="user-name"></span>
-      <button class="logout-btn" onclick="doLogout()">D?connexion</button>
+      <button class="logout-btn" onclick="doLogout()">Déconnexion</button>
     </div>
   </div>
 
   <div class="tabs">
     <button class="tab active" id="tab-clients" onclick="showMainTab('clients')">Recettes</button>
     <button class="tab" id="tab-ajouter" onclick="showMainTab('ajouter')">+ Ajouter</button>
-    <button class="tab" id="tab-couts" onclick="showMainTab('couts')">Co?ts & Prix</button>
+    <button class="tab" id="tab-couts" onclick="showMainTab('couts')">Coûts & Prix</button>
     <button class="tab" id="tab-detail" style="display:none;" onclick="showMainTab('detail')">Fiche</button>
   </div>
 
@@ -263,7 +263,7 @@
         </div>
         <select class="filter" id="filter-marque-produit" onchange="renderProduits()">
           <option value="">Toutes les marques</option>
-          <option>P?pin</option><option>International</option><option>Devoe</option><option>Disolac</option>
+          <option>Pépin</option><option>International</option><option>Devoe</option><option>Disolac</option>
         </select>
       </div>
       <div class="count-label" id="count-produits"></div>
@@ -284,19 +284,19 @@
         <div class="form-grid">
           <div class="fg"><label>Client *</label><input id="f-client" placeholder="Ex: JRM"/></div>
           <div class="fg"><label>Couleur *</label><input id="f-couleur" placeholder="Ex: Rouge JRM"/></div>
-          <div class="fg"><label>Num?ro couleur</label><input id="f-num" placeholder="Ex: L0620EB"/></div>
+          <div class="fg"><label>Numéro couleur</label><input id="f-num" placeholder="Ex: L0620EB"/></div>
           <div class="fg"><label>Marque *</label>
             <select id="f-marque" onchange="updatePrixPreview()">
               <option value="">Choisir...</option>
-              <option>P?pin</option><option>International</option><option>Devoe</option><option>Disolac</option>
+              <option>Pépin</option><option>International</option><option>Devoe</option><option>Disolac</option>
             </select>
           </div>
           <div class="fg"><label>Produit</label><input id="f-produit" placeholder="Ex: Northane, Intergard 345"/></div>
-          <div class="fg"><label>Num?ro de base</label><input id="f-base" placeholder="Ex: NT4291C"/></div>
-          <div class="fg"><label>Quantit?</label>
+          <div class="fg"><label>Numéro de base</label><input id="f-base" placeholder="Ex: NT4291C"/></div>
+          <div class="fg"><label>Quantité</label>
             <select id="f-qty"><option>Gallon</option><option>Pinte</option><option>Canette</option><option>5 gallons</option></select>
           </div>
-          <div class="fg"><label>OK?</label><input id="f-oke" placeholder="Ex: 2026"/></div>
+          <div class="fg"><label>OKÉ</label><input id="f-oke" placeholder="Ex: 2026"/></div>
 
           <!-- COULEUR NUM?RIQUE -->
           <div class="fg full">
@@ -305,10 +305,10 @@
               <div class="colour-preview-bar" id="colour-preview" style="background:#cccccc;"></div>
               <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
                 <span class="hex-display" id="hex-display">#CCCCCC</span>
-                <span style="font-size:12px;color:var(--text-3);">Choisir la m?thode :</span>
+                <span style="font-size:12px;color:var(--text-3);">Choisir la méthode :</span>
               </div>
               <div class="colour-methods">
-                <button class="colour-method-btn active" onclick="setColourMethod('picker',this)">? S?lecteur</button>
+                <button class="colour-method-btn active" onclick="setColourMethod('picker',this)">? Sélecteur</button>
                 <button class="colour-method-btn" onclick="setColourMethod('hex',this)">HEX</button>
                 <button class="colour-method-btn" onclick="setColourMethod('camera',this)">? Photo</button>
               </div>
@@ -320,7 +320,7 @@
                 <input type="text" id="hex-input" placeholder="#FF5500 ou rgb(255,85,0)" oninput="onHexInput(this.value)" style="font-family:monospace;"/>
               </div>
               <div class="camera-area" id="colour-input-camera" style="display:none;">
-                <button class="camera-btn" onclick="startCamera()">? Ouvrir la cam?ra</button>
+                <button class="camera-btn" onclick="startCamera()">? Ouvrir la caméra</button>
                 <video id="camera-video" autoplay playsinline></video>
                 <canvas id="camera-canvas"></canvas>
                 <div id="camera-controls" style="display:none;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
@@ -331,23 +331,23 @@
             </div>
           </div>
 
-          <div class="fg full"><label>Notes</label><textarea id="f-notes" placeholder="Informations suppl?mentaires..."></textarea></div>
+          <div class="fg full"><label>Notes</label><textarea id="f-notes" placeholder="Informations supplémentaires..."></textarea></div>
         </div>
 
         <div class="section-title" style="margin-top:20px;">Colorants</div>
-        <div class="cform-head"><span>Colorant</span><span>Quantit?</span><span>Unit?</span><span></span></div>
+        <div class="cform-head"><span>Colorant</span><span>Quantité</span><span>Unité</span><span></span></div>
         <div id="cform"></div>
         <button class="add-c-btn" onclick="addCRow()">+ Ajouter un colorant</button>
 
         <div id="prix-section">
-          <div class="section-title" style="margin-top:20px;">Co?ts de base</div>
+          <div class="section-title" style="margin-top:20px;">Coûts de base</div>
           <div class="form-grid">
             <div class="fg"><label>Cost base ($)</label><input type="number" id="f-cb" placeholder="0.00" step="0.01" oninput="updatePrixPreview()"/></div>
             <div class="fg"><label>Cost colorant ($)</label><input type="number" id="f-cc" placeholder="0.00" step="0.01" oninput="updatePrixPreview()"/></div>
             <div class="fg"><label>Cost catalyseur ($)</label><input type="number" id="f-ccat" placeholder="0.00" step="0.01" oninput="updatePrixPreview()"/></div>
           </div>
           <div id="prix-preview" style="display:none;margin-top:14px;">
-            <div class="section-title">Prix calcul?s automatiquement</div>
+            <div class="section-title">Prix calculés automatiquement</div>
             <div class="prix-cards" style="grid-template-columns:repeat(3,1fr);">
               <div class="prix-card highlight"><div class="lbl">Prix gallon</div><div class="val" id="prev-gal">?</div></div>
               <div class="prix-card"><div class="lbl">Prix pinte</div><div class="val" id="prev-pinte">?</div></div>
@@ -373,10 +373,10 @@
           <div class="cout-section-title">Marges par marque</div>
           <div class="cout-section-desc">Modifiez le diviseur de marge. Prix gallon = Total cost ? diviseur</div>
           <table class="cout-table">
-            <thead><tr><th>Marque</th><th>Diviseur actuel</th><th>Nouveau diviseur</th><th>Marge r?sultante</th></tr></thead>
+            <thead><tr><th>Marque</th><th>Diviseur actuel</th><th>Nouveau diviseur</th><th>Marge résultante</th></tr></thead>
             <tbody>
               <tr>
-                <td><span class="marque-badge badge-pepin">P?pin</span></td>
+                <td><span class="marque-badge badge-pepin">Pépin</span></td>
                 <td id="cur-pepin">0.60</td>
                 <td><input type="number" id="div-pepin" step="0.01" min="0.1" max="1" placeholder="0.60"/></td>
                 <td id="marge-pepin">40%</td>
@@ -409,14 +409,14 @@
           </div>
           <div style="display:flex;align-items:center;margin-top:14px;">
             <button class="save-couts-btn" onclick="saveCouts()">Sauvegarder les marges</button>
-            <span class="couts-saved" id="couts-saved">? Sauvegard? ? prix mis ? jour!</span>
+            <span class="couts-saved" id="couts-saved">? Sauvegardé ? prix mis à jour!</span>
           </div>
         </div>
 
         <!-- COSTS BASE PAR MARQUE -->
         <div class="cout-section">
-          <div class="cout-section-title">Co?ts des bases (par gallon)</div>
-          <div class="cout-section-desc">Ces valeurs servent de r?f?rence. Mettez ? jour quand vos fournisseurs changent leurs prix.</div>
+          <div class="cout-section-title">Coûts des bases (par gallon)</div>
+          <div class="cout-section-desc">Ces valeurs servent de référence. Mettez à jour quand vos fournisseurs changent leurs prix.</div>
           <table class="cout-table">
             <thead><tr><th>Marque</th><th>Produit / Base</th><th>Cost actuel ($/gal)</th></tr></thead>
             <tbody id="base-costs-tbody">
@@ -443,7 +443,7 @@ let currentHex = '#cccccc';
 let cameraStream = null;
 
 // Marges par defaut (chargees depuis Supabase si disponibles)
-let marges = { Pepin: 0.60, Disolac: 0.60, International: 0.55, Devoe: 0.55 };
+let marges = { 'Pépin': 0.60, Disolac: 0.60, International: 0.55, Devoe: 0.55 };
 
 // --------
 async function doLogin() {
@@ -506,7 +506,7 @@ function dateBadge(dateStr) {
   return `<span class="date-badge ${cls}">* ${fmtDate(dateStr)}</span>`;
 }
 function marqueClass(m) {
-  return {'Pepin':'badge-pepin','International':'badge-inter','Devoe':'badge-devoe','Disolac':'badge-disolac'}[m]||'badge-qty';
+  return {'Pépin':'badge-pepin','International':'badge-inter','Devoe':'badge-devoe','Disolac':'badge-disolac'}[m]||'badge-qty';
 }
 function initials(n) { return n.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase(); }
 function toast(msg,dur=2200) {
@@ -517,7 +517,7 @@ function toast(msg,dur=2200) {
 
 // --------
 function calcPrix(marque, costTotal) {
-  const div = marges[marque]||0.60;
+  const div = marges[marque] || 0.60;
   const gallon = costTotal / div;
   const pinte = (gallon / 4) * 1.10;
   const canette = (gallon / 24) + 14.95;
@@ -553,7 +553,7 @@ async function loadMarges() {
 
 function updateMargesUI() {
   ['pepin','disolac','inter','devoe'].forEach(key=>{
-    const marqueKey = key==='pepin'?'Pepin':key==='disolac'?'Disolac':key==='inter'?'International':'Devoe';
+    const marqueKey = key==='pepin'?'Pépin':key==='disolac'?'Disolac':key==='inter'?'International':'Devoe';
     const div = marges[marqueKey];
     const curEl = document.getElementById('cur-'+key);
     const margeEl = document.getElementById('marge-'+key);
@@ -566,7 +566,7 @@ function updateMargesUI() {
 
 async function saveCouts() {
   const updates = [
-    {type:'marge', marque:'Pepin', valeur: document.getElementById('div-pepin').value||'0.60'},
+    {type:'marge', marque:'Pépin', valeur: document.getElementById('div-pepin').value||'0.60'},
     {type:'marge', marque:'Disolac', valeur: document.getElementById('div-disolac').value||'0.60'},
     {type:'marge', marque:'International', valeur: document.getElementById('div-inter').value||'0.55'},
     {type:'marge', marque:'Devoe', valeur: document.getElementById('div-devoe').value||'0.55'},
@@ -847,12 +847,12 @@ function loadCoutsBasesTable() {
     }
   });
   const tbody=document.getElementById('base-costs-tbody');
-  const marques=['Pepin','International','Devoe','Disolac'];
+  const marques=['Pépin','International','Devoe','Disolac'];
   tbody.innerHTML=marques.map(m=>{
     const d=byMarque[m];
     const avg=d?d.total/d.count:0;
     return `<tr>
-      <td><span class="marque-badge badge-${m==='Pepin'?'pepin':m==='International'?'inter':m==='Devoe'?'devoe':'disolac'}">${m}</span></td>
+      <td><span class="marque-badge badge-${m==='Pépin'?'pepin':m==='International'?'inter':m==='Devoe'?'devoe':'disolac'}">${m}</span></td>
       <td style="color:var(--text-3);">Moyenne des recettes</td>
       <td>${d?avg.toFixed(2)+' $ ('+d.count+' recette'+( d.count!==1?'s':'')+')':"Aucune recette"}</td>
     </tr>`;
