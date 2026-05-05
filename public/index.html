@@ -402,7 +402,6 @@ table.ct tr:last-child td{border-bottom:none}
       <div class="fg"><label>Quantite</label>
         <select id="eqty"><option>Gallon</option><option>3 gallons</option><option>5 gallons</option><option>Pinte</option><option>Canette</option></select>
       </div>
-      <div class="fg"><label>OKE</label><input id="eoke"></div>
       <div class="fg full"><label>Notes</label><textarea id="enotes"></textarea></div>
     </div>
     <div class="stit" style="margin-top:16px">Colorants</div>
@@ -639,7 +638,7 @@ function openDetail(id){
   if(canP()&&p){
     prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span></div></div><div class="pcards"><div class="pc"><div class="pl">Cost base</div><div class="pv">'+parseFloat(p.cost_base||0).toFixed(2)+' $</div></div><div class="pc"><div class="pl">Cost colorant</div><div class="pv">'+parseFloat(p.cost_colorant||0).toFixed(2)+' $</div></div><div class="pc"><div class="pl">Cost catalyseur</div><div class="pv">'+parseFloat(p.cost_catalyseur||0).toFixed(2)+' $</div></div><div class="pc hi"><div class="pl">Total cost</div><div class="pv">'+total.toFixed(2)+' $</div></div>'+(pc?'<div class="pc hi"><div class="pl">Prix gallon</div><div class="pv">'+pc.gal.toFixed(2)+' $</div></div><div class="pc"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div><div class="pc"><div class="pl">Prix canette</div><div class="pv">'+pc.can.toFixed(2)+' $</div></div>':'')+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+total.toFixed(2)+' $ / '+pc.div+' = '+pc.gal.toFixed(2)+' $/gal - Marge '+pc.mg+'%</div>':'')+'</div>';
   }else if(!canP()){prixHTML='<div class="hbox">Prix non disponibles - vue Production</div>';}
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div>'+(r.couleur_hex?'<div style="font-family:monospace;font-size:12px;color:var(--tx3)">'+r.couleur_hex.toUpperCase()+'</div>':'')+'</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div><div><div class="ik">OKE</div><div class="iv">'+(r.oke||'-')+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
+  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div>'+(r.couleur_hex?'<div style="font-family:monospace;font-size:12px;color:var(--tx3)">'+r.couleur_hex.toUpperCase()+'</div>':'')+'</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
   var eb=document.createElement('div');eb.className='ebar';
   var be=document.createElement('button');be.className='be';be.textContent='Modifier';be.addEventListener('click',function(){openEdit(id);});
   var bx=document.createElement('button');bx.className='bx';bx.textContent='Supprimer';bx.addEventListener('click',function(){confirmDel(id);});
@@ -703,7 +702,7 @@ Q('mconfedit').addEventListener('click',function(){
   var client=Q('ec').value.trim(),couleur=Q('ecoul').value.trim(),marque=Q('em').value;
   var ee=Q('eerr');ee.style.display='none';
   if(!client||!couleur||!marque){ee.textContent='Client, couleur et marque requis.';ee.style.display='block';return;}
-  sb.from('recettes').update({client:client,couleur:couleur,numero_couleur:Q('enum').value.trim()||null,marque:marque,produit:Q('eprod').value.trim()||null,numero_base:Q('ebase').value.trim()||null,quantite:Q('eqty').value,oke:Q('eoke').value.trim()||null,notes:Q('enotes').value.trim()||null}).eq('id',editId).then(function(r){
+  sb.from('recettes').update({client:client,couleur:couleur,numero_couleur:Q('enum').value.trim()||null,marque:marque,produit:Q('eprod').value.trim()||null,numero_base:Q('ebase').value.trim()||null,quantite:Q('eqty').value,notes:Q('enotes').value.trim()||null}).eq('id',editId).then(function(r){
     if(r.error){ee.textContent='Erreur: '+r.error.message;ee.style.display='block';return;}
     sb.from('colorants').delete().eq('recette_id',editId).then(function(){
       var cols=[];
@@ -765,16 +764,17 @@ function autofillBase(){
   var produit=Q('fprod').value.trim(),base=Q('fbase').value.trim(),marque=Q('fm').value,qty=Q('fqty').value;
   var found=allBases.filter(function(b){
     var matchProd=!produit||b.produit.toLowerCase()===produit.toLowerCase();
-    var matchBase=!base||( b.numero_base&&b.numero_base.toLowerCase()===base.toLowerCase());
+    var matchBase=!base||(b.numero_base&&b.numero_base.toLowerCase()===base.toLowerCase());
     var matchMarque=!marque||b.marque===marque;
     return matchProd&&matchBase&&matchMarque;
   })[0];
   var hint=Q('base-hint');
   if(found){
     var cost=0;
-    if(qty==='3 gallons'&&found.cout_3gal)cost=parseFloat(found.cout_3gal);
-    else if(qty==='5 gallons'&&found.cout_5gal)cost=parseFloat(found.cout_5gal);
-    else if(found.cout_1gal||found.cout_gallon)cost=parseFloat(found.cout_1gal||found.cout_gallon||0);
+    if((qty==='3 gallons')&&found.cout_3gal)cost=parseFloat(found.cout_3gal);
+    else if((qty==='5 gallons')&&found.cout_5gal)cost=parseFloat(found.cout_5gal);
+    else if(found.cout_1gal)cost=parseFloat(found.cout_1gal);
+    else if(found.cout_gallon)cost=parseFloat(found.cout_gallon);
     if(cost>0){
       Q('fcb').value=cost.toFixed(2);
       if(hint)hint.textContent='Auto: '+found.produit+' '+qty;
@@ -797,14 +797,20 @@ Q('fccat').addEventListener('input',updatePrev);
 // PRIX PREVIEW
 function updatePrev(){
   var m=Q('fm').value,cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0,tot=cb+cc+ccat;
+  var qty=Q('fqty').value;
   var prev=Q('pprev');if(!prev)return;
   if(!m||tot<=0){prev.style.display='none';return;}
   var p=calcPrix(m,tot);
   prev.style.display='block';
-  Q('pgal').textContent=p.gal.toFixed(2)+' $';
-  Q('ppinte').textContent=p.pinte.toFixed(2)+' $';
-  Q('pcan').textContent=p.can.toFixed(2)+' $';
-  Q('fform').textContent='Formule '+m+' : '+tot.toFixed(2)+' $ / '+p.div+' = '+p.gal.toFixed(2)+' $/gal - Marge '+p.mg+'%';
+  var qtyLabel=qty==='3 gallons'?'3 gal':qty==='5 gallons'?'5 gal':'gallon';
+  var pgalEl=Q('pgal'),ppEl=Q('ppinte'),pcEl=Q('pcan');
+  if(pgalEl)pgalEl.textContent=p.gal.toFixed(2)+' $';
+  if(ppEl)ppEl.textContent=p.pinte.toFixed(2)+' $';
+  if(pcEl)pcEl.textContent=p.can.toFixed(2)+' $';
+  // Update label
+  var lbl=prev.querySelector('.pprevt');
+  if(lbl)lbl.textContent='Prix calcules pour '+qtyLabel;
+  Q('fform').textContent='Formule '+m+' : '+tot.toFixed(2)+' $ / '+p.div+' = '+p.gal.toFixed(2)+' $/'+qtyLabel+' - Marge '+p.mg+'%';
 }
 
 // COLORANTS (with autocomplete + auto cost)
@@ -864,12 +870,27 @@ function addCRow(nom,oz,f2,f3){
   if(mode==='gr')q.placeholder='gr';
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){row.remove();calcColTotal();});
+  function getColPrefix(){
+    var m=Q('fm').value,p=Q('fprod').value.toLowerCase();
+    if(m==='Pepin'&&p.indexOf('synthane')>=0)return'stx';
+    if(m==='Pepin')return'num';
+    return'gva';
+  }
   function showAC(){
     var v=n.value.toLowerCase();if(!v){acDiv.classList.remove('on');return;}
-    var items=allCP.filter(function(c){return c.nom.toLowerCase().indexOf(v)>=0;});
+    var prefix=getColPrefix();
+    var items=allCP.filter(function(c){
+      var cn=c.nom.toLowerCase();
+      var matchV=cn.indexOf(v)>=0;
+      var matchPrefix=false;
+      if(prefix==='gva')matchPrefix=cn.indexOf('gva')>=0;
+      else if(prefix==='stx')matchPrefix=cn.indexOf('stx')>=0;
+      else matchPrefix=cn.indexOf('gva')<0&&cn.indexOf('stx')<0||cn==='fa';
+      return matchV&&matchPrefix;
+    });
     if(!items.length){acDiv.classList.remove('on');return;}
     acDiv.innerHTML='';
-    items.slice(0,6).forEach(function(item){
+    items.slice(0,8).forEach(function(item){
       var d=document.createElement('div');d.className='aci';
       d.textContent=item.nom+(item.cout_gallon?' - '+parseFloat(item.cout_gallon).toFixed(2)+'$/gal':'');
       d.addEventListener('mousedown',function(e){e.preventDefault();n.value=item.nom;acDiv.classList.remove('on');calcColTotal();});
