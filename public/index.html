@@ -782,7 +782,8 @@ function autofillBase(){
     }
   }else{if(hint)hint.textContent='';}
 }
-Q('fprod').addEventListener('blur',function(){setTimeout(autofillBase,300);});
+Q('fprod').addEventListener('blur',function(){setTimeout(function(){autofillBase();updateCformHeader();},300);});
+Q('fprod').addEventListener('input',function(){setTimeout(updateCformHeader,100);});
 Q('fbase').addEventListener('blur',function(){setTimeout(autofillBase,300);});
 Q('fqty').addEventListener('change',function(){autofillBase();updatePrev();});
 Q('fm').addEventListener('change',function(){
