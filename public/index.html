@@ -809,16 +809,50 @@ function mkNumIn(cls,val){
   i.style.cssText='padding:5px 3px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%;text-align:center';
   return i;
 }
-function addCRow(nom,oz,f64,f128){
-  nom=nom||'';oz=oz||'';f64=f64||'';f128=f128||'';
+function getColMode(){
+  var m=Q('fm').value;
+  var p=Q('fprod').value.toLowerCase();
+  if(m==='Pepin'&&p.indexOf('synthane')>=0)return'gr';
+  if(m==='Pepin')return'pepin';
+  if(m==='International'||m==='Devoe')return'inter';
+  return'inter';
+}
+function updateCformHeader(){
+  var mode=getColMode();
+  var chd=Q('cform').previousElementSibling;
+  if(!chd)return;
+  if(mode==='gr'){
+    chd.style.gridTemplateColumns='1fr 70px 28px';
+    chd.innerHTML='<span>Colorant</span><span>Grammes</span><span></span>';
+  }else if(mode==='pepin'){
+    chd.style.gridTemplateColumns='1fr 50px 50px 28px';
+    chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/48</span><span></span>';
+  }else{
+    chd.style.gridTemplateColumns='1fr 50px 50px 50px 28px';
+    chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span>';
+  }
+  Q('cform').querySelectorAll('.cr').forEach(function(r){r.remove();});
+  addCRow();
+}
+function validate128(inp,inp64){
+  var v=parseInt(inp.value)||0;
+  if(v>1){inp.value=0;inp64.value=(parseInt(inp64.value)||0)+1;calcColTotal();}
+}
+function addCRow(nom,oz,f2,f3){
+  nom=nom||'';oz=oz||'';f2=f2||'';f3=f3||'';
+  var mode=getColMode();
   var row=document.createElement('div');row.className='cr';
+  if(mode==='gr')row.style.gridTemplateColumns='1fr 70px 28px';
+  else if(mode==='pepin')row.style.gridTemplateColumns='1fr 50px 50px 28px';
+  else row.style.gridTemplateColumns='1fr 50px 50px 50px 28px';
   var wrap=document.createElement('div');wrap.className='crw';
-  var n=document.createElement('input');n.type='text';n.className='cn';n.placeholder='Ex: GVA 902...';n.value=nom;n.autocomplete='off';
+  var n=document.createElement('input');n.type='text';n.className='cn';
+  n.placeholder=mode==='gr'?'Ex: Colorant...':'Ex: GVA 902...';
+  n.value=nom;n.autocomplete='off';
   var acDiv=document.createElement('div');acDiv.className='acl';
   wrap.appendChild(n);wrap.appendChild(acDiv);
   var q=mkNumIn('cq',oz);
-  var q64=mkNumIn('c64',f64);
-  var q128=mkNumIn('c128',f128);
+  if(mode==='gr')q.placeholder='gr';
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){row.remove();calcColTotal();});
   function showAC(){
@@ -836,8 +870,20 @@ function addCRow(nom,oz,f64,f128){
   }
   n.addEventListener('input',showAC);n.addEventListener('focus',showAC);
   n.addEventListener('blur',function(){setTimeout(function(){acDiv.classList.remove('on');calcColTotal();},200);});
-  [q,q64,q128].forEach(function(inp){inp.addEventListener('input',calcColTotal);});
-  row.appendChild(wrap);row.appendChild(q);row.appendChild(q64);row.appendChild(q128);row.appendChild(btn);
+  q.addEventListener('input',calcColTotal);
+  if(mode==='pepin'){
+    var q48=mkNumIn('c48',f2);
+    q48.addEventListener('input',calcColTotal);
+    row.appendChild(wrap);row.appendChild(q);row.appendChild(q48);row.appendChild(btn);
+  }else if(mode==='inter'){
+    var q64=mkNumIn('c64',f2);
+    var q128=mkNumIn('c128',f3);
+    q64.addEventListener('input',calcColTotal);
+    q128.addEventListener('input',function(){validate128(q128,q64);calcColTotal();});
+    row.appendChild(wrap);row.appendChild(q);row.appendChild(q64);row.appendChild(q128);row.appendChild(btn);
+  }else{
+    row.appendChild(wrap);row.appendChild(q);row.appendChild(btn);
+  }
   Q('cform').appendChild(row);
 }
 
@@ -850,16 +896,27 @@ function fracToOz(frac){
 function calcColTotal(){
   if(!canP())return;
   var tot=0;
+  var mode=getColMode();
   Q('cform').querySelectorAll('.cr').forEach(function(row){
     var n=row.querySelector('.cn');
     if(!n)return;
     var cp=allCP.filter(function(c){return c.nom.toLowerCase()===n.value.trim().toLowerCase();})[0];
     if(!cp||!cp.cout_gallon)return;
-    var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
-    var f64=parseFloat((row.querySelector('.c64')||{value:0}).value)||0;
-    var f128=parseFloat((row.querySelector('.c128')||{value:0}).value)||0;
-    var totalOz=oz+(f64/64)+(f128/128);
     var coutParOz=parseFloat(cp.cout_gallon)/128;
+    var totalOz=0;
+    if(mode==='gr'){
+      var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
+      totalOz=gr/29.5735;
+    }else if(mode==='pepin'){
+      var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
+      var f48=parseFloat((row.querySelector('.c48')||{value:0}).value)||0;
+      totalOz=oz+(f48/48);
+    }else{
+      var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
+      var f64=parseFloat((row.querySelector('.c64')||{value:0}).value)||0;
+      var f128=parseFloat((row.querySelector('.c128')||{value:0}).value)||0;
+      totalOz=oz+(f64/64)+(f128/128);
+    }
     tot+=totalOz*coutParOz;
   });
   var cc=Q('fcc'),hint=Q('col-hint');
@@ -882,19 +939,28 @@ Q('savebtn').addEventListener('click',function(){
   sb.from('recettes').insert({client:client,couleur:couleur,numero_couleur:Q('fnum').value.trim()||null,marque:marque,produit:Q('fprod').value.trim()||null,numero_base:Q('fbase').value.trim()||null,quantite:Q('fqty').value,notes:Q('fnotes').value.trim()||null,couleur_hex:hex,date_recette:date}).select().single().then(function(r){
     if(r.error){err.textContent='Erreur: '+r.error.message;err.style.display='block';btn.textContent='Sauvegarder';btn.disabled=false;return;}
     var rec=r.data,cols=[];
+    var saveMode=getColMode();
     Q('cform').querySelectorAll('.cr').forEach(function(row,i){
       var n=row.querySelector('.cn');if(!n)return;
       var nom=n.value.trim();
       if(nom){
-        var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
-        var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
-        var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
-        var parts=[];
-        if(oz>0)parts.push(oz+' oz');
-        if(f64>0)parts.push(f64+'/64');
-        if(f128>0)parts.push(f128+'/128');
-        var qtyStr=parts.length?parts.join(' '):'0';
-        cols.push({recette_id:rec.id,nom:nom,quantite:qtyStr,unite:'OZ',ordre:i});
+        var qtyStr='0',unite='OZ';
+        if(saveMode==='gr'){
+          var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
+          qtyStr=gr?gr.toString():'0';unite='GR';
+        }else if(saveMode==='pepin'){
+          var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
+          var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;
+          var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');
+          qtyStr=parts.length?parts.join(' '):'0';unite='OZ';
+        }else{
+          var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
+          var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
+          var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
+          var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');
+          qtyStr=parts.length?parts.join(' '):'0';unite='OZ';
+        }
+        cols.push({recette_id:rec.id,nom:nom,quantite:qtyStr,unite:unite,ordre:i});
       }
     });
     var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
