@@ -407,7 +407,7 @@ table.ct tr:last-child td{border-bottom:none}
       <div class="fg full"><label>Notes</label><textarea id="enotes"></textarea></div>
     </div>
     <div class="stit" style="margin-top:16px">Colorants</div>
-    <div class="chd"><span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span></div>
+    <div class="chd" id="echd"><span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span></div>
     <div id="ecform"></div>
     <button class="addc" id="eaddc">+ Ajouter</button>
     <div class="ma">
@@ -624,7 +624,8 @@ function openDetail(id){
   var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
   var p=r.prix&&r.prix[0]||null;
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
-  var total=p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+parseFloat(p.cost_catalyseur||0)):0;
+  var isSynRec=(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0);
+  var total=p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+parseFloat(p.cost_catalyseur||0)+(isSynRec?17.25:0)):0;
   var d=ageDays(p&&p.date_prix),ageTxt=d<=90?'Recent':d<=365?'A verifier':'A mettre a jour';
   var ageCls=d<=90?'df':d<=365?'do':'ds';
   var pc=p&&total>0?calcPrix(r.marque,total):null;
@@ -668,42 +669,74 @@ Q('mconfdel').addEventListener('click',function(){
 
 // EDIT
 var editId=null;
+function getEditMode(marque, produit){
+  var p=(produit||'').toLowerCase();
+  if(marque==='Pepin'&&p.indexOf('synthane')>=0)return'gr';
+  if(marque==='Pepin')return'pepin';
+  return'inter';
+}
+function updateEditHeader(mode){
+  var chd=Q('echd');if(!chd)return;
+  if(mode==='gr'){chd.style.gridTemplateColumns='1fr 70px 28px';chd.innerHTML='<span>Colorant</span><span>Grammes</span><span></span>';}
+  else if(mode==='pepin'){chd.style.gridTemplateColumns='1fr 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/48</span><span></span>';}
+  else{chd.style.gridTemplateColumns='';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span>';}
+}
 function openEdit(id){
   editId=id;var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
   Q('ec').value=r.client||'';Q('ecoul').value=r.couleur||'';Q('enum').value=r.numero_couleur||'';
   Q('em').value=r.marque||'';Q('eprod').value=r.produit||'';Q('ebase').value=r.numero_base||'';
   Q('eqty').value=r.quantite||'Gallon';Q('enotes').value=r.notes||'';
+  var emode=getEditMode(r.marque,r.produit);
+  updateEditHeader(emode);
   var cf=Q('ecform');cf.innerHTML='';
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
-  cols.forEach(function(c){addECRow(c.nom,c.quantite,c.unite);});
-  if(!cols.length)addECRow();
+  cols.forEach(function(c){addECRow(c.nom,c.quantite,c.unite,emode);});
+  if(!cols.length)addECRow('','','',emode);
   Q('medit').classList.add('on');
 }
 function parseQtyFields(qty){
-  if(!qty)return{oz:0,f64:0,f128:0};
-  var oz=0,f64=0,f128=0;
+  if(!qty)return{oz:0,f64:0,f128:0,f48:0};
+  var oz=0,f64=0,f128=0,f48=0;
   var parts=qty.split(' ');
   parts.forEach(function(p){
-    if(p.indexOf('oz')>=0)oz=parseInt(p)||0;
+    if(p.indexOf('oz')>=0)oz=parseFloat(p)||0;
+    else if(p.indexOf('/48')>=0)f48=parseInt(p)||0;
     else if(p.indexOf('/64')>=0)f64=parseInt(p)||0;
     else if(p.indexOf('/128')>=0)f128=parseInt(p)||0;
-    else if(!isNaN(parseInt(p)))oz=parseInt(p);
+    else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
   });
-  return{oz:oz,f64:f64,f128:f128};
+  return{oz:oz,f64:f64,f128:f128,f48:f48};
 }
-function addECRow(nom,qty,unit){
-  nom=nom||'';
+function addECRow(nom,qty,unit,mode){
+  nom=nom||'';mode=mode||'inter';
   var pf=parseQtyFields(qty);
   var row=document.createElement('div');row.className='cr';
-  var n=document.createElement('input');n.type='text';n.className='cn';n.placeholder='Ex: STX42...';n.value=nom;
-  var q=mkNumIn('cq',pf.oz||'');
-  var q64=mkNumIn('c64',pf.f64||'');
-  var q128=mkNumIn('c128',pf.f128||'');
+  if(mode==='gr')row.style.gridTemplateColumns='1fr 70px 28px';
+  else if(mode==='pepin')row.style.gridTemplateColumns='1fr 50px 50px 28px';
+  else row.style.gridTemplateColumns='';
+  var n=document.createElement('input');n.type='text';n.className='cn';
+  n.placeholder=mode==='gr'?'Ex: STX10...':'Ex: GVA 902...';n.value=nom;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';btn.addEventListener('click',function(){row.remove();});
-  row.appendChild(n);row.appendChild(q);row.appendChild(q64);row.appendChild(q128);row.appendChild(btn);
+  if(mode==='gr'){
+    var q=mkNumIn('cq',pf.oz||'');q.placeholder='gr';
+    row.appendChild(n);row.appendChild(q);row.appendChild(btn);
+  }else if(mode==='pepin'){
+    var q=mkNumIn('cq',pf.oz||'');
+    var q48=mkNumIn('c48',pf.f48||'');
+    row.appendChild(n);row.appendChild(q);row.appendChild(q48);row.appendChild(btn);
+  }else{
+    var q=mkNumIn('cq',pf.oz||'');
+    var q64=mkNumIn('c64',pf.f64||'');
+    var q128=mkNumIn('c128',pf.f128||'');
+    q128.addEventListener('input',function(){
+      var v=parseInt(q128.value)||0;
+      if(v>1){q128.value=0;q64.value=(parseInt(q64.value)||0)+1;}
+    });
+    row.appendChild(n);row.appendChild(q);row.appendChild(q64);row.appendChild(q128);row.appendChild(btn);
+  }
   Q('ecform').appendChild(row);
 }
-Q('eaddc').addEventListener('click',function(){addECRow();});
+Q('eaddc').addEventListener('click',function(){var m=getEditMode(Q('em').value,Q('eprod').value);updateEditHeader(m);addECRow('','','',m);});
 Q('mcanceledit').addEventListener('click',function(){Q('medit').classList.remove('on');});
 Q('mconfedit').addEventListener('click',function(){
   var client=Q('ec').value.trim(),couleur=Q('ecoul').value.trim(),marque=Q('em').value;
@@ -712,19 +745,28 @@ Q('mconfedit').addEventListener('click',function(){
   sb.from('recettes').update({client:client,couleur:couleur,numero_couleur:Q('enum').value.trim()||null,marque:marque,produit:Q('eprod').value.trim()||null,numero_base:Q('ebase').value.trim()||null,quantite:Q('eqty').value,notes:Q('enotes').value.trim()||null}).eq('id',editId).then(function(r){
     if(r.error){ee.textContent='Erreur: '+r.error.message;ee.style.display='block';return;}
     sb.from('colorants').delete().eq('recette_id',editId).then(function(){
+      var emode=getEditMode(Q('em').value,Q('eprod').value);
       var cols=[];
       Q('ecform').querySelectorAll('.cr').forEach(function(row,i){
         var nom=row.querySelector('.cn').value.trim();
         if(nom){
-          var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
-          var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
-          var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
-          var parts=[];
-          if(oz>0)parts.push(oz+' oz');
-          if(f64>0)parts.push(f64+'/64');
-          if(f128>0)parts.push(f128+'/128');
-          var qtyStr=parts.length?parts.join(' '):'0';
-          cols.push({recette_id:editId,nom:nom,quantite:qtyStr,unite:'OZ',ordre:i});
+          var qtyStr='0',unite='OZ';
+          if(emode==='gr'){
+            var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
+            qtyStr=gr?gr.toString():'0';unite='GR';
+          }else if(emode==='pepin'){
+            var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
+            var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;
+            var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');
+            qtyStr=parts.length?parts.join(' '):'0';
+          }else{
+            var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
+            var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
+            var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
+            var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');
+            qtyStr=parts.length?parts.join(' '):'0';
+          }
+          cols.push({recette_id:editId,nom:nom,quantite:qtyStr,unite:unite,ordre:i});
         }
       });
       var p2=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
@@ -997,14 +1039,11 @@ function calcColTotal(){
     }
     if(totalOz>0)tot+=totalOz*coutParOz;
   });
-  // Synthane: add fixed costs (temps d'homme 10$ + can/misc 7.25$)
-  if(isSynthane()){
-    tot += 17.25;
-  }
+  // Synthane fixed costs added separately at display level, not in colorant cost
   var cc=Q('fcc'),hint=Q('col-hint');
   if(cc&&tot>0){
     cc.value=tot.toFixed(2);
-    if(hint)hint.textContent=isSynthane()?'Auto (incl. 17.25$ frais)':'Auto';
+    if(hint)hint.textContent='Auto';
     updatePrev();
   }
 }
@@ -1046,9 +1085,11 @@ Q('savebtn').addEventListener('click',function(){
       }
     });
     var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
-    var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0,tot=cb+cc+ccat;
+    var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0;
+    var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
+    var tot=cb+cc+ccat+synFrais;
     var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:date;
-    var p2=(canP()&&tot>0)?(function(){var p=calcPrix(marque,tot);return sb.from('prix').insert({recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:datePrix});}()):Promise.resolve();
+    var p2=(canP()&&(cc>0||cb>0))?(function(){var p=calcPrix(marque,tot);return sb.from('prix').insert({recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:datePrix});}()):Promise.resolve();
     Promise.all([p1,p2]).then(function(){
       toast('Recette sauvegardee!');btn.textContent='Sauvegarder';btn.disabled=false;
       curHex='#cccccc';updateHex('#cccccc');
