@@ -1217,15 +1217,17 @@ async function saveColorantsPrix() {
   toast('Colorants sauvegardes!');
 }
 
-// Override showMainTab to load couts data
-const _origShowMainTab = showMainTab;
-function showMainTab(name) {
-  _origShowMainTab(name);
-  if(name==='couts' && currentRole==='admin') {
-    loadBases();
-    loadColorantsPrix();
+// Load couts data when tab clicked
+document.querySelectorAll('.tab').forEach(function(t) {
+  if(t.id === 'tab-couts') {
+    t.addEventListener('click', function() {
+      if(currentRole === 'admin') {
+        loadBases();
+        loadColorantsPrix();
+      }
+    });
   }
-}
+});
 </script>
 </body>
 </html>
