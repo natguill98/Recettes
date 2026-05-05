@@ -675,24 +675,49 @@ function getEditMode(marque, produit){
   if(marque==='Pepin')return'pepin';
   return'inter';
 }
-function updateEditHeader(mode){
-  var chd=Q('echd');if(!chd)return;
-  if(mode==='gr'){chd.style.gridTemplateColumns='1fr 70px 28px';chd.innerHTML='<span>Colorant</span><span>Grammes</span><span></span>';}
-  else if(mode==='pepin'){chd.style.gridTemplateColumns='1fr 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/48</span><span></span>';}
-  else{chd.style.gridTemplateColumns='';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span>';}
-}
 function openEdit(id){
-  editId=id;var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
-  Q('ec').value=r.client||'';Q('ecoul').value=r.couleur||'';Q('enum').value=r.numero_couleur||'';
-  Q('em').value=r.marque||'';Q('eprod').value=r.produit||'';Q('ebase').value=r.numero_base||'';
-  Q('eqty').value=r.quantite||'Gallon';Q('enotes').value=r.notes||'';
-  var emode=getEditMode(r.marque,r.produit);
-  updateEditHeader(emode);
-  var cf=Q('ecform');cf.innerHTML='';
+  editId=id;
+  var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
+  // Fill the add form with existing data
+  Q('fc').value=r.client||'';
+  Q('fcoul').value=r.couleur||'';
+  Q('fnum').value=r.numero_couleur||'';
+  Q('fm').value=r.marque||'';
+  Q('fprod').value=r.produit||'';
+  Q('fbase').value=r.numero_base||'';
+  Q('fqty').value=r.quantite||'Gallon';
+  Q('fnotes').value=r.notes||'';
+  Q('fdate').value=r.date_recette||new Date().toISOString().slice(0,10);
+  // Colour
+  if(r.couleur_hex){updateHex(r.couleur_hex);}else{updateHex('#cccccc');}
+  // Prix
+  var p=r.prix&&r.prix[0]||null;
+  if(p&&canP()){
+    Q('fcb').value=parseFloat(p.cost_base||0)||'';
+    Q('fcc').value=parseFloat(p.cost_colorant||0)||'';
+    Q('fccat').value=parseFloat(p.cost_catalyseur||0)||'';
+    if(Q('fdateprix'))Q('fdateprix').value=p.date_prix||new Date().toISOString().slice(0,10);
+  }
+  // Update form header/mode
+  updateCformHeader();
+  updateQtyOptions();
+  // Colorants
+  Q('cform').innerHTML='';
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
-  cols.forEach(function(c){addECRow(c.nom,c.quantite,c.unite,emode);});
-  if(!cols.length)addECRow('','','',emode);
-  Q('medit').classList.add('on');
+  var mode=getEditMode(r.marque,r.produit);
+  cols.forEach(function(c){
+    var pf=parseQtyFields(c.quantite);
+    if(mode==='gr')addCRow(c.nom,pf.oz||c.quantite,'');
+    else if(mode==='pepin')addCRow(c.nom,pf.oz,pf.f48);
+    else addCRow(c.nom,pf.oz,pf.f64,pf.f128);
+  });
+  if(!cols.length)addCRow();
+  // Change title and save button
+  Q('ftit').textContent='Modifier la recette';
+  Q('savebtn').textContent='Sauvegarder les modifications';
+  Q('savebtn').dataset.editid=id;
+  updatePrev();
+  showView('ajouter');
 }
 function parseQtyFields(qty){
   if(!qty)return{oz:0,f64:0,f128:0,f48:0};
@@ -707,7 +732,7 @@ function parseQtyFields(qty){
   });
   return{oz:oz,f64:f64,f128:f128,f48:f48};
 }
-function addECRow(nom,qty,unit,mode){
+function addECRow_unused(nom,qty,unit,mode){
   nom=nom||'';mode=mode||'inter';
   var pf=parseQtyFields(qty);
   var row=document.createElement('div');row.className='cr';
@@ -736,44 +761,6 @@ function addECRow(nom,qty,unit,mode){
   }
   Q('ecform').appendChild(row);
 }
-Q('eaddc').addEventListener('click',function(){var m=getEditMode(Q('em').value,Q('eprod').value);updateEditHeader(m);addECRow('','','',m);});
-Q('mcanceledit').addEventListener('click',function(){Q('medit').classList.remove('on');});
-Q('mconfedit').addEventListener('click',function(){
-  var client=Q('ec').value.trim(),couleur=Q('ecoul').value.trim(),marque=Q('em').value;
-  var ee=Q('eerr');ee.style.display='none';
-  if(!client||!couleur||!marque){ee.textContent='Client, couleur et marque requis.';ee.style.display='block';return;}
-  sb.from('recettes').update({client:client,couleur:couleur,numero_couleur:Q('enum').value.trim()||null,marque:marque,produit:Q('eprod').value.trim()||null,numero_base:Q('ebase').value.trim()||null,quantite:Q('eqty').value,notes:Q('enotes').value.trim()||null}).eq('id',editId).then(function(r){
-    if(r.error){ee.textContent='Erreur: '+r.error.message;ee.style.display='block';return;}
-    sb.from('colorants').delete().eq('recette_id',editId).then(function(){
-      var emode=getEditMode(Q('em').value,Q('eprod').value);
-      var cols=[];
-      Q('ecform').querySelectorAll('.cr').forEach(function(row,i){
-        var nom=row.querySelector('.cn').value.trim();
-        if(nom){
-          var qtyStr='0',unite='OZ';
-          if(emode==='gr'){
-            var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
-            qtyStr=gr?gr.toString():'0';unite='GR';
-          }else if(emode==='pepin'){
-            var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
-            var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;
-            var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');
-            qtyStr=parts.length?parts.join(' '):'0';
-          }else{
-            var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
-            var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
-            var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
-            var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');
-            qtyStr=parts.length?parts.join(' '):'0';
-          }
-          cols.push({recette_id:editId,nom:nom,quantite:qtyStr,unite:unite,ordre:i});
-        }
-      });
-      var p2=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
-      p2.then(function(){Q('medit').classList.remove('on');toast('Recette modifiee!');loadRecs();openClient(client);});
-    });
-  });
-});
 
 // AUTOCOMPLETE
 function setupAC(inp,list,getItems){
@@ -1050,6 +1037,7 @@ Q('addcbtn').addEventListener('click',function(){addCRow();});
 
 // SAVE RECETTE
 Q('savebtn').addEventListener('click',function(){
+  if(Q('savebtn').dataset.editid){saveEdit(Q('savebtn').dataset.editid);return;}
   var client=Q('fc').value.trim(),couleur=Q('fcoul').value.trim(),marque=Q('fm').value;
   var err=Q('ferr');err.style.display='none';
   if(!client||!couleur||!marque){err.textContent='Client, couleur et marque sont requis.';err.style.display='block';return;}
@@ -1102,7 +1090,7 @@ Q('savebtn').addEventListener('click',function(){
     });
   });
 });
-Q('cancelbtn').addEventListener('click',function(){showView('clients');});
+Q('cancelbtn').addEventListener('click',function(){delete Q('savebtn').dataset.editid;Q('ftit').textContent='Nouvelle recette client';Q('savebtn').textContent='Sauvegarder';resetForm();showView('clients');});
 
 // COLOUR
 function updateHex(hex){curHex=hex;Q('cprev').style.background=hex;Q('hexd').textContent=hex.toUpperCase();if(/^#[0-9A-Fa-f]{6}$/.test(hex))Q('cpicker').value=hex;}
@@ -1211,6 +1199,81 @@ Q('savecols').addEventListener('click',function(){
 });
 
 // INIT
+function saveEdit(id){
+  var client=Q('fc').value.trim(),couleur=Q('fcoul').value.trim(),marque=Q('fm').value;
+  var err=Q('ferr');err.style.display='none';
+  if(!client||!couleur||!marque){err.textContent='Client, couleur et marque sont requis.';err.style.display='block';return;}
+  var btn=Q('savebtn');btn.textContent='Sauvegarde...';btn.disabled=true;
+  var hex=curHex&&curHex!=='#cccccc'?curHex:null;
+  sb.from('recettes').update({
+    client:client,couleur:couleur,
+    numero_couleur:Q('fnum').value.trim()||null,
+    marque:marque,
+    produit:Q('fprod').value.trim()||null,
+    numero_base:Q('fbase').value.trim()||null,
+    quantite:Q('fqty').value,
+    notes:Q('fnotes').value.trim()||null,
+    couleur_hex:hex,
+    date_recette:Q('fdate').value||new Date().toISOString().slice(0,10)
+  }).eq('id',id).then(function(r){
+    if(r.error){err.textContent='Erreur: '+r.error.message;err.style.display='block';btn.textContent='Sauvegarder les modifications';btn.disabled=false;return;}
+    // Delete and re-insert colorants
+    sb.from('colorants').delete().eq('recette_id',id).then(function(){
+      var saveMode=getColMode();
+      var cols=[];
+      Q('cform').querySelectorAll('.cr').forEach(function(row,i){
+        var n=row.querySelector('.cn');if(!n)return;
+        var nom=n.value.trim();
+        if(nom){
+          var qtyStr='0',unite='OZ';
+          if(saveMode==='gr'){var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;qtyStr=gr?gr.toString():'0';unite='GR';}
+          else if(saveMode==='pepin'){var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');qtyStr=parts.length?parts.join(' '):'0';}
+          else{var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');qtyStr=parts.length?parts.join(' '):'0';}
+          cols.push({recette_id:id,nom:nom,quantite:qtyStr,unite:unite,ordre:i});
+        }
+      });
+      var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
+      // Update prix if admin/comptoir
+      var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0;
+      var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
+      var tot=cb+cc+ccat+synFrais;
+      var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:new Date().toISOString().slice(0,10);
+      var p2=Promise.resolve();
+      if(canP()&&(cc>0||cb>0)){
+        var pc=calcPrix(marque,tot);
+        p2=sb.from('prix').delete().eq('recette_id',id).then(function(){
+          return sb.from('prix').insert({recette_id:id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),date_prix:datePrix});
+        });
+      }
+      Promise.all([p1,p2]).then(function(){
+        toast('Recette modifiee!');
+        btn.textContent='Sauvegarder';btn.disabled=false;
+        delete btn.dataset.editid;
+        Q('ftit').textContent='Nouvelle recette client';
+        Q('savebtn').textContent='Sauvegarder';
+        resetForm();
+        loadRecs();
+        showView('clients');
+      });
+    });
+  });
+}
+
+function resetForm(){
+  curHex='#cccccc';updateHex('#cccccc');
+  ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fccat','fdateprix'].forEach(function(id){var el=Q(id);if(el)el.value='';});
+  Q('fm').value='';
+  Q('fdate').value=new Date().toISOString().slice(0,10);
+  if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
+  Q('cform').innerHTML='';
+  if(Q('pprev'))Q('pprev').style.display='none';
+  var bh=Q('base-hint'),ch=Q('col-hint');
+  if(bh)bh.textContent='';if(ch)ch.textContent='';
+  addCRow();
+  updateCformHeader();
+  updateQtyOptions();
+}
+
 addCRow();updateHex('#cccccc');
 })();
 </script>
