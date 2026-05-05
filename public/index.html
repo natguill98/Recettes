@@ -674,9 +674,12 @@ function showMainTab(name) {
 
 // --------
 async function loadRecettes() {
-  const {data,error} = await sb.from('recettes').select('*, colorants(*), prix(*)').order('client');
+  const {data:recs, error} = await sb.from('recettes').select('*, colorants(*)').order('client');
   if(error) return;
-  allRecettes = data||[];
+  const {data:prix} = await sb.from('prix').select('*');
+  const prixMap = {};
+  (prix||[]).forEach(p => { prixMap[p.recette_id] = p; });
+  allRecettes = (recs||[]).map(r => ({...r, prix: prixMap[r.id] ? [prixMap[r.id]] : []}));
   renderClients();
 }
 
