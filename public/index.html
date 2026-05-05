@@ -867,10 +867,9 @@ function updateQtyOptions(){
   var found=false;
   for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){found=true;break;}}
   if(found)sel.value=cur;
-  // Hide/show cost base and catalyseur for Synthane
   var fcb=Q('fg-cb'),fccat=Q('fg-ccat');
-  if(fcb)fcb.style.display=syn?'none':'';
-  if(fccat)fccat.style.display=syn?'none':'';
+  if(fcb){fcb.style.display=syn?'none':'flex';}
+  if(fccat){fccat.style.display=syn?'none':'flex';}
   if(syn){if(Q('fcb'))Q('fcb').value='';if(Q('fccat'))Q('fccat').value='';}
 }
 function updatePrev(){
