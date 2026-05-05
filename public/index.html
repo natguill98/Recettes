@@ -136,12 +136,12 @@ table.ct tr:last-child td{border-bottom:none}
 .acl.on{display:block}
 .aci{padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:0.5px solid var(--bd)}
 .aci:last-child{border-bottom:none}.aci:hover{background:var(--blue-l);color:var(--blue)}
-.chd{display:grid;grid-template-columns:1fr 60px 90px 28px;gap:6px;margin-bottom:4px}
+.chd{display:grid;grid-template-columns:1fr 50px 50px 50px 28px;gap:5px;margin-bottom:4px}
 .chd span{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
-.cr{display:grid;grid-template-columns:1fr 60px 90px 28px;gap:6px;align-items:center;margin-bottom:6px}
+.cr{display:grid;grid-template-columns:1fr 50px 50px 50px 28px;gap:5px;align-items:center;margin-bottom:6px}
 .cr input{padding:6px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0}
 .cr select{padding:6px 4px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
-@media(max-width:480px){.chd,.cr{grid-template-columns:1fr 60px 70px 24px;gap:4px}.cr select{font-size:11px;padding:5px 2px}}
+@media(max-width:480px){.chd,.cr{grid-template-columns:1fr 40px 40px 40px 24px;gap:3px}}
 .crw{position:relative;min-width:0}
 .rm{background:none;border:none;cursor:pointer;color:var(--tx3);font-size:16px;line-height:1;padding:0}
 .rm:hover{color:var(--red)}
@@ -296,7 +296,7 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="fg full"><label>Notes</label><textarea id="fnotes"></textarea></div>
         </div>
         <div class="stit" style="margin-top:20px">Colorants</div>
-        <div class="chd" style="grid-template-columns:1fr 60px 90px 28px"><span>Colorant</span><span>Oz</span><span>Fraction</span><span></span></div>
+        <div class="chd"><span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span></div>
         <div id="cform"></div>
         <button class="addc" id="addcbtn">+ Ajouter un colorant</button>
         <div id="psec">
@@ -406,7 +406,7 @@ table.ct tr:last-child td{border-bottom:none}
       <div class="fg full"><label>Notes</label><textarea id="enotes"></textarea></div>
     </div>
     <div class="stit" style="margin-top:16px">Colorants</div>
-    <div class="chd" style="grid-template-columns:1fr 60px 90px 28px"><span>Colorant</span><span>Oz</span><span>Fraction</span><span></span></div>
+    <div class="chd"><span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span></div>
     <div id="ecform"></div>
     <button class="addc" id="eaddc">+ Ajouter</button>
     <div class="ma">
@@ -673,23 +673,28 @@ function openEdit(id){
   if(!cols.length)addECRow();
   Q('medit').classList.add('on');
 }
-function parseQtyFrac(qty){
-  if(!qty)return{oz:'',frac:'-'};
-  var parts=qty.trim().split(' ');
-  var oz=parts[0]||'';
-  var frac=parts[1]||'-';
-  return{oz:oz,frac:frac};
+function parseQtyFields(qty){
+  if(!qty)return{oz:0,f64:0,f128:0};
+  var oz=0,f64=0,f128=0;
+  var parts=qty.split(' ');
+  parts.forEach(function(p){
+    if(p.indexOf('oz')>=0)oz=parseInt(p)||0;
+    else if(p.indexOf('/64')>=0)f64=parseInt(p)||0;
+    else if(p.indexOf('/128')>=0)f128=parseInt(p)||0;
+    else if(!isNaN(parseInt(p)))oz=parseInt(p);
+  });
+  return{oz:oz,f64:f64,f128:f128};
 }
 function addECRow(nom,qty,unit){
   nom=nom||'';
-  var pf=parseQtyFrac(qty);
+  var pf=parseQtyFields(qty);
   var row=document.createElement('div');row.className='cr';
   var n=document.createElement('input');n.type='text';n.className='cn';n.placeholder='Ex: STX42...';n.value=nom;
-  var q=document.createElement('input');q.type='number';q.className='cq';q.placeholder='0';q.value=pf.oz;q.min='0';q.step='1';q.style.cssText='padding:6px 4px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%;text-align:center';
-  var u=document.createElement('select');u.className='cu';
-  ['-','1/48','1/64','1/128'].forEach(function(uu){var o=document.createElement('option');o.value=uu;o.textContent=uu;if(uu===pf.frac)o.selected=true;u.appendChild(o);});
+  var q=mkNumIn('cq',pf.oz||'');
+  var q64=mkNumIn('c64',pf.f64||'');
+  var q128=mkNumIn('c128',pf.f128||'');
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';btn.addEventListener('click',function(){row.remove();});
-  row.appendChild(n);row.appendChild(q);row.appendChild(u);row.appendChild(btn);
+  row.appendChild(n);row.appendChild(q);row.appendChild(q64);row.appendChild(q128);row.appendChild(btn);
   Q('ecform').appendChild(row);
 }
 Q('eaddc').addEventListener('click',function(){addECRow();});
@@ -705,9 +710,14 @@ Q('mconfedit').addEventListener('click',function(){
       Q('ecform').querySelectorAll('.cr').forEach(function(row,i){
         var nom=row.querySelector('.cn').value.trim();
         if(nom){
-          var oz=row.querySelector('.cq').value.trim()||'0';
-          var frac=row.querySelector('.cu').value;
-          var qtyStr=oz+(frac&&frac!=='-'?' '+frac:'');
+          var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
+          var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
+          var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
+          var parts=[];
+          if(oz>0)parts.push(oz+' oz');
+          if(f64>0)parts.push(f64+'/64');
+          if(f128>0)parts.push(f128+'/128');
+          var qtyStr=parts.length?parts.join(' '):'0';
           cols.push({recette_id:editId,nom:nom,quantite:qtyStr,unite:'OZ',ordre:i});
         }
       });
@@ -794,16 +804,21 @@ function updatePrev(){
 }
 
 // COLORANTS (with autocomplete + auto cost)
-function addCRow(nom,qty,frac){
-  nom=nom||'';qty=qty||'';frac=frac||'';
+function mkNumIn(cls,val){
+  var i=document.createElement('input');i.type='number';i.className=cls;i.placeholder='0';i.value=val||'';i.min='0';i.step='1';
+  i.style.cssText='padding:5px 3px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%;text-align:center';
+  return i;
+}
+function addCRow(nom,oz,f64,f128){
+  nom=nom||'';oz=oz||'';f64=f64||'';f128=f128||'';
   var row=document.createElement('div');row.className='cr';
   var wrap=document.createElement('div');wrap.className='crw';
   var n=document.createElement('input');n.type='text';n.className='cn';n.placeholder='Ex: GVA 902...';n.value=nom;n.autocomplete='off';
   var acDiv=document.createElement('div');acDiv.className='acl';
   wrap.appendChild(n);wrap.appendChild(acDiv);
-  var q=document.createElement('input');q.type='number';q.className='cq';q.placeholder='0';q.value=qty;q.min='0';q.step='1';q.style.cssText='padding:6px 4px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%;text-align:center';
-  var u=document.createElement('select');u.className='cu';
-  ['-','1/48','1/64','1/128'].forEach(function(uu){var o=document.createElement('option');o.value=uu;o.textContent=uu;if(uu===frac)o.selected=true;u.appendChild(o);});
+  var q=mkNumIn('cq',oz);
+  var q64=mkNumIn('c64',f64);
+  var q128=mkNumIn('c128',f128);
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){row.remove();calcColTotal();});
   function showAC(){
@@ -821,8 +836,8 @@ function addCRow(nom,qty,frac){
   }
   n.addEventListener('input',showAC);n.addEventListener('focus',showAC);
   n.addEventListener('blur',function(){setTimeout(function(){acDiv.classList.remove('on');calcColTotal();},200);});
-  q.addEventListener('input',calcColTotal);u.addEventListener('change',calcColTotal);
-  row.appendChild(wrap);row.appendChild(q);row.appendChild(u);row.appendChild(btn);
+  [q,q64,q128].forEach(function(inp){inp.addEventListener('input',calcColTotal);});
+  row.appendChild(wrap);row.appendChild(q);row.appendChild(q64);row.appendChild(q128);row.appendChild(btn);
   Q('cform').appendChild(row);
 }
 
@@ -836,13 +851,14 @@ function calcColTotal(){
   if(!canP())return;
   var tot=0;
   Q('cform').querySelectorAll('.cr').forEach(function(row){
-    var n=row.querySelector('.cn'),q=row.querySelector('.cq'),u=row.querySelector('.cu');
-    if(!n||!q||!u)return;
+    var n=row.querySelector('.cn');
+    if(!n)return;
     var cp=allCP.filter(function(c){return c.nom.toLowerCase()===n.value.trim().toLowerCase();})[0];
     if(!cp||!cp.cout_gallon)return;
-    var ozEntier=parseFloat(q.value)||0;
-    var ozFrac=fracToOz(u.value);
-    var totalOz=ozEntier+ozFrac;
+    var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
+    var f64=parseFloat((row.querySelector('.c64')||{value:0}).value)||0;
+    var f128=parseFloat((row.querySelector('.c128')||{value:0}).value)||0;
+    var totalOz=oz+(f64/64)+(f128/128);
     var coutParOz=parseFloat(cp.cout_gallon)/128;
     tot+=totalOz*coutParOz;
   });
@@ -870,11 +886,15 @@ Q('savebtn').addEventListener('click',function(){
       var n=row.querySelector('.cn');if(!n)return;
       var nom=n.value.trim();
       if(nom){
-        var oz=row.querySelector('.cq').value.trim()||'0';
-        var frac=row.querySelector('.cu').value;
-        var qtyStr=oz+(frac&&frac!=='-'?' '+frac:'');
-        var uniteStr='OZ';
-        cols.push({recette_id:rec.id,nom:nom,quantite:qtyStr,unite:uniteStr,ordre:i});
+        var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
+        var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
+        var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
+        var parts=[];
+        if(oz>0)parts.push(oz+' oz');
+        if(f64>0)parts.push(f64+'/64');
+        if(f128>0)parts.push(f128+'/128');
+        var qtyStr=parts.length?parts.join(' '):'0';
+        cols.push({recette_id:rec.id,nom:nom,quantite:qtyStr,unite:'OZ',ordre:i});
       }
     });
     var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
