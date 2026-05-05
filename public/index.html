@@ -195,6 +195,31 @@
   .save-couts-btn { margin-top:16px; font-size:13px; padding:9px 20px; border-radius:var(--radius); cursor:pointer; border:none; background:linear-gradient(135deg,var(--blue),#0d6fa8); color:white; font-weight:500; }
   .couts-saved { font-size:12px; color:var(--green); background:var(--green-light); padding:6px 12px; border-radius:var(--radius); display:none; margin-left:10px; }
 
+
+  .back-btn { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--blue); background:none; border:none; cursor:pointer; padding:0; margin-bottom:14px; }
+  .back-btn:hover { text-decoration:underline; }
+  .back-btn::before { content:"←"; font-size:15px; }
+  .edit-bar { display:flex; gap:8px; margin-top:16px; padding-top:16px; border-top:0.5px solid var(--border); }
+  .btn-danger { background:var(--red-light); color:var(--red); border-color:var(--red); font-size:13px; padding:8px 16px; border-radius:var(--radius); cursor:pointer; border-width:0.5px; border-style:solid; font-weight:500; }
+  .btn-danger:hover { background:var(--red); color:white; }
+  .btn-edit { background:var(--blue-light); color:var(--blue); border-color:var(--blue); font-size:13px; padding:8px 16px; border-radius:var(--radius); cursor:pointer; border-width:0.5px; border-style:solid; font-weight:500; }
+  .btn-edit:hover { background:var(--blue); color:white; }
+  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:500; display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:var(--surface); border-radius:var(--radius-lg); padding:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; }
+  .modal-title { font-size:15px; font-weight:600; margin-bottom:16px; }
+  .modal-actions { display:flex; gap:8px; margin-top:16px; justify-content:flex-end; }
+  .couts-table-wrap { overflow-x:auto; }
+  .cout-row { display:grid; grid-template-columns:1fr 1fr 1fr 80px 36px; gap:8px; align-items:center; margin-bottom:8px; }
+  .cout-row-col { display:grid; grid-template-columns:2fr 1fr 1fr 36px; gap:8px; align-items:center; margin-bottom:8px; }
+  .cout-row input, .cout-row select { padding:6px 8px; font-size:13px; border:0.5px solid var(--border-strong); border-radius:var(--radius); background:var(--surface); color:var(--text); width:100%; }
+  .cout-row-col input { padding:6px 8px; font-size:13px; border:0.5px solid var(--border-strong); border-radius:var(--radius); background:var(--surface); color:var(--text); width:100%; }
+  .cout-row select { padding:6px 4px; }
+  .add-row-btn { font-size:12px; color:var(--blue); background:none; border:none; cursor:pointer; padding:4px 0; margin-top:4px; }
+  .cout-head { display:grid; gap:8px; margin-bottom:6px; }
+  .cout-head span { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3); font-weight:500; }
+  .cout-head-base { grid-template-columns:1fr 1fr 1fr 80px 36px; }
+  .cout-head-col { grid-template-columns:2fr 1fr 1fr 36px; }
   .empty { text-align:center; padding:48px; color:var(--text-3); font-size:13px; }
   .loading { text-align:center; padding:48px; color:var(--text-3); font-size:13px; }
   .toast { position:fixed; bottom:24px; right:24px; background:#1a2a3a; color:white; font-size:13px; padding:10px 18px; border-radius:var(--radius); z-index:999; display:none; box-shadow:0 4px 20px rgba(0,0,0,0.2); }
@@ -255,6 +280,7 @@
 
     <!-- PRODUITS -->
     <div id="view-produits" style="display:none;">
+      <button class="back-btn" onclick="showMainTab('clients')">Retour aux clients</button>
       <div class="breadcrumb" id="breadcrumb-produits"></div>
       <div class="toolbar">
         <div class="search-wrap">
@@ -272,6 +298,7 @@
 
     <!-- DETAIL -->
     <div id="view-detail" style="display:none;">
+      <button class="back-btn" id="back-to-produits" onclick="goBack()">Retour</button>
       <div class="breadcrumb" id="breadcrumb-detail"></div>
       <div class="detail" id="detail-panel"></div>
     </div>
@@ -431,6 +458,53 @@
   </div>
 </div>
 
+
+<!-- MODAL SUPPRESSION -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal">
+    <div class="modal-title">Supprimer la recette?</div>
+    <p style="font-size:13px;color:var(--text-2)">Cette action est irréversible. La recette et tous ses colorants seront supprimés.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title">Modifier la recette</div>
+    <div class="err" id="edit-err"></div>
+    <div class="form-grid">
+      <div class="fg"><label>Client *</label><input id="e-client"/></div>
+      <div class="fg"><label>Couleur *</label><input id="e-couleur"/></div>
+      <div class="fg"><label>Numéro couleur</label><input id="e-num"/></div>
+      <div class="fg"><label>Marque *</label>
+        <select id="e-marque">
+          <option value="">Choisir...</option>
+          <option>Pépin</option><option>International</option><option>Devoe</option><option>Disolac</option>
+        </select>
+      </div>
+      <div class="fg"><label>Produit</label><input id="e-produit"/></div>
+      <div class="fg"><label>Numéro de base</label><input id="e-base"/></div>
+      <div class="fg"><label>Quantité</label>
+        <select id="e-qty"><option>Gallon</option><option>Pinte</option><option>Canette</option><option>5 gallons</option></select>
+      </div>
+      <div class="fg"><label>OKÉ</label><input id="e-oke"/></div>
+      <div class="fg full"><label>Notes</label><textarea id="e-notes"></textarea></div>
+    </div>
+    <div class="section-title" style="margin-top:16px;">Colorants</div>
+    <div class="cform-head"><span>Colorant</span><span>Quantité</span><span>Unité</span><span></span></div>
+    <div id="e-cform"></div>
+    <button class="add-c-btn" onclick="addEditCRow()">+ Ajouter un colorant</button>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" id="confirm-edit-btn">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -443,7 +517,7 @@ let currentHex = '#cccccc';
 let cameraStream = null;
 
 // Marges par defaut (chargees depuis Supabase si disponibles)
-let marges = { 'Pépin': 0.60, Disolac: 0.60, International: 0.55, Devoe: 0.55 };
+let marges = { 'Ppin': 0.60, Disolac: 0.60, International: 0.55, Devoe: 0.55 };
 
 // --------
 async function doLogin() {
@@ -506,7 +580,7 @@ function dateBadge(dateStr) {
   return `<span class="date-badge ${cls}">* ${fmtDate(dateStr)}</span>`;
 }
 function marqueClass(m) {
-  return {'Pépin':'badge-pepin','International':'badge-inter','Devoe':'badge-devoe','Disolac':'badge-disolac'}[m]||'badge-qty';
+  return {'Ppin':'badge-pepin','International':'badge-inter','Devoe':'badge-devoe','Disolac':'badge-disolac'}[m]||'badge-qty';
 }
 function initials(n) { return n.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase(); }
 function toast(msg,dur=2200) {
@@ -553,7 +627,7 @@ async function loadMarges() {
 
 function updateMargesUI() {
   ['pepin','disolac','inter','devoe'].forEach(key=>{
-    const marqueKey = key==='pepin'?'Pépin':key==='disolac'?'Disolac':key==='inter'?'International':'Devoe';
+    const marqueKey = key==='pepin'?'Ppin':key==='disolac'?'Disolac':key==='inter'?'International':'Devoe';
     const div = marges[marqueKey];
     const curEl = document.getElementById('cur-'+key);
     const margeEl = document.getElementById('marge-'+key);
@@ -566,7 +640,7 @@ function updateMargesUI() {
 
 async function saveCouts() {
   const updates = [
-    {type:'marge', marque:'Pépin', valeur: document.getElementById('div-pepin').value||'0.60'},
+    {type:'marge', marque:'Ppin', valeur: document.getElementById('div-pepin').value||'0.60'},
     {type:'marge', marque:'Disolac', valeur: document.getElementById('div-disolac').value||'0.60'},
     {type:'marge', marque:'International', valeur: document.getElementById('div-inter').value||'0.55'},
     {type:'marge', marque:'Devoe', valeur: document.getElementById('div-devoe').value||'0.55'},
@@ -832,6 +906,10 @@ function openDetail(id) {
       ${prixCalc?`<div class="formule-box" style="margin-top:10px;">Formule ${r.marque} : ${total.toFixed(2)} $ / ${prixCalc.div} = <strong>${prixCalc.gallon.toFixed(2)} $/gal</strong> &nbsp;-&nbsp; Marge ${prixCalc.marge}%</div>`:''}
     </div>`:!canSeePrix()?`<div class="hidden-box">Prix non disponibles - vue Production</div>`:''}
   `;
+  const editBar = document.createElement('div');
+  editBar.className = 'edit-bar';
+  editBar.innerHTML = '<button class="btn-edit">Modifier la recette</button><button class="btn-danger">Supprimer</button>'; editBar.querySelectorAll('button')[0].addEventListener('click',function(){openEdit(id);}); editBar.querySelectorAll('button')[1].addEventListener('click',function(){confirmDelete(id);});
+  document.getElementById('detail-panel').appendChild(editBar);
   document.getElementById('tab-detail').style.display='';
   showMainTab('detail');
 }
@@ -850,12 +928,12 @@ function loadCoutsBasesTable() {
     }
   });
   const tbody=document.getElementById('base-costs-tbody');
-  const marques=['Pépin','International','Devoe','Disolac'];
+  const marques=['Ppin','International','Devoe','Disolac'];
   tbody.innerHTML=marques.map(m=>{
     const d=byMarque[m];
     const avg=d?d.total/d.count:0;
     return `<tr>
-      <td><span class="marque-badge badge-${m==='Pépin'?'pepin':m==='International'?'inter':m==='Devoe'?'devoe':'disolac'}">${m}</span></td>
+      <td><span class="marque-badge badge-${m==='Ppin'?'pepin':m==='International'?'inter':m==='Devoe'?'devoe':'disolac'}">${m}</span></td>
       <td style="color:var(--text-3);">Moyenne des recettes</td>
       <td>${d?avg.toFixed(2)+' $ ('+d.count+' recette'+( d.count!==1?'s':'')+')':"Aucune recette"}</td>
     </tr>`;
@@ -933,6 +1011,221 @@ async function saveRecette() {
 
 addCRow();
 updateColourPreview('#cccccc');
+
+// -------- BACK BUTTONS --------
+function goBack() {
+  if(selectedClient) {
+    renderProduits();
+    showMainTab('produits');
+  } else {
+    showMainTab('clients');
+  }
+}
+
+// -------- DELETE RECETTE --------
+let pendingDeleteId = null;
+function confirmDelete(id) {
+  pendingDeleteId = id;
+  document.getElementById('modal-delete').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modal-delete').classList.remove('show');
+  document.getElementById('modal-edit').classList.remove('show');
+  pendingDeleteId = null;
+}
+document.getElementById('confirm-delete-btn').addEventListener('click', async function() {
+  if(!pendingDeleteId) return;
+  await sb.from('colorants').delete().eq('recette_id', pendingDeleteId);
+  await sb.from('prix').delete().eq('recette_id', pendingDeleteId);
+  await sb.from('recettes').delete().eq('id', pendingDeleteId);
+  closeModal();
+  toast('Recette supprimee!');
+  await loadRecettes();
+  showMainTab('clients');
+});
+
+// -------- EDIT RECETTE --------
+let editingId = null;
+function openEdit(id) {
+  editingId = id;
+  const r = allRecettes.find(x => x.id === id);
+  if(!r) return;
+  document.getElementById('e-client').value = r.client || '';
+  document.getElementById('e-couleur').value = r.couleur || '';
+  document.getElementById('e-num').value = r.numero_couleur || '';
+  document.getElementById('e-marque').value = r.marque || '';
+  document.getElementById('e-produit').value = r.produit || '';
+  document.getElementById('e-base').value = r.numero_base || '';
+  document.getElementById('e-qty').value = r.quantite || 'Gallon';
+  document.getElementById('e-oke').value = r.oke || '';
+  document.getElementById('e-notes').value = r.notes || '';
+  const cform = document.getElementById('e-cform');
+  cform.innerHTML = '';
+  const cols = (r.colorants||[]).sort((a,b)=>a.ordre-b.ordre);
+  cols.forEach(c => addEditCRow(c.nom, c.quantite, c.unite));
+  if(!cols.length) addEditCRow();
+  document.getElementById('modal-edit').classList.add('show');
+}
+function addEditCRow(nom, qty, unit) {
+  nom = nom||''; qty = qty||''; unit = unit||'OZ';
+  const row = document.createElement('div');
+  row.className = 'crow';
+  row.innerHTML = '<input type="text" placeholder="Ex: STX42..." class="c-nom" value="'+nom+'"/><input type="text" placeholder="Ex: 2.5" class="c-qty" value="'+qty+'"/><select class="c-unit">'+['OZ','GR','1/48','1/64','1/128'].map(u=>'<option'+(u===unit?' selected':'')+'>'+u+'</option>').join('')+'</select><button class="rm-btn" onclick="this.parentElement.remove()">x</button>';
+  document.getElementById('e-cform').appendChild(row);
+}
+document.getElementById('confirm-edit-btn').addEventListener('click', async function() {
+  const client = document.getElementById('e-client').value.trim();
+  const couleur = document.getElementById('e-couleur').value.trim();
+  const marque = document.getElementById('e-marque').value;
+  const errEl = document.getElementById('edit-err');
+  errEl.style.display = 'none';
+  if(!client||!couleur||!marque) { errEl.textContent='Client, couleur et marque sont requis.'; errEl.style.display='block'; return; }
+  await sb.from('recettes').update({
+    client, couleur,
+    numero_couleur: document.getElementById('e-num').value.trim()||null,
+    marque,
+    produit: document.getElementById('e-produit').value.trim()||null,
+    numero_base: document.getElementById('e-base').value.trim()||null,
+    quantite: document.getElementById('e-qty').value,
+    oke: document.getElementById('e-oke').value.trim()||null,
+    notes: document.getElementById('e-notes').value.trim()||null,
+  }).eq('id', editingId);
+  await sb.from('colorants').delete().eq('recette_id', editingId);
+  const cols = [];
+  document.querySelectorAll('#e-cform .crow').forEach((row,i) => {
+    const nom = row.querySelector('.c-nom').value.trim();
+    if(nom) cols.push({recette_id:editingId, nom, quantite:row.querySelector('.c-qty').value.trim(), unite:row.querySelector('.c-unit').value, ordre:i});
+  });
+  if(cols.length) await sb.from('colorants').insert(cols);
+  closeModal();
+  toast('Recette modifiee!');
+  await loadRecettes();
+  openClient(client);
+});
+
+// -------- BASES --------
+let allBases = [];
+async function loadBases() {
+  const {data} = await sb.from('bases').select('*').order('produit');
+  allBases = data||[];
+  renderBasesRows();
+}
+function renderBasesRows() {
+  const container = document.getElementById('bases-rows');
+  if(!container) return;
+  container.innerHTML = '';
+  allBases.forEach(b => addBaseRow(b.id, b.produit, b.numero_base, b.marque, b.cout_gallon));
+}
+function addBaseRow(id, produit, numBase, marque, cout) {
+  id = id||''; produit = produit||''; numBase = numBase||''; marque = marque||''; cout = cout||'';
+  var row = document.createElement('div');
+  row.className = 'cout-row';
+  row.dataset.id = id;
+  var sel = document.createElement('select');
+  sel.className = 'b-marque';
+  sel.innerHTML = '<option value=>Marque...</option>';
+  ['Pepin','International','Devoe','Disolac'].forEach(function(m) {
+    var opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    if(m === marque) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  var p = document.createElement('input'); p.type='text'; p.className='b-prod'; p.placeholder='Ex: Northane'; p.value=produit;
+  var n = document.createElement('input'); n.type='text'; n.className='b-num'; n.placeholder='Ex: NT4291C'; n.value=numBase;
+  var c = document.createElement('input'); c.type='number'; c.className='b-cout'; c.placeholder='0.00'; c.step='0.01'; c.value=cout;
+  var btn = document.createElement('button'); btn.className='rm-btn'; btn.textContent='x';
+  btn.addEventListener('click', function(){ removeBaseRow(row, id); });
+  row.appendChild(p); row.appendChild(n); row.appendChild(sel); row.appendChild(c); row.appendChild(btn);
+  document.getElementById('bases-rows').appendChild(row);
+}
+async function removeBaseRow(row, id) {
+  if(id) await sb.from('bases').delete().eq('id', id);
+  row.remove();
+  toast('Base supprimee!');
+}
+async function saveBases() {
+  const rows = document.querySelectorAll('#bases-rows .cout-row');
+  for(const row of rows) {
+    const id = row.dataset.id;
+    const produit = row.querySelector('.b-prod').value.trim();
+    const numero_base = row.querySelector('.b-num').value.trim()||null;
+    const marque = row.querySelector('.b-marque').value;
+    const cout_gallon = parseFloat(row.querySelector('.b-cout').value)||0;
+    if(!produit||!marque) continue;
+    if(id) {
+      await sb.from('bases').update({produit, numero_base, marque, cout_gallon}).eq('id', id);
+    } else {
+      const {data} = await sb.from('bases').insert({produit, numero_base, marque, cout_gallon}).select().single();
+      if(data) row.dataset.id = data.id;
+    }
+  }
+  await loadBases();
+  const s = document.getElementById('bases-saved');
+  s.style.display='inline-block'; setTimeout(()=>s.style.display='none',3000);
+  toast('Bases sauvegardees!');
+}
+
+// -------- COLORANTS PRIX --------
+let allColorantsPrix = [];
+async function loadColorantsPrix() {
+  const {data} = await sb.from('colorants_prix').select('*').order('nom');
+  allColorantsPrix = data||[];
+  renderColorantsPrixRows();
+}
+function renderColorantsPrixRows() {
+  const container = document.getElementById('colorants-prix-rows');
+  if(!container) return;
+  container.innerHTML = '';
+  allColorantsPrix.forEach(c => addColorantPrixRow(c.id, c.nom, c.cout_oz, c.cout_gr));
+}
+function addColorantPrixRow(id, nom, coutOz, coutGr) {
+  id = id||''; nom = nom||''; coutOz = coutOz||''; coutGr = coutGr||'';
+  var row = document.createElement('div');
+  row.className = 'cout-row-col';
+  row.dataset.id = id;
+  var n = document.createElement('input'); n.type='text'; n.className='cp-nom'; n.placeholder='Ex: STX42'; n.value=nom;
+  var oz = document.createElement('input'); oz.type='number'; oz.className='cp-oz'; oz.placeholder='0.00'; oz.step='0.0001'; oz.value=coutOz;
+  var gr = document.createElement('input'); gr.type='number'; gr.className='cp-gr'; gr.placeholder='0.00'; gr.step='0.0001'; gr.value=coutGr;
+  var btn = document.createElement('button'); btn.className='rm-btn'; btn.textContent='x';
+  btn.addEventListener('click', function(){ removeColorantPrixRow(row, id); });
+  row.appendChild(n); row.appendChild(oz); row.appendChild(gr); row.appendChild(btn);
+  document.getElementById('colorants-prix-rows').appendChild(row);
+}
+async function removeColorantPrixRow(row, id) {
+  if(id) await sb.from('colorants_prix').delete().eq('id', id);
+  row.remove();
+  toast('Colorant supprime!');
+}
+async function saveColorantsPrix() {
+  const rows = document.querySelectorAll('#colorants-prix-rows .cout-row-col');
+  for(const row of rows) {
+    const id = row.dataset.id;
+    const nom = row.querySelector('.cp-nom').value.trim();
+    const cout_oz = parseFloat(row.querySelector('.cp-oz').value)||null;
+    const cout_gr = parseFloat(row.querySelector('.cp-gr').value)||null;
+    if(!nom) continue;
+    if(id) {
+      await sb.from('colorants_prix').update({nom, cout_oz, cout_gr}).eq('id', id);
+    } else {
+      const {data} = await sb.from('colorants_prix').insert({nom, cout_oz, cout_gr}).select().single();
+      if(data) row.dataset.id = data.id;
+    }
+  }
+  await loadColorantsPrix();
+  const s = document.getElementById('colorants-saved');
+  s.style.display='inline-block'; setTimeout(()=>s.style.display='none',3000);
+  toast('Colorants sauvegardes!');
+}
+
+// Override showMainTab to load couts data
+const _origShowMainTab = showMainTab;
+function showMainTab(name) {
+  _origShowMainTab(name);
+  if(name==='couts' && currentRole==='admin') {
+    loadBases();
+    loadColorantsPrix();
+  }
+}
 </script>
 </body>
 </html>
