@@ -669,7 +669,7 @@ function openEdit(id){
   editId=id;var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
   Q('ec').value=r.client||'';Q('ecoul').value=r.couleur||'';Q('enum').value=r.numero_couleur||'';
   Q('em').value=r.marque||'';Q('eprod').value=r.produit||'';Q('ebase').value=r.numero_base||'';
-  Q('eqty').value=r.quantite||'Gallon';Q('eoke').value=r.oke||'';Q('enotes').value=r.notes||'';
+  Q('eqty').value=r.quantite||'Gallon';Q('enotes').value=r.notes||'';
   var cf=Q('ecform');cf.innerHTML='';
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
   cols.forEach(function(c){addECRow(c.nom,c.quantite,c.unite);});
@@ -961,18 +961,17 @@ function calcColTotal(){
     var n=row.querySelector('.cn');
     if(!n)return;
     var cp=allCP.filter(function(c){return c.nom.toLowerCase()===n.value.trim().toLowerCase();})[0];
-    if(!cp||!cp.cout_gallon)return;
-    var coutParOz=parseFloat(cp.cout_gallon)/128;
+    if(!cp)return;
+    var coutGal=parseFloat(cp.cout_gallon)||0;
+    var coutParOz=coutGal/128;
     var totalOz=0;
     if(mode==='gr'){
       var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
-      if(cp.poids_gr_gal&&cp.poids_gr_gal>0){
-        // cout/gr = cout_gallon / poids_gr_gal
-        // cost = grammes * cout_gallon / poids_gr_gal
-        var coutGr = parseFloat(cp.cout_gallon) / parseFloat(cp.poids_gr_gal);
-        tot += gr * coutGr;
-      } else if(cp.cout_gr) {
-        tot += gr * parseFloat(cp.cout_gr);
+      if(cp.poids_gr_gal&&parseFloat(cp.poids_gr_gal)>0&&coutGal>0){
+        var coutGr=coutGal/parseFloat(cp.poids_gr_gal);
+        tot+=gr*coutGr;
+      } else if(cp.cout_gr&&parseFloat(cp.cout_gr)>0){
+        tot+=gr*parseFloat(cp.cout_gr);
       }
       totalOz=0;
     }else if(mode==='pepin'){
