@@ -1175,7 +1175,7 @@ Q('savebases').addEventListener('click',function(){
     var id=row.dataset.id,prod=row.querySelector('.bp').value.trim(),num=row.querySelector('.bn').value.trim()||null,marque=row.querySelector('.bm').value;
     var c1=parseFloat(row.querySelector('.bc1').value)||null,c3=parseFloat(row.querySelector('.bc3').value)||null,c5=parseFloat(row.querySelector('.bc5').value)||null;
     if(!prod||!marque)return;
-    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:c1,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5};
+    var cout_gal=c1||c3||c5||0; var data={produit:prod,numero_base:num,marque:marque,cout_gallon:cout_gal,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5};
     if(id)proms.push(sb.from('bases').update(data).eq('id',id));
     else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
   });
