@@ -349,6 +349,12 @@ table.ct tr:last-child td{border-bottom:none}
             <button class="sbtn" id="savemg">Sauvegarder les marges</button>
             <span class="svd" id="mgsvd">Sauvegarde!</span>
           </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:0.5px solid var(--bd)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">Recalcul des prix</div>
+            <div style="font-size:12px;color:var(--tx3);margin-bottom:12px">Recalcule et sauvegarde les prix de toutes les recettes selon les couts actuels des bases, colorants et marges.</div>
+            <button class="sbtn" id="recalcbtn" style="background:#3B6D11">Recalculer tous les prix</button>
+            <span class="svd" id="recalcsvd" style="margin-left:10px"></span>
+          </div>
         </div>
         <div class="cs">
           <div class="cst">Couts des bases</div>
@@ -1286,6 +1292,129 @@ function resetForm(){
   updateCformHeader();
   updateQtyOptions();
 }
+
+// RECALCUL TOUS LES PRIX
+document.getElementById('recalcbtn').addEventListener('click', async function(){
+  var btn = document.getElementById('recalcbtn');
+  var svd = document.getElementById('recalcsvd');
+  btn.textContent = 'Recalcul en cours...'; btn.disabled = true;
+  svd.style.display = 'none';
+  
+  // Reload latest catalogues and marges
+  await loadCatalogues();
+  
+  var updated = 0, errors = 0;
+  
+  for(var i=0; i<recs.length; i++){
+    var r = recs[i];
+    var marque = r.marque;
+    var produit = (r.produit||'').toLowerCase();
+    var isSyn = marque==='Pepin' && produit.indexOf('synthane')>=0;
+    var qty = r.quantite||'Gallon';
+    
+    // Calculate cost base from bases table
+    var cb = 0;
+    if(!isSyn){
+      var base = allBases.filter(function(b){
+        var matchProd = !r.produit || b.produit.toLowerCase()===r.produit.toLowerCase();
+        var matchBase = !r.numero_base || (b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
+        var matchMarque = !marque || b.marque===marque;
+        return matchProd && matchBase && matchMarque;
+      })[0];
+      if(base){
+        if(qty==='3 gallons' && base.cout_3gal) cb = parseFloat(base.cout_3gal);
+        else if(qty==='5 gallons' && base.cout_5gal) cb = parseFloat(base.cout_5gal);
+        else if(base.cout_1gal) cb = parseFloat(base.cout_1gal);
+        else if(base.cout_gallon) cb = parseFloat(base.cout_gallon);
+      }
+    }
+    
+    // Calculate cost colorant from colorants
+    var cc = 0;
+    var cols = (r.colorants||[]);
+    for(var j=0; j<cols.length; j++){
+      var col = cols[j];
+      var cp = allCP.filter(function(c){ return c.nom.toLowerCase()===col.nom.toLowerCase(); })[0];
+      if(!cp) continue;
+      var coutGal = parseFloat(cp.cout_gallon)||0;
+      if(!coutGal) continue;
+      
+      // Parse quantity
+      var qtyStr = col.quantite||'0';
+      var unite = col.unite||'OZ';
+      
+      if(unite==='GR'){
+        // Synthane: grammes * cout_gr_direct
+        var gr = parseFloat(qtyStr)||0;
+        var coutGr = cp.cout_gr_direct ? parseFloat(cp.cout_gr_direct) : (cp.poids_gr_gal ? coutGal/parseFloat(cp.poids_gr_gal) : 0);
+        cc += gr * coutGr;
+      } else {
+        // Pepin or Inter/Devoe
+        var parts = qtyStr.split(' ');
+        var oz=0, f2=0, f3=0;
+        parts.forEach(function(p){
+          if(p.indexOf('oz')>=0) oz=parseFloat(p)||0;
+          else if(p.indexOf('/48')>=0) f2=parseInt(p)||0;
+          else if(p.indexOf('/64')>=0) f2=parseInt(p)||0;
+          else if(p.indexOf('/128')>=0) f3=parseInt(p)||0;
+          else if(!isNaN(parseFloat(p))) oz=parseFloat(p);
+        });
+        var coutBase = coutGal/126;
+        if(marque==='Pepin'){
+          cc += (oz + f2/64) * coutBase;
+        } else {
+          cc += (oz + f2/64 + f3/128) * coutBase;
+        }
+      }
+    }
+    
+    // Add Synthane fixed costs
+    if(isSyn) cc += 17.25;
+    
+    // Skip if no costs
+    if(cc <= 0 && cb <= 0) continue;
+    
+    var tot = cb + cc;
+    var p = calcPrix(marque, tot);
+    var today = new Date().toISOString().slice(0,10);
+    
+    // Upsert prix
+    try {
+      var existing = r.prix && r.prix[0];
+      if(existing){
+        await sb.from('prix').update({
+          cost_base: cb,
+          cost_colorant: cc,
+          prix_gallon: parseFloat(p.gal.toFixed(2)),
+          prix_pinte: parseFloat(p.pinte.toFixed(2)),
+          prix_canette: parseFloat(p.can.toFixed(2)),
+          date_prix: today
+        }).eq('id', existing.id);
+      } else {
+        await sb.from('prix').insert({
+          recette_id: r.id,
+          cost_base: cb,
+          cost_colorant: cc,
+          cost_catalyseur: 0,
+          prix_gallon: parseFloat(p.gal.toFixed(2)),
+          prix_pinte: parseFloat(p.pinte.toFixed(2)),
+          prix_canette: parseFloat(p.can.toFixed(2)),
+          date_prix: today
+        });
+      }
+      updated++;
+    } catch(e) {
+      errors++;
+    }
+  }
+  
+  await loadRecs();
+  btn.textContent = 'Recalculer tous les prix'; btn.disabled = false;
+  svd.textContent = updated + ' recettes mises a jour' + (errors?' ('+errors+' erreurs)':'') + '!';
+  svd.style.display = 'inline-block';
+  setTimeout(function(){ svd.style.display='none'; }, 5000);
+  toast(updated + ' prix recalcules!');
+});
 
 addCRow();updateHex('#cccccc');
 })();
