@@ -1146,7 +1146,7 @@ function loadBases(){
 }
 function renderBases(){
   var c=Q('brows');if(!c)return;c.innerHTML='';
-  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal||b.cout_gallon,b.cout_3gal,b.cout_5gal);});
+  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal);});
 }
 function addBRow(id,prod,num,marque,c1,c3,c5){
   id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';
