@@ -174,10 +174,10 @@ table.ct tr:last-child td{border-bottom:none}
 .ctable input{width:100%;padding:5px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx)}
 .sbtn{margin-top:16px;font-size:13px;padding:9px 20px;border-radius:var(--r);cursor:pointer;border:none;background:#1A8FD1;color:#fff;font-weight:500}
 .svd{font-size:12px;color:var(--green);background:var(--green-l);padding:6px 12px;border-radius:var(--r);display:none;margin-left:10px}
-.brow{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px;gap:5px;align-items:center;margin-bottom:6px}
+.brow{display:grid;grid-template-columns:1.2fr 0.8fr 0.8fr 60px 60px 60px 1fr 60px 60px 60px 28px;gap:4px;align-items:center;margin-bottom:6px}
 .brow input,.brow select{padding:5px 6px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
 .brow select{padding:5px 3px}
-.bhd{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px;gap:5px;margin-bottom:4px}
+.bhd{display:grid;grid-template-columns:1.2fr 0.8fr 0.8fr 60px 60px 60px 1fr 60px 60px 60px 28px;gap:4px;margin-bottom:4px}
 .bhd span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
 .crow3{display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
 .crow3 input{padding:6px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
@@ -360,7 +360,7 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="cs">
           <div class="cst">Couts des bases</div>
           <div class="csd">Entrez le prix par taille. Le cost base se remplira automatiquement selon la quantite choisie dans la recette.</div>
-          <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
+          <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span>Catalyseur</span><span>Cat. 1L $</span><span>Cat. 1gl $</span><span>Cat. 5gl $</span><span></span></div>
           <div id="brows"></div>
           <button class="addbtn" id="addbtn">+ Ajouter une base</button>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
@@ -1186,10 +1186,11 @@ function loadBases(){
 }
 function renderBases(){
   var c=Q('brows');if(!c)return;c.innerHTML='';
-  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal);});
+  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal,b.catalyseur_nom,b.catalyseur_cout_1gal,b.catalyseur_cout_1L,b.catalyseur_cout_5gal);});
 }
-function addBRow(id,prod,num,marque,c1,c3,c5){
+function addBRow(id,prod,num,marque,c1,c3,c5,catNom,catC1,catC3,catC5){
   id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';
+  catNom=catNom||'';catC1=catC1||'';catC3=catC3||'';catC5=catC5||'';
   var row=document.createElement('div');row.className='brow';row.dataset.id=id;
   var p=document.createElement('input');p.type='text';p.className='bp';p.placeholder='Ex: Intergard 345';p.value=prod;
   var n=document.createElement('input');n.type='text';n.className='bn';n.placeholder='Ex: AAA100';n.value=num;
@@ -1199,13 +1200,19 @@ function addBRow(id,prod,num,marque,c1,c3,c5){
   var i1=document.createElement('input');i1.type='number';i1.className='bc1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i3=document.createElement('input');i3.type='number';i3.className='bc3';i3.placeholder='3 gal';i3.step='0.01';i3.value=c3;
   var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
+  var iCatNom=document.createElement('input');iCatNom.type='text';iCatNom.className='bcat';iCatNom.placeholder='Ex: VKA044';iCatNom.value=catNom;
+  var iCat1L=document.createElement('input');iCat1L.type='number';iCat1L.className='bcat1L';iCat1L.placeholder='1L';iCat1L.step='0.01';iCat1L.value=catC3;
+  var iCat1=document.createElement('input');iCat1.type='number';iCat1.className='bcat1';iCat1.placeholder='1 gal';iCat1.step='0.01';iCat1.value=catC1;
+  var iCat5=document.createElement('input');iCat5.type='number';iCat5.className='bcat5';iCat5.placeholder='5 gal';iCat5.step='0.01';iCat5.value=catC5;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){
     var rid=row.dataset.id;
     if(rid){sb.from('bases').delete().eq('id',rid).then(function(){loadBases();toast('Base supprimee!');});}
     else{row.remove();}
   });
-  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);row.appendChild(btn);
+  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);
+  row.appendChild(iCatNom);row.appendChild(iCat1L);row.appendChild(iCat1);row.appendChild(iCat5);
+  row.appendChild(btn);
   Q('brows').appendChild(row);
 }
 Q('addbtn').addEventListener('click',function(){addBRow();});
@@ -1215,7 +1222,12 @@ Q('savebases').addEventListener('click',function(){
     var id=row.dataset.id,prod=row.querySelector('.bp').value.trim(),num=row.querySelector('.bn').value.trim()||null,marque=row.querySelector('.bm').value;
     var c1=parseFloat(row.querySelector('.bc1').value)||null,c3=parseFloat(row.querySelector('.bc3').value)||null,c5=parseFloat(row.querySelector('.bc5').value)||null;
     if(!prod||!marque)return;
-    var cout_gal=c1||c3||c5||0; var data={produit:prod,numero_base:num,marque:marque,cout_gallon:cout_gal,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5};
+    var cout_gal=c1||c3||c5||0;
+    var catNom=row.querySelector('.bcat').value.trim()||null;
+    var catC1L=parseFloat(row.querySelector('.bcat1L').value)||null;
+    var catC1=parseFloat(row.querySelector('.bcat1').value)||null;
+    var catC5=parseFloat(row.querySelector('.bcat5').value)||null;
+    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:cout_gal,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5,catalyseur_nom:catNom,catalyseur_cout_1L:catC1L,catalyseur_cout_1gal:catC1,catalyseur_cout_3gal:null,catalyseur_cout_5gal:catC5};
     if(id)proms.push(sb.from('bases').update(data).eq('id',id));
     else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
   });
@@ -1366,8 +1378,8 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
     var isSyn = marque==='Pepin' && produit.indexOf('synthane')>=0;
     var qty = r.quantite||'Gallon';
     
-    // Calculate cost base from bases table
-    var cb = 0;
+    // Calculate cost base and catalyseur from bases table
+    var cb = 0, ccat_auto = 0;
     if(!isSyn){
       var base = allBases.filter(function(b){
         var matchProd = !r.produit || b.produit.toLowerCase()===r.produit.toLowerCase();
@@ -1380,6 +1392,9 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
         else if(qty==='5 gallons' && base.cout_5gal) cb = parseFloat(base.cout_5gal);
         else if(base.cout_1gal) cb = parseFloat(base.cout_1gal);
         else if(base.cout_gallon) cb = parseFloat(base.cout_gallon);
+        if(qty==='Pinte' && base.catalyseur_cout_1L) ccat_auto = parseFloat(base.catalyseur_cout_1L);
+        else if(qty==='5 gallons' && base.catalyseur_cout_5gal) ccat_auto = parseFloat(base.catalyseur_cout_5gal);
+        else if(base.catalyseur_cout_1gal) ccat_auto = parseFloat(base.catalyseur_cout_1gal);
       }
     }
     
@@ -1428,7 +1443,8 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
     // Skip if no costs
     if(cc <= 0 && cb <= 0) continue;
     
-    var tot = cb + cc;
+    var ccat_r = (r.prix&&r.prix[0]&&parseFloat(r.prix[0].cost_catalyseur||0)>0)?parseFloat(r.prix[0].cost_catalyseur):ccat_auto;
+    var tot = cb + cc + ccat_r;
     var p = calcPrix(marque, tot, isSyn);
     var now = new Date();
     var today = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
@@ -1436,7 +1452,7 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
     // Upsert prix
     try {
       var existing = r.prix && r.prix[0];
-      var histData={recette_id:r.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:existing?parseFloat(existing.cost_catalyseur||0):0,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:today};
+      var histData={recette_id:r.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:today};
       if(existing){
         await sb.from('prix').update({cost_base:cb,cost_colorant:cc,prix_gallon:histData.prix_gallon,prix_pinte:histData.prix_pinte,prix_canette:histData.prix_canette,date_prix:today}).eq('id', existing.id);
       } else {
