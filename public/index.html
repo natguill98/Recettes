@@ -1396,9 +1396,10 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
         else if(qty==='5 gallons' && base.cout_5gal) cb = parseFloat(base.cout_5gal);
         else if(base.cout_1gal) cb = parseFloat(base.cout_1gal);
         else if(base.cout_gallon) cb = parseFloat(base.cout_gallon);
-        if(qty==='Pinte' && base.catalyseur_cout_1l) ccat_auto = parseFloat(base.catalyseur_cout_1l);
-        else if(qty==='5 gallons' && base.catalyseur_cout_5gal) ccat_auto = parseFloat(base.catalyseur_cout_5gal);
-        else if(base.catalyseur_cout_1gal) ccat_auto = parseFloat(base.catalyseur_cout_1gal);
+        // 1gl/Pinte -> 1L cata, 5gl -> 1gl cata, special 5gl -> 5gl cata
+        if(qty==='5 gallons' && base.catalyseur_cout_5gal) ccat_auto = parseFloat(base.catalyseur_cout_5gal);
+        else if(qty==='5 gallons' && base.catalyseur_cout_1gal) ccat_auto = parseFloat(base.catalyseur_cout_1gal);
+        else if(base.catalyseur_cout_1l) ccat_auto = parseFloat(base.catalyseur_cout_1l);
       }
     }
     
