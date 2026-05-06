@@ -371,7 +371,7 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="cs">
           <div class="cst">Couts des catalyseurs</div>
           <div class="csd">Associez un catalyseur a chaque produit. Le cost se remplira automatiquement selon la quantite.</div>
-          <div class="bhd" style="grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px"><span>Produit</span><span>Code cat.</span><span>Marque</span><span>1L $</span><span>1 gal $</span><span>5 gal $</span><span></span></div>
+          <div class="bhd" style="grid-template-columns:1.5fr 1fr 70px 70px 70px 28px"><span>Produit</span><span>Code cat.</span><span>1L $</span><span>1 gal $</span><span>5 gal $</span><span></span></div>
           <div id="catrows"></div>
           <button class="addbtn" id="addcatbtn">+ Ajouter un catalyseur</button>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
@@ -1197,7 +1197,7 @@ function loadBases(){
 }
 function renderBases(){
   var c=Q('brows');if(!c)return;c.innerHTML='';
-  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal,b.catalyseur_nom,b.catalyseur_cout_1gal,b.catalyseur_cout_1L,b.catalyseur_cout_5gal);});
+  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal,b.catalyseur_nom,b.catalyseur_cout_1gal,b.catalyseur_cout_1l,b.catalyseur_cout_5gal);});
 }
 function addBRow(id,prod,num,marque,c1,c3,c5,catNom,catC1,catC3,catC5){
   id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';
@@ -1396,7 +1396,7 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
         else if(qty==='5 gallons' && base.cout_5gal) cb = parseFloat(base.cout_5gal);
         else if(base.cout_1gal) cb = parseFloat(base.cout_1gal);
         else if(base.cout_gallon) cb = parseFloat(base.cout_gallon);
-        if(qty==='Pinte' && base.catalyseur_cout_1L) ccat_auto = parseFloat(base.catalyseur_cout_1L);
+        if(qty==='Pinte' && base.catalyseur_cout_1l) ccat_auto = parseFloat(base.catalyseur_cout_1l);
         else if(qty==='5 gallons' && base.catalyseur_cout_5gal) ccat_auto = parseFloat(base.catalyseur_cout_5gal);
         else if(base.catalyseur_cout_1gal) ccat_auto = parseFloat(base.catalyseur_cout_1gal);
       }
@@ -1479,52 +1479,53 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
 
 // CATALYSEURS SECTION
 function loadCats(){
-  sb.from('bases').select('id,produit,numero_base,marque,catalyseur_nom,catalyseur_cout_1L,catalyseur_cout_1gal,catalyseur_cout_5gal').order('produit').then(function(r){
+  sb.from('bases').select('id,produit,numero_base,marque,catalyseur_nom,catalyseur_cout_1l,catalyseur_cout_1gal,catalyseur_cout_5gal').order('produit').then(function(r){
     var c=Q('catrows');if(!c)return;c.innerHTML='';
     (r.data||[]).forEach(function(b){
-      if(b.catalyseur_nom||b.catalyseur_cout_1gal||b.catalyseur_cout_1L||b.catalyseur_cout_5gal){
-        addCatRow(b.id,b.produit,b.catalyseur_nom,b.marque,b.catalyseur_cout_1L,b.catalyseur_cout_1gal,b.catalyseur_cout_5gal);
+      if(b.catalyseur_nom||b.catalyseur_cout_1gal||b.catalyseur_cout_1l||b.catalyseur_cout_5gal){
+        addCatRow(b.id,b.produit,b.catalyseur_nom,b.marque,b.catalyseur_cout_1l,b.catalyseur_cout_1gal,b.catalyseur_cout_5gal);
       }
     });
   });
 }
 function addCatRow(baseId,prod,catNom,marque,c1L,c1,c5){
   baseId=baseId||'';prod=prod||'';catNom=catNom||'';marque=marque||'';c1L=c1L||'';c1=c1||'';c5=c5||'';
-  var row=document.createElement('div');row.className='brow';row.style.gridTemplateColumns='1.5fr 1fr 1fr 70px 70px 70px 28px';row.dataset.baseid=baseId;
-  var p=document.createElement('input');p.type='text';p.className='catp';p.placeholder='Ex: Northane';p.value=prod;
+  var row=document.createElement('div');row.className='brow';row.style.gridTemplateColumns='1.5fr 1fr 70px 70px 70px 28px';row.dataset.baseid=baseId;
+  // Select produit from allBases
+  var sel=document.createElement('select');sel.className='catp';
+  var defOpt=document.createElement('option');defOpt.value='';defOpt.textContent='Choisir un produit...';sel.appendChild(defOpt);
+  allBases.forEach(function(b){
+    var o=document.createElement('option');
+    o.value=b.id;
+    o.textContent=b.produit+(b.numero_base?' ('+b.numero_base+')':'');
+    if(b.id===baseId)o.selected=true;
+    sel.appendChild(o);
+  });
   var n=document.createElement('input');n.type='text';n.className='catn';n.placeholder='Ex: VKA044';n.value=catNom;
-  var sel=document.createElement('select');sel.className='catm';
-  sel.innerHTML='<option value="">Marque...</option>';
-  ['Pepin','International','Devoe','Disolac'].forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;if(m===marque)o.selected=true;sel.appendChild(o);});
-  var i1L=document.createElement('input');i1L.type='number';i1L.className='cat1L';i1L.placeholder='1L';i1L.step='0.01';i1L.value=c1L;
+  var i1L=document.createElement('input');i1L.type='number';i1L.className='cat1l';i1L.placeholder='1L';i1L.step='0.01';i1L.value=c1L;
   var i1=document.createElement('input');i1.type='number';i1.className='cat1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i5=document.createElement('input');i5.type='number';i5.className='cat5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){
-    var bid=row.dataset.baseid;
-    if(bid){sb.from('bases').update({catalyseur_nom:null,catalyseur_cout_1L:null,catalyseur_cout_1gal:null,catalyseur_cout_5gal:null}).eq('id',bid).then(function(){loadCats();toast('Catalyseur retire!');});}
+    var bid=row.dataset.baseid||sel.value;
+    if(bid){sb.from('bases').update({catalyseur_nom:null,catalyseur_cout_1l:null,catalyseur_cout_1gal:null,catalyseur_cout_5gal:null}).eq('id',bid).then(function(){loadCats();toast('Catalyseur retire!');});}
     else{row.remove();}
   });
-  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1L);row.appendChild(i1);row.appendChild(i5);row.appendChild(btn);
+  row.appendChild(sel);row.appendChild(n);row.appendChild(i1L);row.appendChild(i1);row.appendChild(i5);row.appendChild(btn);
   Q('catrows').appendChild(row);
 }
 document.getElementById('addcatbtn').addEventListener('click',function(){addCatRow();});
 document.getElementById('savecats').addEventListener('click',function(){
   var rows=Q('catrows').querySelectorAll('.brow');var proms=[];
   rows.forEach(function(row){
-    var baseId=row.dataset.baseid;
-    var prod=row.querySelector('.catp').value.trim();
+    var sel=row.querySelector('.catp');
+    var baseId=sel?sel.value:row.dataset.baseid;
     var catNom=row.querySelector('.catn').value.trim()||null;
-    var marque=row.querySelector('.catm').value;
-    var c1L=parseFloat(row.querySelector('.cat1L').value)||null;
+    var c1L=parseFloat(row.querySelector('.cat1l').value)||null;
     var c1=parseFloat(row.querySelector('.cat1').value)||null;
     var c5=parseFloat(row.querySelector('.cat5').value)||null;
     if(baseId){
-      proms.push(sb.from('bases').update({catalyseur_nom:catNom,catalyseur_cout_1L:c1L,catalyseur_cout_1gal:c1,catalyseur_cout_5gal:c5}).eq('id',baseId));
-    } else if(prod&&marque){
-      // Find matching base and update
-      var base=allBases.filter(function(b){return b.produit.toLowerCase()===prod.toLowerCase()&&b.marque===marque;})[0];
-      if(base)proms.push(sb.from('bases').update({catalyseur_nom:catNom,catalyseur_cout_1L:c1L,catalyseur_cout_1gal:c1,catalyseur_cout_5gal:c5}).eq('id',base.id));
+      proms.push(sb.from('bases').update({catalyseur_nom:catNom,catalyseur_cout_1l:c1L,catalyseur_cout_1gal:c1,catalyseur_cout_5gal:c5}).eq('id',baseId));
     }
   });
   Promise.all(proms).then(function(){
