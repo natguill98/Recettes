@@ -526,7 +526,7 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 // TABS
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
-    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();if(currentRole==='admin')loadCats();}
+    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();}
     showView(t.dataset.tab);
   });
 });
