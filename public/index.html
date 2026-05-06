@@ -890,6 +890,7 @@ Q('fm').addEventListener('change',function(){
 Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
 Q('fccat').addEventListener('input',updatePrev);
+if(Q('fmarge'))Q('fmarge').addEventListener('input',updatePrev);
 
 // PRIX PREVIEW
 function isSynthane(){
@@ -913,8 +914,8 @@ function updatePrev(){
   var qty=Q('fqty').value;
   var prev=Q('pprev');if(!prev)return;
   if(!m||tot<=0){prev.style.display='none';return;}
-  var margeSpec=Q('fmarge')?Q('fmarge').value:'';
-  var p=calcPrix(m,tot,isSynthane(),margeSpec);
+  var margeSpecV=Q('fmarge')&&Q('fmarge').value?parseFloat(Q('fmarge').value)||null:null;
+  var p=calcPrix(m,tot,isSynthane(),margeSpecV);
   prev.style.display='block';
   var qtyLabel=qty==='3 gallons'?'3 gal':qty==='5 gallons'?'5 gal':'gallon';
   var pgalEl=Q('pgal'),ppEl=Q('ppinte');
