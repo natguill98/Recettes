@@ -174,10 +174,10 @@ table.ct tr:last-child td{border-bottom:none}
 .ctable input{width:100%;padding:5px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx)}
 .sbtn{margin-top:16px;font-size:13px;padding:9px 20px;border-radius:var(--r);cursor:pointer;border:none;background:#1A8FD1;color:#fff;font-weight:500}
 .svd{font-size:12px;color:var(--green);background:var(--green-l);padding:6px 12px;border-radius:var(--r);display:none;margin-left:10px}
-.brow{display:grid;grid-template-columns:1.2fr 0.8fr 0.8fr 60px 60px 60px 1fr 60px 60px 60px 28px;gap:4px;align-items:center;margin-bottom:6px}
+.brow{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px;gap:5px;align-items:center;margin-bottom:6px}
 .brow input,.brow select{padding:5px 6px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
 .brow select{padding:5px 3px}
-.bhd{display:grid;grid-template-columns:1.2fr 0.8fr 0.8fr 60px 60px 60px 1fr 60px 60px 60px 28px;gap:4px;margin-bottom:4px}
+.bhd{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px;gap:5px;margin-bottom:4px}
 .bhd span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
 .crow3{display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
 .crow3 input{padding:6px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
@@ -360,12 +360,23 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="cs">
           <div class="cst">Couts des bases</div>
           <div class="csd">Entrez le prix par taille. Le cost base se remplira automatiquement selon la quantite choisie dans la recette.</div>
-          <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span>Catalyseur</span><span>Cat. 1L $</span><span>Cat. 1gl $</span><span>Cat. 5gl $</span><span></span></div>
+          <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
           <div id="brows"></div>
           <button class="addbtn" id="addbtn">+ Ajouter une base</button>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
             <button class="sbtn" id="savebases">Sauvegarder les bases</button>
             <span class="svd" id="bsvd">Sauvegarde!</span>
+          </div>
+        </div>
+        <div class="cs">
+          <div class="cst">Couts des catalyseurs</div>
+          <div class="csd">Associez un catalyseur a chaque produit. Le cost se remplira automatiquement selon la quantite.</div>
+          <div class="bhd" style="grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px"><span>Produit</span><span>Code cat.</span><span>Marque</span><span>1L $</span><span>1 gal $</span><span>5 gal $</span><span></span></div>
+          <div id="catrows"></div>
+          <button class="addbtn" id="addcatbtn">+ Ajouter un catalyseur</button>
+          <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
+            <button class="sbtn" id="savecats">Sauvegarder les catalyseurs</button>
+            <span class="svd" id="catsvd">Sauvegarde!</span>
           </div>
         </div>
         <div class="cs">
@@ -515,7 +526,7 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 // TABS
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
-    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();}
+    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();if(currentRole==='admin')loadCats();}
     showView(t.dataset.tab);
   });
 });
@@ -1200,10 +1211,7 @@ function addBRow(id,prod,num,marque,c1,c3,c5,catNom,catC1,catC3,catC5){
   var i1=document.createElement('input');i1.type='number';i1.className='bc1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i3=document.createElement('input');i3.type='number';i3.className='bc3';i3.placeholder='3 gal';i3.step='0.01';i3.value=c3;
   var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
-  var iCatNom=document.createElement('input');iCatNom.type='text';iCatNom.className='bcat';iCatNom.placeholder='Ex: VKA044';iCatNom.value=catNom;
-  var iCat1L=document.createElement('input');iCat1L.type='number';iCat1L.className='bcat1L';iCat1L.placeholder='1L';iCat1L.step='0.01';iCat1L.value=catC3;
-  var iCat1=document.createElement('input');iCat1.type='number';iCat1.className='bcat1';iCat1.placeholder='1 gal';iCat1.step='0.01';iCat1.value=catC1;
-  var iCat5=document.createElement('input');iCat5.type='number';iCat5.className='bcat5';iCat5.placeholder='5 gal';iCat5.step='0.01';iCat5.value=catC5;
+
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){
     var rid=row.dataset.id;
@@ -1211,7 +1219,7 @@ function addBRow(id,prod,num,marque,c1,c3,c5,catNom,catC1,catC3,catC5){
     else{row.remove();}
   });
   row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);
-  row.appendChild(iCatNom);row.appendChild(iCat1L);row.appendChild(iCat1);row.appendChild(iCat5);
+
   row.appendChild(btn);
   Q('brows').appendChild(row);
 }
@@ -1223,11 +1231,7 @@ Q('savebases').addEventListener('click',function(){
     var c1=parseFloat(row.querySelector('.bc1').value)||null,c3=parseFloat(row.querySelector('.bc3').value)||null,c5=parseFloat(row.querySelector('.bc5').value)||null;
     if(!prod||!marque)return;
     var cout_gal=c1||c3||c5||0;
-    var catNom=row.querySelector('.bcat').value.trim()||null;
-    var catC1L=parseFloat(row.querySelector('.bcat1L').value)||null;
-    var catC1=parseFloat(row.querySelector('.bcat1').value)||null;
-    var catC5=parseFloat(row.querySelector('.bcat5').value)||null;
-    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:cout_gal,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5,catalyseur_nom:catNom,catalyseur_cout_1L:catC1L,catalyseur_cout_1gal:catC1,catalyseur_cout_3gal:null,catalyseur_cout_5gal:catC5};
+    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:cout_gal,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5};
     if(id)proms.push(sb.from('bases').update(data).eq('id',id));
     else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
   });
@@ -1471,6 +1475,63 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
   svd.style.display = 'inline-block';
   setTimeout(function(){ svd.style.display='none'; }, 5000);
   toast(updated + ' prix recalcules!');
+});
+
+// CATALYSEURS SECTION
+function loadCats(){
+  sb.from('bases').select('id,produit,numero_base,marque,catalyseur_nom,catalyseur_cout_1L,catalyseur_cout_1gal,catalyseur_cout_5gal').order('produit').then(function(r){
+    var c=Q('catrows');if(!c)return;c.innerHTML='';
+    (r.data||[]).forEach(function(b){
+      if(b.catalyseur_nom||b.catalyseur_cout_1gal||b.catalyseur_cout_1L||b.catalyseur_cout_5gal){
+        addCatRow(b.id,b.produit,b.catalyseur_nom,b.marque,b.catalyseur_cout_1L,b.catalyseur_cout_1gal,b.catalyseur_cout_5gal);
+      }
+    });
+  });
+}
+function addCatRow(baseId,prod,catNom,marque,c1L,c1,c5){
+  baseId=baseId||'';prod=prod||'';catNom=catNom||'';marque=marque||'';c1L=c1L||'';c1=c1||'';c5=c5||'';
+  var row=document.createElement('div');row.className='brow';row.style.gridTemplateColumns='1.5fr 1fr 1fr 70px 70px 70px 28px';row.dataset.baseid=baseId;
+  var p=document.createElement('input');p.type='text';p.className='catp';p.placeholder='Ex: Northane';p.value=prod;
+  var n=document.createElement('input');n.type='text';n.className='catn';n.placeholder='Ex: VKA044';n.value=catNom;
+  var sel=document.createElement('select');sel.className='catm';
+  sel.innerHTML='<option value="">Marque...</option>';
+  ['Pepin','International','Devoe','Disolac'].forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;if(m===marque)o.selected=true;sel.appendChild(o);});
+  var i1L=document.createElement('input');i1L.type='number';i1L.className='cat1L';i1L.placeholder='1L';i1L.step='0.01';i1L.value=c1L;
+  var i1=document.createElement('input');i1.type='number';i1.className='cat1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
+  var i5=document.createElement('input');i5.type='number';i5.className='cat5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
+  var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
+  btn.addEventListener('click',function(){
+    var bid=row.dataset.baseid;
+    if(bid){sb.from('bases').update({catalyseur_nom:null,catalyseur_cout_1L:null,catalyseur_cout_1gal:null,catalyseur_cout_5gal:null}).eq('id',bid).then(function(){loadCats();toast('Catalyseur retire!');});}
+    else{row.remove();}
+  });
+  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1L);row.appendChild(i1);row.appendChild(i5);row.appendChild(btn);
+  Q('catrows').appendChild(row);
+}
+document.getElementById('addcatbtn').addEventListener('click',function(){addCatRow();});
+document.getElementById('savecats').addEventListener('click',function(){
+  var rows=Q('catrows').querySelectorAll('.brow');var proms=[];
+  rows.forEach(function(row){
+    var baseId=row.dataset.baseid;
+    var prod=row.querySelector('.catp').value.trim();
+    var catNom=row.querySelector('.catn').value.trim()||null;
+    var marque=row.querySelector('.catm').value;
+    var c1L=parseFloat(row.querySelector('.cat1L').value)||null;
+    var c1=parseFloat(row.querySelector('.cat1').value)||null;
+    var c5=parseFloat(row.querySelector('.cat5').value)||null;
+    if(baseId){
+      proms.push(sb.from('bases').update({catalyseur_nom:catNom,catalyseur_cout_1L:c1L,catalyseur_cout_1gal:c1,catalyseur_cout_5gal:c5}).eq('id',baseId));
+    } else if(prod&&marque){
+      // Find matching base and update
+      var base=allBases.filter(function(b){return b.produit.toLowerCase()===prod.toLowerCase()&&b.marque===marque;})[0];
+      if(base)proms.push(sb.from('bases').update({catalyseur_nom:catNom,catalyseur_cout_1L:c1L,catalyseur_cout_1gal:c1,catalyseur_cout_5gal:c5}).eq('id',base.id));
+    }
+  });
+  Promise.all(proms).then(function(){
+    loadCatalogues();loadCats();
+    var s=Q('catsvd');s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);
+    toast('Catalyseurs sauvegardes!');
+  });
 });
 
 addCRow();updateHex('#cccccc');
