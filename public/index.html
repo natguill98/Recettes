@@ -1160,7 +1160,11 @@ function addBRow(id,prod,num,marque,c1,c3,c5){
   var i3=document.createElement('input');i3.type='number';i3.className='bc3';i3.placeholder='3 gal';i3.step='0.01';i3.value=c3;
   var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
-  btn.addEventListener('click',function(){if(id)sb.from('bases').delete().eq('id',id);row.remove();});
+  btn.addEventListener('click',function(){
+    var rid=row.dataset.id;
+    if(rid){sb.from('bases').delete().eq('id',rid).then(function(){loadBases();toast('Base supprimee!');});}
+    else{row.remove();}
+  });
   row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);row.appendChild(btn);
   Q('brows').appendChild(row);
 }
@@ -1175,9 +1179,17 @@ Q('savebases').addEventListener('click',function(){
     if(id)proms.push(sb.from('bases').update(data).eq('id',id));
     else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
   });
-  Promise.all(proms).then(function(){
+  Promise.all(proms).then(function(results){
+    // Check for errors
+    var hasError = results.some(function(r){return r&&r.error;});
+    if(hasError){
+      results.forEach(function(r){if(r&&r.error)console.error('Save error:',r.error);});
+    }
     loadBases();loadCatalogues();
-    var s=Q('bsvd');s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);toast('Bases sauvegardees!');
+    var s=Q('bsvd');s.style.display='inline-block';
+    s.textContent=hasError?'Erreur partielle - verifiez':'Sauvegarde!';
+    setTimeout(function(){s.style.display='none';},3000);
+    toast('Bases sauvegardees!');
   });
 });
 
