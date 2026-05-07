@@ -908,6 +908,19 @@ Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
 
 if(Q('fmarge'))Q('fmarge').addEventListener('input',updatePrev);
+if(Q('fprixgal'))Q('fprixgal').addEventListener('input',function(){
+  var prixGal=parseFloat(Q('fprixgal').value)||0;
+  var cb=parseFloat(Q('fcb').value)||0;
+  var cc=parseFloat(Q('fcc').value)||0;
+  var syn=isSynthane();
+  var tot=cb+cc+(syn?17.25:0);
+  if(prixGal>0&&tot>0){
+    var div=tot/prixGal;
+    var mg=Math.round((1-div)*100);
+    if(Q('fmarge'))Q('fmarge').value=mg;
+    updatePrev();
+  }
+});
 
 // PRIX PREVIEW
 function isSynthane(){
