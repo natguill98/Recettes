@@ -1177,7 +1177,7 @@ return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_histor
     });
   });
 });
-Q('cancelbtn').addEventListener('click',function(){delete Q('savebtn').dataset.editid;Q('ftit').textContent='Nouvelle recette client';Q('savebtn').textContent='Sauvegarder';resetForm();showView('clients');});
+Q('cancelbtn').addEventListener('click',function(){var eid=Q('savebtn').dataset.editid;delete Q('savebtn').dataset.editid;Q('ftit').textContent='Nouvelle recette client';Q('savebtn').textContent='Sauvegarder';resetForm();if(eid){openDetail(eid);}else{showView('clients');}});
 
 // COLOUR
 function updateHex(hex){curHex=hex;Q('cprev').style.background=hex;Q('hexd').textContent=hex.toUpperCase();if(/^#[0-9A-Fa-f]{6}$/.test(hex))Q('cpicker').value=hex;}
