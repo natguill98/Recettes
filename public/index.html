@@ -1448,7 +1448,7 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
     // Skip if no costs
     if(cc <= 0 && cb <= 0) continue;
     
-    var ccat_r = (r.prix&&r.prix[0]&&parseFloat(r.prix[0].cost_catalyseur||0)>0)?parseFloat(r.prix[0].cost_catalyseur):ccat_auto;
+    var ccat_r = ccat_auto > 0 ? ccat_auto : (r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0);
     var tot = cb + cc + ccat_r;
     var p = calcPrix(marque, tot, isSyn);
     var now = new Date();
