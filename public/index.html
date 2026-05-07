@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -677,7 +677,8 @@ function openDetail(id){
   var prixHTML='';
   if(canP()&&p){
     var baseCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost base</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_base||0).toFixed(2)+' $</div></div>':'';
-    var catCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost catalyseur</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_catalyseur||0).toFixed(2)+' $</div></div>':'';
+    var pCatDisplay=p.prix_catalyseur?parseFloat(p.prix_catalyseur).toFixed(2):(p.cost_catalyseur&&parseFloat(p.cost_catalyseur)>0?(parseFloat(p.cost_catalyseur)/(marges[r.marque]||0.60)).toFixed(2):'0.00');
+    var catCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost catalyseur</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_catalyseur||0).toFixed(2)+' $</div></div><div class="pc hi" style="cursor:pointer" title="Cliquez pour modifier"><div class="pl">Prix catalyseur</div><div class="pv"><span id="pcat-val">'+pCatDisplay+'</span> $ <span style="font-size:10px;opacity:0.6">(modifiable)</span></div></div>':'';
     var fraisCard=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Frais fixes</div><div class="pv" style="color:var(--tx)">17.25 $</div></div>':'';
     var costPinteDisplay=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost pinte</div><div class="pv" style="color:var(--tx)">'+(total/4).toFixed(2)+' $</div></div>':'';
     pinteCard=isSynRec&&pc?costPinteDisplay+'<div class="pc hi"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div>':'';
@@ -702,6 +703,23 @@ function openDetail(id){
     tbl+='</tbody></table>';
     histDiv.innerHTML=tbl;
   });
+  // Prix catalyseur editable
+  setTimeout(function(){
+    var pcatEl=document.getElementById('pcat-val');
+    if(pcatEl){
+      pcatEl.parentElement.parentElement.addEventListener('click',function(){
+        var cur=pcatEl.textContent;
+        var val=prompt('Prix catalyseur ($):',cur);
+        if(val!==null&&!isNaN(parseFloat(val))){
+          var newVal=parseFloat(val).toFixed(2);
+          pcatEl.textContent=newVal;
+          sb.from('prix').update({prix_catalyseur:parseFloat(newVal)}).eq('recette_id',id).then(function(){
+            toast('Prix catalyseur mis a jour!');
+          });
+        }
+      });
+    }
+  },500);
   var eb=document.createElement('div');eb.className='ebar';
   var be=document.createElement('button');be.className='be';be.textContent='Modifier';
   be.dataset.rid=id;
@@ -1143,7 +1161,7 @@ Q('savebtn').addEventListener('click',function(){
     var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
     var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0;
     var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
-    var tot=cb+cc+ccat+synFrais;
+    var tot=cb+cc+synFrais; // catalyseur calcule separement
     var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:date;
     var p2=(canP()&&(cc>0||cb>0))?(function(){var synF=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0);var p=calcPrix(marque,tot,synF);var pdata={recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:datePrix};
 return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_historique').insert(pdata);});}()):Promise.resolve();
@@ -1396,7 +1414,6 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
         else if(qty==='5 gallons' && base.cout_5gal) cb = parseFloat(base.cout_5gal);
         else if(base.cout_1gal) cb = parseFloat(base.cout_1gal);
         else if(base.cout_gallon) cb = parseFloat(base.cout_gallon);
-        console.log("BASE FOUND:", base.produit, base.numero_base, "1l:", base.catalyseur_cout_1l, "1gal:", base.catalyseur_cout_1gal);
         // 1gl/Pinte -> 1L cata, 5gl -> 1gl cata, special 5gl -> 5gl cata
         if(qty==='5 gallons' && base.catalyseur_cout_5gal) ccat_auto = parseFloat(base.catalyseur_cout_5gal);
         else if(qty==='5 gallons' && base.catalyseur_cout_1gal) ccat_auto = parseFloat(base.catalyseur_cout_1gal);
@@ -1450,7 +1467,7 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
     if(cc <= 0 && cb <= 0) continue;
     
     var ccat_r = ccat_auto > 0 ? ccat_auto : (r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0);
-    var tot = cb + cc + ccat_r;
+    var tot = cb + cc; // catalyseur calcule separement
     var p = calcPrix(marque, tot, isSyn);
     var now = new Date();
     var today = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
@@ -1458,9 +1475,11 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
     // Upsert prix
     try {
       var existing = r.prix && r.prix[0];
-      var histData={recette_id:r.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:today};
+      var div_r=marges[marque]||0.60;
+      var pCat_r=ccat_r>0?parseFloat((ccat_r/div_r).toFixed(2)):null;
+      var histData={recette_id:r.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_catalyseur:pCat_r,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:today};
       if(existing){
-        await sb.from('prix').update({cost_base:cb,cost_colorant:cc,prix_gallon:histData.prix_gallon,prix_pinte:histData.prix_pinte,prix_canette:histData.prix_canette,date_prix:today}).eq('id', existing.id);
+        await sb.from('prix').update({cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_gallon:histData.prix_gallon,prix_pinte:histData.prix_pinte,prix_canette:histData.prix_canette,prix_catalyseur:pCat_r,date_prix:today}).eq('id', existing.id);
       } else {
         await sb.from('prix').insert(Object.assign({},histData,{cost_catalyseur:0}));
       }
