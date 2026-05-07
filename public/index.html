@@ -678,7 +678,8 @@ function openDetail(id){
   var prixHTML='';
   if(canP()&&p){
     var baseCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost base</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_base||0).toFixed(2)+' $</div></div>':'';
-    var pCatDisplay=p.prix_catalyseur?parseFloat(p.prix_catalyseur).toFixed(2):(p.cost_catalyseur&&parseFloat(p.cost_catalyseur)>0?(parseFloat(p.cost_catalyseur)/(marges[r.marque]||0.60)).toFixed(2):'0.00');
+    var pCatRaw=p.prix_catalyseur?parseFloat(p.prix_catalyseur):null;
+    var pCatDisplay=pCatRaw?pCatRaw.toFixed(2):'0.00';
     var catCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost catalyseur</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_catalyseur||0).toFixed(2)+' $</div></div><div class="pc hi" style="cursor:pointer" title="Cliquez pour modifier"><div class="pl">Prix catalyseur</div><div class="pv"><span id="pcat-val">'+pCatDisplay+'</span> $ <span style="font-size:10px;opacity:0.6">(modifiable)</span></div></div>':'';
     var fraisCard=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Frais fixes</div><div class="pv" style="color:var(--tx)">17.25 $</div></div>':'';
     var costPinteDisplay=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost pinte</div><div class="pv" style="color:var(--tx)">'+(total/4).toFixed(2)+' $</div></div>':'';
@@ -1392,12 +1393,14 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
     // Calculate cost base and catalyseur from bases table
     var cb = 0, ccat_auto = 0;
     if(!isSyn){
-      var base = allBases.filter(function(b){
+      var baseCandidates = allBases.filter(function(b){
         var matchProd = !r.produit || b.produit.toLowerCase()===r.produit.toLowerCase();
         var matchBase = !r.numero_base || (b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
         var matchMarque = !marque || b.marque.toLowerCase()===marque.toLowerCase();
         return matchProd && matchBase && matchMarque;
-      })[0];
+      });
+      // Prefer base with catalyseur
+      var base = baseCandidates.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0] || baseCandidates[0];
       if(base){
         if(qty==='3 gallons' && base.cout_3gal) cb = parseFloat(base.cout_3gal);
         else if(qty==='5 gallons' && base.cout_5gal) cb = parseFloat(base.cout_5gal);
