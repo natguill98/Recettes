@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -305,7 +305,6 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="fg2">
             <div class="fg" id="fg-cb"><label>Cost base ($) <span class="info-badge" id="base-hint"></span></label><input type="number" id="fcb" placeholder="0.00" step="0.01"></div>
             <div class="fg"><label>Cost colorant ($) <span class="info-badge" id="col-hint"></span></label><input type="number" id="fcc" placeholder="0.00" step="0.01"></div>
-            <div class="fg full" id="fg-ccat"><label>Cost catalyseur ($)</label><input type="number" id="fccat" placeholder="0.00" step="0.01"></div>
             <div class="fg full" id="fg-frais" style="display:none"><label>Frais fixes Synthane</label><div style="background:var(--amber-l);border:0.5px solid #FAC775;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--amber)">Temps d'homme : 10.00 $ &nbsp;|&nbsp; Can/Misc : 7.25 $ &nbsp;|&nbsp; <strong>Total : 17.25 $</strong> (inclus automatiquement dans le calcul du prix)</div></div>
             <div class="fg full"><label>Date des prix</label><input type="date" id="fdateprix"></div>
             <div class="fg full" id="fg-marge"><label>% Profit special (optionnel - laissez vide pour utiliser la marge standard)</label><input type="number" id="fmarge" placeholder="Ex: 45 pour 45%" step="0.1" min="1" max="99"></div>
@@ -682,7 +681,7 @@ function openDetail(id){
     var fraisCard=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Frais fixes</div><div class="pv" style="color:var(--tx)">17.25 $</div></div>':'';
     var costPinteDisplay=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost pinte</div><div class="pv" style="color:var(--tx)">'+(total/4).toFixed(2)+' $</div></div>':'';
     pinteCard=isSynRec&&pc?costPinteDisplay+'<div class="pc hi"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div>':'';
-    var galCard=pc?'<div class="pc hi"><div class="pl">Prix gallon</div><div class="pv">'+pc.gal.toFixed(2)+' $</div></div>':'';
+    var galCard=pc?'<div class="pc hi" style="cursor:pointer" title="Cliquez pour modifier"><div class="pl">Prix gallon</div><div class="pv"><span id="pgal-val">'+pc.gal.toFixed(2)+'</span> $</div></div>':'';
     prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span>'+(margeSpec?'<span style="font-size:11px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:500">Profit special: '+margeSpec+'%</span>':'')+'</div></div><div class="pcards">'+baseCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost colorant</div><div class="pv" style="color:var(--tx)">'+(isSynRec?Math.max(0,parseFloat(p.cost_colorant||0)-17.25).toFixed(2):parseFloat(p.cost_colorant||0).toFixed(2))+' $</div></div>'+fraisCard+catCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Total cost</div><div class="pv" style="color:var(--tx)">'+total.toFixed(2)+' $</div></div>'+galCard+pinteCard+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+total.toFixed(2)+' $ / '+pc.div+' = '+pc.gal.toFixed(2)+' $/gal - Marge '+pc.mg+'%</div>':'')+'</div>';
     }else if(!canP()){prixHTML='<div class="hbox">Prix non disponibles - vue Production</div>';}
   Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div>'+'</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
@@ -703,8 +702,22 @@ function openDetail(id){
     tbl+='</tbody></table>';
     histDiv.innerHTML=tbl;
   });
-  // Prix catalyseur editable
+  // Prix gallon et catalyseur editables
   setTimeout(function(){
+    var pgalEl=document.getElementById('pgal-val');
+    if(pgalEl){
+      pgalEl.parentElement.parentElement.addEventListener('click',function(){
+        var cur=pgalEl.textContent;
+        var val=prompt('Prix gallon ($):',cur);
+        if(val!==null&&!isNaN(parseFloat(val))){
+          var newVal=parseFloat(val).toFixed(2);
+          pgalEl.textContent=newVal;
+          sb.from('prix').update({prix_gallon:parseFloat(newVal)}).eq('recette_id',id).then(function(){
+            toast('Prix gallon mis a jour!');
+          });
+        }
+      });
+    }
     var pcatEl=document.getElementById('pcat-val');
     if(pcatEl){
       pcatEl.parentElement.parentElement.addEventListener('click',function(){
@@ -933,10 +946,9 @@ function updateQtyOptions(){
   var found=false;
   for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){found=true;break;}}
   if(found)sel.value=cur;
-  var fcb=Q('fg-cb'),fccat=Q('fg-ccat');
+  var fcb=Q('fg-cb');
   if(fcb){fcb.style.display=syn?'none':'flex';}
-  if(fccat){fccat.style.display=syn?'none':'flex';}
-  if(syn){if(Q('fcb'))Q('fcb').value='';if(Q('fccat'))Q('fccat').value='';}
+  if(syn){if(Q('fcb'))Q('fcb').value='';}
   var ffrais=Q('fg-frais');if(ffrais)ffrais.style.display=syn?'':'none';
 }
 function updatePrev(){
