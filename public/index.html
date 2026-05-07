@@ -1173,7 +1173,9 @@ return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_histor
       Q('cform').innerHTML='';Q('pprev').style.display='none';
       var bh=Q('base-hint'),ch=Q('col-hint');
       if(bh)bh.textContent='';if(ch)ch.textContent='';
-      addCRow();loadRecs();showView('clients');
+      addCRow();
+      var savedId=rec.id;
+      loadRecs().then(function(){openDetail(savedId);});
     });
   });
 });
@@ -1362,8 +1364,7 @@ function saveEdit(id){
         Q('ftit').textContent='Nouvelle recette client';
         Q('savebtn').textContent='Sauvegarder';
         resetForm();
-        loadRecs();
-        showView('clients');
+        loadRecs().then(function(){ openDetail(id); });
       });
     });
   });
