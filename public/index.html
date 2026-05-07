@@ -702,34 +702,70 @@ function openDetail(id){
     tbl+='</tbody></table>';
     histDiv.innerHTML=tbl;
   });
-  // Prix gallon et catalyseur editables
+  // Prix editables inline
   setTimeout(function(){
-    var pgalEl=document.getElementById('pgal-val');
-    if(pgalEl){
-      pgalEl.parentElement.parentElement.addEventListener('click',function(){
-        var cur=pgalEl.textContent;
-        var val=prompt('Prix gallon ($):',cur);
-        if(val!==null&&!isNaN(parseFloat(val))){
-          var newVal=parseFloat(val).toFixed(2);
-          pgalEl.textContent=newVal;
-          sb.from('prix').update({prix_gallon:parseFloat(newVal)}).eq('recette_id',id).then(function(){
-            toast('Prix gallon mis a jour!');
-          });
-        }
-      });
+    var prixChanged={};
+    var saveBar=document.getElementById('prix-savebar');
+
+    function showSaveBar(){
+      if(saveBar)saveBar.style.display='flex';
     }
-    var pcatEl=document.getElementById('pcat-val');
-    if(pcatEl){
-      pcatEl.parentElement.parentElement.addEventListener('click',function(){
-        var cur=pcatEl.textContent;
-        var val=prompt('Prix catalyseur ($):',cur);
-        if(val!==null&&!isNaN(parseFloat(val))){
-          var newVal=parseFloat(val).toFixed(2);
-          pcatEl.textContent=newVal;
-          sb.from('prix').update({prix_catalyseur:parseFloat(newVal)}).eq('recette_id',id).then(function(){
-            toast('Prix catalyseur mis a jour!');
+
+    function makePrixEditable(elId, field, label){
+      var el=document.getElementById(elId);
+      if(!el)return;
+      var pc=el.closest('.pc');
+      if(pc){
+        pc.style.cursor='pointer';
+        pc.title='Cliquez pour modifier';
+        // Replace span with input on click
+        pc.addEventListener('click',function(e){
+          if(pc.querySelector('input'))return;
+          var cur=el.textContent;
+          var inp=document.createElement('input');
+          inp.type='number';inp.step='0.01';inp.value=cur;
+          inp.style.cssText='width:80px;font-size:15px;font-weight:700;color:var(--amber);border:none;border-bottom:2px solid var(--amber);background:transparent;outline:none';
+          el.replaceWith(inp);
+          inp.focus();inp.select();
+          inp.addEventListener('input',function(){
+            prixChanged[field]=parseFloat(inp.value)||0;
+            // Recalc profit % if gallon changed
+            if(field==='prix_gallon'){
+              var tot=parseFloat(document.getElementById('total-cost-val')||{textContent:0}).textContent||0;
+              var fboxEl=document.querySelector('.fbox');
+              if(fboxEl&&tot>0){
+                var newGal=parseFloat(inp.value)||0;
+                var newDiv=tot/newGal;
+                var newMg=Math.round((1-newDiv)*100);
+                fboxEl.textContent='Prix modifie manuellement : '+newGal.toFixed(2)+' $/gal - Marge '+newMg+'%';
+              }
+            }
+            showSaveBar();
           });
-        }
+          inp.addEventListener('blur',function(){
+            el.textContent=parseFloat(inp.value).toFixed(2);
+            inp.replaceWith(el);
+          });
+        });
+      }
+    }
+
+    makePrixEditable('pgal-val','prix_gallon','Prix gallon');
+    makePrixEditable('pcat-val','prix_catalyseur','Prix catalyseur');
+
+    // Save bar button
+    var savePrixBtn=document.getElementById('save-prix-btn');
+    if(savePrixBtn){
+      savePrixBtn.addEventListener('click',function(){
+        if(Object.keys(prixChanged).length===0)return;
+        sb.from('prix').update(prixChanged).eq('recette_id',id).then(function(r){
+          if(r.error){toast('Erreur: '+r.error.message);}
+          else{
+            toast('Prix mis a jour!');
+            if(saveBar)saveBar.style.display='none';
+            prixChanged={};
+          }
+        });
       });
     }
   },500);
