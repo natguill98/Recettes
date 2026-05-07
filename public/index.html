@@ -680,7 +680,7 @@ function openDetail(id){
     var baseCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost base</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_base||0).toFixed(2)+' $</div></div>':'';
     var pCatRaw=p.prix_catalyseur?parseFloat(p.prix_catalyseur):null;
     var pCatDisplay=pCatRaw?pCatRaw.toFixed(2):'0.00';
-    var catCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost catalyseur</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_catalyseur||0).toFixed(2)+' $</div></div><div class="pc hi" style="cursor:pointer" title="Cliquez pour modifier"><div class="pl">Prix catalyseur</div><div class="pv"><span id="pcat-val">'+pCatDisplay+'</span> $ <span style="font-size:10px;opacity:0.6">(modifiable)</span></div></div>':'';
+    var catCard=!isSynRec&&pCatDisplay!=='0.00'?'<div class="pc hi"><div class="pl">Prix catalyseur</div><div class="pv">'+pCatDisplay+' $</div></div>':'';
     var fraisCard=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Frais fixes</div><div class="pv" style="color:var(--tx)">17.25 $</div></div>':'';
     var costPinteDisplay=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost pinte</div><div class="pv" style="color:var(--tx)">'+(total/4).toFixed(2)+' $</div></div>':'';
     pinteCard=isSynRec&&pc?costPinteDisplay+'<div class="pc hi"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div>':'';
