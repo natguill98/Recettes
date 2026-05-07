@@ -925,7 +925,7 @@ function updateQtyOptions(){
   var ffrais=Q('fg-frais');if(ffrais)ffrais.style.display=syn?'':'none';
 }
 function updatePrev(){
-  var m=Q('fm').value,cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0,tot=cb+cc+ccat;
+  var m=Q('fm').value,cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,tot=cb+cc;
   var qty=Q('fqty').value;
   var prev=Q('pprev');if(!prev)return;
   if(!m||tot<=0){prev.style.display='none';return;}
@@ -1144,7 +1144,7 @@ Q('savebtn').addEventListener('click',function(){
       }
     });
     var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
-    var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0;
+    var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=0;
     var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
     var tot=cb+cc+synFrais; // catalyseur calcule separement
     var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:date;
@@ -1324,7 +1324,7 @@ function saveEdit(id){
       });
       var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
       // Update prix if admin/comptoir
-      var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=parseFloat(Q('fccat').value)||0;
+      var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=0;
       var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
       var tot=cb+cc+ccat+synFrais;
       var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:new Date().toISOString().slice(0,10);
