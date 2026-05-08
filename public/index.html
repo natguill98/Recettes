@@ -673,6 +673,9 @@ function openDetail(id){
   var ageCls=d<=90?'df':d<=365?'do':'ds';
   var margeSpec=p&&p.marge_speciale?parseFloat(p.marge_speciale):null;
   var pc=p&&total>0?calcPrix(r.marque,total,isSynRec,margeSpec):null;
+  // Toujours utiliser le prix_gallon sauvegardé en BD (respecte les overrides manuels)
+  if(pc&&p&&p.prix_gallon)pc.gal=parseFloat(p.prix_gallon);
+  if(pc&&p&&p.prix_pinte)pc.pinte=parseFloat(p.prix_pinte);
   var sw=r.couleur_hex?'<div class="dsw" style="background:'+r.couleur_hex+'"></div>':'';
   var bc=Q('bcd');bc.innerHTML='';
   var a1=document.createElement('a');a1.textContent='Recettes';a1.addEventListener('click',function(){showView('clients');});bc.appendChild(a1);
