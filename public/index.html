@@ -666,7 +666,9 @@ function openDetail(id){
   var p=r.prix&&r.prix[0]||null;
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
   var isSynRec=(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0);
-  var total=p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+parseFloat(p.cost_catalyseur||0)):0;
+  // Pour Pepin: catalyseur inclus dans total. Pour Inter/Devoe: catalyseur séparé, pas dans le total peinture
+  var isPepin=r.marque==='Pepin';
+  var total=p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+(isPepin?parseFloat(p.cost_catalyseur||0):0)):0;
   var d=ageDays(p&&p.date_prix),ageTxt=d<=90?'Recent':d<=365?'A verifier':'A mettre a jour';
   var ageCls=d<=90?'df':d<=365?'do':'ds';
   var margeSpec=p&&p.marge_speciale?parseFloat(p.marge_speciale):null;
