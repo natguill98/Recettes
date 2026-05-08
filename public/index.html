@@ -372,13 +372,25 @@ table.ct tr:last-child td{border-bottom:none}
         </div>
         <div class="cs">
           <div class="cst">Couts des catalyseurs / Part B</div>
-          <div class="csd">Un catalyseur par produit (Inter/Devoe). S'applique automatiquement a toutes les bases de ce produit.</div>
+          <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px;margin-top:4px">Inter / Devoe — par produit</div>
+          <div class="csd">Un catalyseur par produit. S'applique a toutes les bases de ce produit automatiquement.</div>
           <div class="bhd" style="grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px"><span>Produit</span><span>Marque</span><span>Code part B</span><span>1L $</span><span>1 gal $</span><span>5 gal $</span><span></span></div>
           <div id="catrows"></div>
-          <button class="addbtn" id="addcatbtn">+ Ajouter un catalyseur</button>
+          <button class="addbtn" id="addcatbtn">+ Ajouter (Inter/Devoe)</button>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
-            <button class="sbtn" id="savecats">Sauvegarder les catalyseurs</button>
+            <button class="sbtn" id="savecats">Sauvegarder Inter/Devoe</button>
             <span class="svd" id="catsvd">Sauvegarde!</span>
+          </div>
+          <div style="border-top:0.5px solid var(--bd);margin-top:20px;padding-top:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:6px">Pepin — par base</div>
+            <div class="csd">Chaque base peut avoir son propre catalyseur (ex: NORTHANE NT4291 → NTC4290).</div>
+            <div class="bhd" style="grid-template-columns:1.5fr 1fr 70px 70px 70px 28px"><span>Base (produit)</span><span>Code part B</span><span>1L $</span><span>1 gal $</span><span>5 gal $</span><span></span></div>
+            <div id="catrows-pepin"></div>
+            <button class="addbtn" id="addcatpepinbtn">+ Ajouter (Pepin)</button>
+            <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
+              <button class="sbtn" id="savecatspepin" style="background:var(--amber)">Sauvegarder Pepin</button>
+              <span class="svd" id="catpepinsvd">Sauvegarde!</span>
+            </div>
           </div>
         </div>
         <div class="cs">
@@ -1315,7 +1327,24 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
     }
     if(isSyn)cc+=17.25;
     if(cc<=0&&cb<=0)continue;
-    var ccat_r=ccat_auto>0?ccat_auto:(r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0);
+    // Catalyseur: Pepin → depuis bases (par base), Inter/Devoe → depuis produits_catalyseurs (par produit)
+    var ccat_r=0;
+    if(marque==='Pepin'){
+      ccat_r=ccat_auto>0?ccat_auto:(r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0);
+    }else{
+      // Inter/Devoe: cherche dans produits_catalyseurs par produit+marque
+      var pcEntry=allPC.filter(function(pc){
+        return pc.marque===marque&&pc.produit.toLowerCase()===(r.produit||'').toLowerCase();
+      })[0];
+      if(pcEntry){
+        if(qty==='5 gallons'&&pcEntry.catalyseur_cout_5gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_5gal);
+        else if(qty==='5 gallons'&&pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
+        else if(pcEntry.catalyseur_cout_1l)ccat_r=parseFloat(pcEntry.catalyseur_cout_1l);
+        else if(pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
+      }else{
+        ccat_r=r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0;
+      }
+    }
     var tot=cb+cc,p=calcPrix(marque,tot,isSyn);
     var now=new Date(),today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
     try{
@@ -1336,25 +1365,32 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
   toast(updated+' prix recalcules!');
 });
 
-// CATALYSEURS PAR PRODUIT
+// CATALYSEURS — Inter/Devoe par produit, Pepin par base
 function loadCats(){
+  // Inter/Devoe depuis produits_catalyseurs
   sb.from('produits_catalyseurs').select('*').order('produit').then(function(r){
     allPC=r.data||[];
     var c=Q('catrows');if(!c)return;c.innerHTML='';
     allPC.forEach(function(pc){addCatRow(pc.id,pc.produit,pc.marque,pc.catalyseur_nom,pc.catalyseur_cout_1l,pc.catalyseur_cout_1gal,pc.catalyseur_cout_5gal);});
   });
+  // Pepin depuis bases
+  sb.from('bases').select('id,produit,numero_base,marque,catalyseur_nom,catalyseur_cout_1l,catalyseur_cout_1gal,catalyseur_cout_5gal').eq('marque','Pepin').order('produit').then(function(r){
+    var c=Q('catrows-pepin');if(!c)return;c.innerHTML='';
+    (r.data||[]).forEach(function(b){
+      if(b.catalyseur_nom||b.catalyseur_cout_1l||b.catalyseur_cout_1gal||b.catalyseur_cout_5gal){
+        addCatPepinRow(b.id,b.produit,b.numero_base,b.catalyseur_nom,b.catalyseur_cout_1l,b.catalyseur_cout_1gal,b.catalyseur_cout_5gal);
+      }
+    });
+  });
 }
+// Inter/Devoe row
 function addCatRow(id,prod,marque,catNom,c1L,c1,c5){
   id=id||'';prod=prod||'';marque=marque||'';catNom=catNom||'';c1L=c1L||'';c1=c1||'';c5=c5||'';
   var row=document.createElement('div');row.className='brow';row.style.gridTemplateColumns='1.5fr 1fr 1fr 70px 70px 70px 28px';row.dataset.id=id;
-  // Produit input avec autocomplete depuis allBases
   var p=document.createElement('input');p.type='text';p.className='catp';p.placeholder='Ex: Intercure 99NA';p.value=prod;
-  // Marque select
   var sel=document.createElement('select');sel.className='catm';
   sel.innerHTML='<option value="">Marque...</option>';
-  ['International','Devoe','Pepin','Disolac'].forEach(function(m){
-    var o=document.createElement('option');o.value=m;o.textContent=m;if(m===marque)o.selected=true;sel.appendChild(o);
-  });
+  ['International','Devoe'].forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;if(m===marque)o.selected=true;sel.appendChild(o);});
   var n=document.createElement('input');n.type='text';n.className='catn';n.placeholder='Ex: VKA046';n.value=catNom;
   var i1L=document.createElement('input');i1L.type='number';i1L.className='cat1l';i1L.placeholder='1L';i1L.step='0.01';i1L.value=c1L;
   var i1=document.createElement('input');i1.type='number';i1.className='cat1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
@@ -1368,7 +1404,32 @@ function addCatRow(id,prod,marque,catNom,c1L,c1,c5){
   row.appendChild(p);row.appendChild(sel);row.appendChild(n);row.appendChild(i1L);row.appendChild(i1);row.appendChild(i5);row.appendChild(btn);
   Q('catrows').appendChild(row);
 }
+// Pepin row — par base
+function addCatPepinRow(baseId,prod,numBase,catNom,c1L,c1,c5){
+  baseId=baseId||'';prod=prod||'';numBase=numBase||'';catNom=catNom||'';c1L=c1L||'';c1=c1||'';c5=c5||'';
+  var row=document.createElement('div');row.className='brow';row.style.gridTemplateColumns='1.5fr 1fr 70px 70px 70px 28px';row.dataset.baseid=baseId;
+  var sel=document.createElement('select');sel.className='catbp';
+  var defOpt=document.createElement('option');defOpt.value='';defOpt.textContent='Choisir une base...';sel.appendChild(defOpt);
+  allBases.filter(function(b){return b.marque==='Pepin';}).forEach(function(b){
+    var o=document.createElement('option');o.value=b.id;
+    o.textContent=b.produit+(b.numero_base?' ('+b.numero_base+')':'');
+    if(b.id===baseId)o.selected=true;sel.appendChild(o);
+  });
+  var n=document.createElement('input');n.type='text';n.className='catn';n.placeholder='Ex: NTC4200';n.value=catNom;
+  var i1L=document.createElement('input');i1L.type='number';i1L.className='cat1l';i1L.placeholder='1L';i1L.step='0.01';i1L.value=c1L;
+  var i1=document.createElement('input');i1.type='number';i1.className='cat1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
+  var i5=document.createElement('input');i5.type='number';i5.className='cat5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
+  var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
+  btn.addEventListener('click',function(){
+    var bid=row.dataset.baseid||sel.value;
+    if(bid){sb.from('bases').update({catalyseur_nom:null,catalyseur_cout_1l:null,catalyseur_cout_1gal:null,catalyseur_cout_5gal:null}).eq('id',bid).then(function(){loadCats();toast('Catalyseur retire!');});}
+    else{row.remove();}
+  });
+  row.appendChild(sel);row.appendChild(n);row.appendChild(i1L);row.appendChild(i1);row.appendChild(i5);row.appendChild(btn);
+  Q('catrows-pepin').appendChild(row);
+}
 document.getElementById('addcatbtn').addEventListener('click',function(){addCatRow();});
+document.getElementById('addcatpepinbtn').addEventListener('click',function(){addCatPepinRow();});
 document.getElementById('savecats').addEventListener('click',function(){
   var rows=Q('catrows').querySelectorAll('.brow');var proms=[];
   rows.forEach(function(row){
@@ -1387,7 +1448,24 @@ document.getElementById('savecats').addEventListener('click',function(){
   Promise.all(proms).then(function(){
     loadCatalogues();loadCats();
     var s=Q('catsvd');s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);
-    toast('Catalyseurs sauvegardes!');
+    toast('Catalyseurs Inter/Devoe sauvegardes!');
+  });
+});
+document.getElementById('savecatspepin').addEventListener('click',function(){
+  var rows=Q('catrows-pepin').querySelectorAll('.brow');var proms=[];
+  rows.forEach(function(row){
+    var sel=row.querySelector('.catbp');
+    var baseId=sel?sel.value:row.dataset.baseid;
+    var catNom=row.querySelector('.catn').value.trim()||null;
+    var c1L=parseFloat(row.querySelector('.cat1l').value)||null;
+    var c1=parseFloat(row.querySelector('.cat1').value)||null;
+    var c5=parseFloat(row.querySelector('.cat5').value)||null;
+    if(baseId)proms.push(sb.from('bases').update({catalyseur_nom:catNom,catalyseur_cout_1l:c1L,catalyseur_cout_1gal:c1,catalyseur_cout_5gal:c5}).eq('id',baseId));
+  });
+  Promise.all(proms).then(function(){
+    loadCatalogues();loadCats();
+    var s=Q('catpepinsvd');s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);
+    toast('Catalyseurs Pepin sauvegardes!');
   });
 });
 
