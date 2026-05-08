@@ -1355,7 +1355,15 @@ function saveEdit(id){
         p2=sb.from('prix').delete().eq('recette_id',id).then(function(){
           var pCatE=prixCatOverride||(ccat>0?parseFloat((ccat/(margeSpecE?(1-margeSpecE/100):(marges[marque]||0.60))).toFixed(2)):null);
           var hdata={recette_id:id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),prix_catalyseur:pCatE,date_prix:datePrix,marge_speciale:margeSpecE};
-          return sb.from('prix').insert(hdata).then(function(){return sb.from('prix_historique').insert(hdata);});
+          return sb.from('prix').insert(hdata).then(function(){
+            // Check last historique entry - only insert if prix changed
+            return sb.from('prix_historique').select('prix_gallon,date_prix').eq('recette_id',id).order('created_at',{ascending:false}).limit(1).then(function(hr){
+              var last=hr.data&&hr.data[0];
+              if(!last||Math.abs(parseFloat(last.prix_gallon||0)-hdata.prix_gallon)>0.01||last.date_prix!==datePrix){
+                return sb.from('prix_historique').insert(hdata);
+              }
+            });
+          });
         });
       }
       Promise.all([p1,p2]).then(function(){
@@ -1490,7 +1498,11 @@ document.getElementById('recalcbtn').addEventListener('click', async function(){
       } else {
         await sb.from('prix').insert(Object.assign({},histData,{cost_catalyseur:0}));
       }
-      await sb.from('prix_historique').insert(histData);
+      // Only insert historique if prix changed
+      var existingPrix=existing?parseFloat(existing.prix_gallon||0):0;
+      if(!existing||Math.abs(existingPrix-histData.prix_gallon)>0.01){
+        await sb.from('prix_historique').insert(histData);
+      }
       updated++;
     } catch(e) {
       errors++;
