@@ -780,10 +780,17 @@ function openEdit(id){
     if(Q('fprixgal'))Q('fprixgal').value=p.prix_gallon||'';
     if(Q('fprixcat'))Q('fprixcat').value=p.prix_catalyseur||'';
   }
-  updateCformHeader();updateQtyOptions();
+  updateQtyOptions();
   Q('cform').innerHTML='';
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
   var mode=getEditMode(r.marque,r.produit);
+  // Mettre à jour le header manuellement selon le mode sans effacer le cform
+  var chd=Q('cform').previousElementSibling;
+  if(chd){
+    if(mode==='gr'){chd.style.gridTemplateColumns='1fr 70px 28px';chd.innerHTML='<span>Colorant</span><span>Grammes</span><span></span>';}
+    else if(mode==='pepin'){chd.style.gridTemplateColumns='1fr 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/48</span><span></span>';}
+    else{chd.style.gridTemplateColumns='1fr 50px 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span>';}
+  }
   cols.forEach(function(c){
     var pf=parseQtyFields(c.quantite);
     if(mode==='gr')addCRow(c.nom,pf.oz||c.quantite,'');
