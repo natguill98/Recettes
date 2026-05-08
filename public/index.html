@@ -55,6 +55,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
 .ccard{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;cursor:pointer;transition:all 0.15s}
 .ccard:hover{border-color:var(--blue-m);box-shadow:0 2px 12px rgba(26,143,209,0.1);transform:translateY(-1px)}
+.cinit{width:40px;height:40px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
 .cinit{width:40px;height:40px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
 .cname{font-size:15px;font-weight:600;margin-bottom:4px}
 .ccount{font-size:12px;color:var(--tx3)}
@@ -316,7 +317,6 @@ table.ct tr:last-child td{border-bottom:none}
             <div class="pcards">
               <div class="pc hi"><div class="pl">Prix gallon</div><div class="pv" id="pgal">-</div></div>
               <div class="pc"><div class="pl">Prix pinte</div><div class="pv" id="ppinte">-</div></div>
-              
             </div>
             <div class="fbox" id="fform"></div>
           </div>
@@ -345,7 +345,7 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="fbox" style="margin-top:12px">
             Prix gallon = Total cost / diviseur<br>
             Prix pinte = (Prix gallon / 4) x 1.10<br>
-            Prix canette = (Prix gallon / 24) + 14.95 $
+            Prix kit = Prix gallon + Prix part B
           </div>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px;flex-wrap:wrap">
             <button class="sbtn" id="savemg">Sauvegarder les marges</button>
@@ -370,9 +370,9 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
         </div>
         <div class="cs">
-          <div class="cst">Couts des catalyseurs</div>
-          <div class="csd">Associez un catalyseur a chaque produit. Le cost se remplira automatiquement selon la quantite.</div>
-          <div class="bhd" style="grid-template-columns:1.5fr 1fr 70px 70px 70px 28px"><span>Produit</span><span>Code cat.</span><span>1L $</span><span>1 gal $</span><span>5 gal $</span><span></span></div>
+          <div class="cst">Couts des catalyseurs / Part B</div>
+          <div class="csd">Associez un catalyseur a chaque produit. Le prix part B se calculera automatiquement avec la meme marge que la peinture.</div>
+          <div class="bhd" style="grid-template-columns:1.5fr 1fr 70px 70px 70px 28px"><span>Produit</span><span>Code part B</span><span>1L $</span><span>1 gal $</span><span>5 gal $</span><span></span></div>
           <div id="catrows"></div>
           <button class="addbtn" id="addcatbtn">+ Ajouter un catalyseur</button>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
@@ -474,17 +474,15 @@ function calcPrix(m,t,isSyn,margeSpec){
     div=marges[m]||0.60;
   }
   var gal=t/div;
-  var pinte,chopine;
+  var pinte;
   if(isSyn){
     var costPinte=t/4;
     pinte=costPinte/div+5;
-    chopine=(t/8)/div+5;
   } else {
     pinte=(gal/4)*1.10;
-    chopine=(gal/8)*1.10;
   }
   var can=(gal/24)+14.95;
-  return{gal:gal,pinte:pinte,chopine:chopine,can:can,div:div,mg:Math.round((1-div)*100)};
+  return{gal:gal,pinte:pinte,can:can,div:div,mg:Math.round((1-div)*100)};
 }
 
 // AUTH
@@ -675,20 +673,30 @@ function openDetail(id){
   var a3=document.createElement('a');a3.textContent=r.produit||'Sans produit';a3.addEventListener('click',function(){openClient(r.client);});bc.appendChild(a3);
   bc.appendChild(document.createTextNode(' > '));
   var sp=document.createElement('span');sp.textContent=r.couleur;bc.appendChild(sp);
+
   var prixHTML='';
   if(canP()&&p){
     var baseCard=!isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost base</div><div class="pv" style="color:var(--tx)">'+parseFloat(p.cost_base||0).toFixed(2)+' $</div></div>':'';
     var pCatRaw=p.prix_catalyseur?parseFloat(p.prix_catalyseur):null;
     var pCatDisplay=pCatRaw?pCatRaw.toFixed(2):'0.00';
-    var catCard=!isSynRec&&pCatDisplay!=='0.00'?'<div class="pc hi"><div class="pl">Prix catalyseur</div><div class="pv">'+pCatDisplay+' $</div></div>':'';
+    // Prix kit = prix gallon peinture + prix part B
+    var prixKit=pc&&pCatRaw?parseFloat((pc.gal+pCatRaw).toFixed(2)):null;
+    var catCard='';
+    if(!isSynRec&&pCatRaw){
+      catCard='<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Prix part B</div><div class="pv" style="color:var(--tx)">'+pCatDisplay+' $</div></div>'+
+              '<div class="pc hi" style="background:#EAF3DE;border:0.5px solid #8BC34A"><div class="pl" style="color:#3B6D11">Prix kit</div><div class="pv" style="color:#3B6D11">'+prixKit.toFixed(2)+' $</div></div>';
+    }
     var fraisCard=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Frais fixes</div><div class="pv" style="color:var(--tx)">17.25 $</div></div>':'';
     var costPinteDisplay=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost pinte</div><div class="pv" style="color:var(--tx)">'+(total/4).toFixed(2)+' $</div></div>':'';
-    pinteCard=isSynRec&&pc?costPinteDisplay+'<div class="pc hi"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div>':'';
+    var pinteCard=isSynRec&&pc?costPinteDisplay+'<div class="pc hi"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div>':'';
     var galCard=pc?'<div class="pc hi"><div class="pl">Prix gallon</div><div class="pv">'+pc.gal.toFixed(2)+' $</div></div>':'';
-    prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span>'+(margeSpec?'<span style="font-size:11px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:500">Profit special: '+margeSpec+'%</span>':'')+'</div></div><div class="pcards">'+baseCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost colorant</div><div class="pv" style="color:var(--tx)">'+(isSynRec?Math.max(0,parseFloat(p.cost_colorant||0)-17.25).toFixed(2):parseFloat(p.cost_colorant||0).toFixed(2))+' $</div></div>'+fraisCard+catCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Total cost</div><div class="pv" style="color:var(--tx)">'+total.toFixed(2)+' $</div></div>'+galCard+pinteCard+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+total.toFixed(2)+' $ / '+pc.div+' = '+pc.gal.toFixed(2)+' $/gal - Marge '+pc.mg+'%</div>':'')+'</div>';
-    }else if(!canP()){prixHTML='<div class="hbox">Prix non disponibles - vue Production</div>';}
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div>'+'</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
-  // Load and show historique
+    var formuleKit=prixKit?' &nbsp;|&nbsp; Kit : '+pc.gal.toFixed(2)+' + '+pCatDisplay+' = '+prixKit.toFixed(2)+' $':'';
+    prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span>'+(margeSpec?'<span style="font-size:11px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:500">Profit special: '+margeSpec+'%</span>':'')+'</div></div><div class="pcards">'+baseCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost colorant</div><div class="pv" style="color:var(--tx)">'+(isSynRec?Math.max(0,parseFloat(p.cost_colorant||0)-17.25).toFixed(2):parseFloat(p.cost_colorant||0).toFixed(2))+' $</div></div>'+fraisCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Total cost</div><div class="pv" style="color:var(--tx)">'+total.toFixed(2)+' $</div></div>'+galCard+pinteCard+catCard+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+total.toFixed(2)+' $ / '+pc.div+' = '+pc.gal.toFixed(2)+' $/gal - Marge '+pc.mg+'%'+formuleKit+'</div>':'')+'</div>';
+  }else if(!canP()){prixHTML='<div class="hbox">Prix non disponibles - vue Production</div>';}
+
+  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
+
+  // Historique des prix
   var histDiv=document.createElement('div');
   histDiv.style.cssText='margin-top:12px;';
   histDiv.innerHTML='<div class="stit">Historique des prix</div><div id="hist-loading" style="font-size:12px;color:var(--tx3)">Chargement...</div>';
@@ -697,10 +705,14 @@ function openDetail(id){
     var rows=hr.data||[];
     if(!rows.length){histDiv.innerHTML='<div class="stit">Historique des prix</div><div style="font-size:12px;color:var(--tx3);padding:8px 0">Aucun historique disponible</div>';return;}
     var isSynH=(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0);
-    var tbl='<div class="stit">Historique des prix</div><table class="ct"><thead><tr><th>Date</th><th>Cost total</th><th>Prix gallon</th>'+(isSynH?'<th>Prix pinte</th>':'')+'</tr></thead><tbody>';
+    var hasKit=rows.some(function(h){return parseFloat(h.prix_catalyseur||0)>0;});
+    var tbl='<div class="stit">Historique des prix</div><table class="ct"><thead><tr><th>Date</th><th>Cost total</th><th>Prix gallon</th>'+(isSynH?'<th>Prix pinte</th>':'')+(hasKit?'<th>Prix kit</th>':'')+'</tr></thead><tbody>';
     rows.forEach(function(h,i){
       var htot=(parseFloat(h.cost_base||0)+parseFloat(h.cost_colorant||0)+parseFloat(h.cost_catalyseur||0));
-      tbl+='<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td>'+fmtD(h.date_prix)+'</td><td>'+htot.toFixed(2)+' $</td><td style="font-weight:600;color:var(--amber)">'+parseFloat(h.prix_gallon||0).toFixed(2)+' $</td>'+(isSynH?'<td>'+parseFloat(h.prix_pinte||0).toFixed(2)+' $</td>':'')+'</tr>';
+      var pCatH=parseFloat(h.prix_catalyseur||0);
+      var pGalH=parseFloat(h.prix_gallon||0);
+      var kitH=pCatH>0?(pGalH+pCatH).toFixed(2):'-';
+      tbl+='<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td>'+fmtD(h.date_prix)+'</td><td>'+htot.toFixed(2)+' $</td><td style="font-weight:600;color:var(--amber)">'+pGalH.toFixed(2)+' $</td>'+(isSynH?'<td>'+parseFloat(h.prix_pinte||0).toFixed(2)+' $</td>':'')+(hasKit?'<td style="font-weight:600;color:#3B6D11">'+kitH+(kitH!=='-'?' $':'')+'</td>':'')+'</tr>';
     });
     tbl+='</tbody></table>';
     histDiv.innerHTML=tbl;
@@ -731,7 +743,6 @@ Q('mconfdel').addEventListener('click',function(){
 });
 
 // EDIT
-var editId=null;
 function getEditMode(marque, produit){
   var p=(produit||'').toLowerCase();
   if(marque==='Pepin'&&p.indexOf('synthane')>=0)return'gr';
@@ -741,7 +752,6 @@ function getEditMode(marque, produit){
 function openEdit(id){
   editId=id;
   var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
-  // Fill the add form with existing data
   Q('fc').value=r.client||'';
   Q('fcoul').value=r.couleur||'';
   Q('fnum').value=r.numero_couleur||'';
@@ -751,9 +761,7 @@ function openEdit(id){
   Q('fqty').value=r.quantite||'Gallon';
   Q('fnotes').value=r.notes||'';
   Q('fdate').value=r.date_recette||new Date().toISOString().slice(0,10);
-  // Colour
   if(r.couleur_hex){updateHex(r.couleur_hex);}else{updateHex('#cccccc');}
-  // Prix
   var p=r.prix&&r.prix[0]||null;
   if(p&&canP()){
     Q('fcb').value=parseFloat(p.cost_base||0)||'';
@@ -763,10 +771,8 @@ function openEdit(id){
     if(Q('fprixgal'))Q('fprixgal').value=p.prix_gallon||'';
     if(Q('fprixcat'))Q('fprixcat').value=p.prix_catalyseur||'';
   }
-  // Update form header/mode
   updateCformHeader();
   updateQtyOptions();
-  // Colorants
   Q('cform').innerHTML='';
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
   var mode=getEditMode(r.marque,r.produit);
@@ -777,13 +783,13 @@ function openEdit(id){
     else addCRow(c.nom,pf.oz,pf.f64,pf.f128);
   });
   if(!cols.length)addCRow();
-  // Change title and save button
   Q('ftit').textContent='Modifier la recette';
   Q('savebtn').textContent='Sauvegarder les modifications';
   Q('savebtn').dataset.editid=id;
   updatePrev();
   showView('ajouter');
 }
+var editId=null;
 function parseQtyFields(qty){
   if(!qty)return{oz:0,f64:0,f128:0,f48:0};
   var oz=0,f64=0,f128=0,f48=0;
@@ -796,35 +802,6 @@ function parseQtyFields(qty){
     else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
   });
   return{oz:oz,f64:f64,f128:f128,f48:f48};
-}
-function addECRow_unused(nom,qty,unit,mode){
-  nom=nom||'';mode=mode||'inter';
-  var pf=parseQtyFields(qty);
-  var row=document.createElement('div');row.className='cr';
-  if(mode==='gr')row.style.gridTemplateColumns='1fr 70px 28px';
-  else if(mode==='pepin')row.style.gridTemplateColumns='1fr 50px 50px 28px';
-  else row.style.gridTemplateColumns='';
-  var n=document.createElement('input');n.type='text';n.className='cn';
-  n.placeholder=mode==='gr'?'Ex: STX10...':'Ex: GVA 902...';n.value=nom;
-  var btn=document.createElement('button');btn.className='rm';btn.textContent='x';btn.addEventListener('click',function(){row.remove();});
-  if(mode==='gr'){
-    var q=mkNumIn('cq',pf.oz||'');q.placeholder='gr';
-    row.appendChild(n);row.appendChild(q);row.appendChild(btn);
-  }else if(mode==='pepin'){
-    var q=mkNumIn('cq',pf.oz||'');
-    var q48=mkNumIn('c48',pf.f48||'');
-    row.appendChild(n);row.appendChild(q);row.appendChild(q48);row.appendChild(btn);
-  }else{
-    var q=mkNumIn('cq',pf.oz||'');
-    var q64=mkNumIn('c64',pf.f64||'');
-    var q128=mkNumIn('c128',pf.f128||'');
-    q128.addEventListener('input',function(){
-      var v=parseInt(q128.value)||0;
-      if(v>1){q128.value=0;q64.value=(parseInt(q64.value)||0)+1;}
-    });
-    row.appendChild(n);row.appendChild(q);row.appendChild(q64);row.appendChild(q128);row.appendChild(btn);
-  }
-  Q('ecform').appendChild(row);
 }
 
 // AUTOCOMPLETE
@@ -888,25 +865,19 @@ Q('fprod').addEventListener('input',function(){
   setTimeout(function(){
     updateCformHeader();
     updateQtyOptions();
-    // Clear cost base if Synthane (no base product)
-    if(isSynthane()){
-      Q('fcb').value='';
-      var hint=Q('base-hint');if(hint)hint.textContent='';
-    }
+    if(isSynthane()){Q('fcb').value='';var hint=Q('base-hint');if(hint)hint.textContent='';}
     updatePrev();
   },100);
 });
 Q('fbase').addEventListener('blur',function(){setTimeout(autofillBase,300);});
 Q('fqty').addEventListener('change',function(){autofillBase();updatePrev();});
 Q('fm').addEventListener('change',function(){
-  updateCformHeader();
-  updateQtyOptions();
+  updateCformHeader();updateQtyOptions();
   if(isSynthane()){Q('fcb').value='';var hint=Q('base-hint');if(hint)hint.textContent='';}
   updatePrev();
 });
 Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
-
 if(Q('fmarge'))Q('fmarge').addEventListener('input',updatePrev);
 if(Q('fprixgal'))Q('fprixgal').addEventListener('input',function(){
   var prixGal=parseFloat(Q('fprixgal').value)||0;
@@ -922,7 +893,6 @@ if(Q('fprixgal'))Q('fprixgal').addEventListener('input',function(){
   }
 });
 
-// PRIX PREVIEW
 function isSynthane(){
   return Q('fm').value==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0;
 }
@@ -959,7 +929,7 @@ function updatePrev(){
   Q('fform').textContent='Formule '+m+' : '+tot.toFixed(2)+' $ / '+p.div+' = '+p.gal.toFixed(2)+' $/'+qtyLabel+' - Marge '+p.mg+'%';
 }
 
-// COLORANTS (with autocomplete + auto cost)
+// COLORANTS FORM
 function mkNumIn(cls,val){
   var i=document.createElement('input');i.type='number';i.className=cls;i.placeholder='0';i.value=val||'';i.min='0';i.step='1';
   i.style.cssText='padding:5px 3px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%;text-align:center';
@@ -970,7 +940,6 @@ function getColMode(){
   var p=Q('fprod').value.toLowerCase();
   if(m==='Pepin'&&p.indexOf('synthane')>=0)return'gr';
   if(m==='Pepin')return'pepin';
-  if(m==='International'||m==='Devoe')return'inter';
   return'inter';
 }
 function updateCformHeader(){
@@ -1062,13 +1031,6 @@ function addCRow(nom,oz,f2,f3){
   }
   Q('cform').appendChild(row);
 }
-
-function fracToOz(frac){
-  if(!frac||frac==='-')return 0;
-  var parts=frac.split('/');
-  if(parts.length===2)return parseFloat(parts[0])/parseFloat(parts[1]);
-  return 0;
-}
 function calcColTotal(){
   if(!canP())return;
   var tot=0;
@@ -1079,45 +1041,26 @@ function calcColTotal(){
     var cp=allCP.filter(function(c){return c.nom.toLowerCase()===n.value.trim().toLowerCase();})[0];
     if(!cp)return;
     var coutGal=parseFloat(cp.cout_gallon)||0;
-    var coutParOz=coutGal/128;
-    var totalOz=0;
     if(mode==='gr'){
       var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       var coutGr=0;
-      if(cp.cout_gr_direct&&parseFloat(cp.cout_gr_direct)>0){
-        coutGr=parseFloat(cp.cout_gr_direct);
-      } else if(cp.poids_gr_gal&&parseFloat(cp.poids_gr_gal)>0&&coutGal>0){
-        coutGr=coutGal/parseFloat(cp.poids_gr_gal);
-      } else if(cp.cout_gr&&parseFloat(cp.cout_gr)>0){
-        coutGr=parseFloat(cp.cout_gr);
-      }
+      if(cp.cout_gr_direct&&parseFloat(cp.cout_gr_direct)>0)coutGr=parseFloat(cp.cout_gr_direct);
+      else if(cp.poids_gr_gal&&parseFloat(cp.poids_gr_gal)>0&&coutGal>0)coutGr=coutGal/parseFloat(cp.poids_gr_gal);
+      else if(cp.cout_gr&&parseFloat(cp.cout_gr)>0)coutGr=parseFloat(cp.cout_gr);
       if(coutGr>0)tot+=gr*coutGr;
-      totalOz=0;
     }else if(mode==='pepin'){
       var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       var f48=parseFloat((row.querySelector('.c48')||{value:0}).value)||0;
-      // Pepin: divise par 126 (pas 128), colonne 1/48 = valeur/64 dans calcul
-      var coutPepin=coutGal/126;
-      tot+=(oz+(f48/64))*coutPepin;
-      totalOz=0;
+      tot+=(oz+(f48/64))*(coutGal/126);
     }else{
       var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       var f64=parseFloat((row.querySelector('.c64')||{value:0}).value)||0;
       var f128=parseFloat((row.querySelector('.c128')||{value:0}).value)||0;
-      // Inter/Devoe: divise par 126 comme Pepin
-      var coutInter=coutGal/126;
-      tot+=(oz+(f64/64)+(f128/128))*coutInter;
-      totalOz=0;
+      tot+=(oz+(f64/64)+(f128/128))*(coutGal/126);
     }
-    if(totalOz>0)tot+=totalOz*coutParOz;
   });
-  // Synthane fixed costs added separately at display level, not in colorant cost
   var cc=Q('fcc'),hint=Q('col-hint');
-  if(cc&&tot>0){
-    cc.value=tot.toFixed(2);
-    if(hint)hint.textContent='Auto';
-    updatePrev();
-  }
+  if(cc&&tot>0){cc.value=tot.toFixed(2);if(hint)hint.textContent='Auto';updatePrev();}
 }
 Q('addcbtn').addEventListener('click',function(){addCRow();});
 
@@ -1139,37 +1082,29 @@ Q('savebtn').addEventListener('click',function(){
       var nom=n.value.trim();
       if(nom){
         var qtyStr='0',unite='OZ';
-        if(saveMode==='gr'){
-          var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
-          qtyStr=gr?gr.toString():'0';unite='GR';
-        }else if(saveMode==='pepin'){
-          var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
-          var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;
-          var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');
-          qtyStr=parts.length?parts.join(' '):'0';unite='OZ';
-        }else{
-          var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;
-          var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;
-          var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;
-          var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');
-          qtyStr=parts.length?parts.join(' '):'0';unite='OZ';
-        }
+        if(saveMode==='gr'){var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;qtyStr=gr?gr.toString():'0';unite='GR';}
+        else if(saveMode==='pepin'){var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');qtyStr=parts.length?parts.join(' '):'0';}
+        else{var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');qtyStr=parts.length?parts.join(' '):'0';}
         cols.push({recette_id:rec.id,nom:nom,quantite:qtyStr,unite:unite,ordre:i});
       }
     });
     var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
-    var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=0;
+    var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0;
     var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
-    var tot=cb+cc+synFrais; // catalyseur calcule separement
+    var tot=cb+cc+synFrais;
     var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:date;
-    var p2=(canP()&&(cc>0||cb>0))?(function(){var synF=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0);var p=calcPrix(marque,tot,synF);var pdata={recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:datePrix};
-return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_historique').insert(pdata);});}()):Promise.resolve();
+    var p2=(canP()&&(cc>0||cb>0))?(function(){
+      var synF=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0);
+      var p=calcPrix(marque,tot,synF);
+      var pdata={recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:0,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:datePrix};
+      return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_historique').insert(pdata);});
+    }()):Promise.resolve();
     Promise.all([p1,p2]).then(function(){
       toast('Recette sauvegardee!');btn.textContent='Sauvegarder';btn.disabled=false;
       curHex='#cccccc';updateHex('#cccccc');
-      ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fdateprix','fmarge','fprixgal','fprixcat'].forEach(function(id){var el=Q(id);if(el)el.value='';});  if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
+      ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fdateprix','fmarge','fprixgal','fprixcat'].forEach(function(id){var el=Q(id);if(el)el.value='';});
+      if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
       Q('fm').value='';Q('fdate').value=new Date().toISOString().slice(0,10);
-    if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
       Q('cform').innerHTML='';Q('pprev').style.display='none';
       var bh=Q('base-hint'),ch=Q('col-hint');
       if(bh)bh.textContent='';if(ch)ch.textContent='';
@@ -1216,11 +1151,10 @@ function loadBases(){
 }
 function renderBases(){
   var c=Q('brows');if(!c)return;c.innerHTML='';
-  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal,b.catalyseur_nom,b.catalyseur_cout_1gal,b.catalyseur_cout_1l,b.catalyseur_cout_5gal);});
+  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal);});
 }
-function addBRow(id,prod,num,marque,c1,c3,c5,catNom,catC1,catC3,catC5){
+function addBRow(id,prod,num,marque,c1,c3,c5){
   id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';
-  catNom=catNom||'';catC1=catC1||'';catC3=catC3||'';catC5=catC5||'';
   var row=document.createElement('div');row.className='brow';row.dataset.id=id;
   var p=document.createElement('input');p.type='text';p.className='bp';p.placeholder='Ex: Intergard 345';p.value=prod;
   var n=document.createElement('input');n.type='text';n.className='bn';n.placeholder='Ex: AAA100';n.value=num;
@@ -1230,16 +1164,13 @@ function addBRow(id,prod,num,marque,c1,c3,c5,catNom,catC1,catC3,catC5){
   var i1=document.createElement('input');i1.type='number';i1.className='bc1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i3=document.createElement('input');i3.type='number';i3.className='bc3';i3.placeholder='3 gal';i3.step='0.01';i3.value=c3;
   var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
-
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){
     var rid=row.dataset.id;
     if(rid){sb.from('bases').delete().eq('id',rid).then(function(){loadBases();toast('Base supprimee!');});}
     else{row.remove();}
   });
-  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);
-
-  row.appendChild(btn);
+  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);row.appendChild(btn);
   Q('brows').appendChild(row);
 }
 Q('addbtn').addEventListener('click',function(){addBRow();});
@@ -1255,11 +1186,7 @@ Q('savebases').addEventListener('click',function(){
     else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
   });
   Promise.all(proms).then(function(results){
-    // Check for errors
-    var hasError = results.some(function(r){return r&&r.error;});
-    if(hasError){
-      results.forEach(function(r){if(r&&r.error)console.error('Save error:',r.error);});
-    }
+    var hasError=results.some(function(r){return r&&r.error;});
     loadBases();loadCatalogues();
     var s=Q('bsvd');s.style.display='inline-block';
     s.textContent=hasError?'Erreur partielle - verifiez':'Sauvegarde!';
@@ -1304,7 +1231,7 @@ Q('savecols').addEventListener('click',function(){
   });
 });
 
-// INIT
+// SAVE EDIT
 function saveEdit(id){
   var client=Q('fc').value.trim(),couleur=Q('fcoul').value.trim(),marque=Q('fm').value;
   var err=Q('ferr');err.style.display='none';
@@ -1314,8 +1241,7 @@ function saveEdit(id){
   sb.from('recettes').update({
     client:client,couleur:couleur,
     numero_couleur:Q('fnum').value.trim()||null,
-    marque:marque,
-    produit:Q('fprod').value.trim()||null,
+    marque:marque,produit:Q('fprod').value.trim()||null,
     numero_base:Q('fbase').value.trim()||null,
     quantite:Q('fqty').value,
     notes:Q('fnotes').value.trim()||null,
@@ -1323,7 +1249,6 @@ function saveEdit(id){
     date_recette:Q('fdate').value||new Date().toISOString().slice(0,10)
   }).eq('id',id).then(function(r){
     if(r.error){err.textContent='Erreur: '+r.error.message;err.style.display='block';btn.textContent='Sauvegarder les modifications';btn.disabled=false;return;}
-    // Delete and re-insert colorants
     sb.from('colorants').delete().eq('recette_id',id).then(function(){
       var saveMode=getColMode();
       var cols=[];
@@ -1339,10 +1264,9 @@ function saveEdit(id){
         }
       });
       var p1=cols.length?sb.from('colorants').insert(cols):Promise.resolve();
-      // Update prix if admin/comptoir
-      var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0,ccat=0;
+      var cb=parseFloat(Q('fcb').value)||0,cc=parseFloat(Q('fcc').value)||0;
       var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
-      var tot=cb+cc+ccat+synFrais;
+      var tot=cb+cc+synFrais;
       var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:new Date().toISOString().slice(0,10);
       var p2=Promise.resolve();
       if(canP()&&(cc>0||cb>0)){
@@ -1353,11 +1277,10 @@ function saveEdit(id){
         var prixCatOverride=Q('fprixcat')&&Q('fprixcat').value?parseFloat(Q('fprixcat').value):null;
         if(prixGalOverride)pc.gal=prixGalOverride;
         p2=sb.from('prix').delete().eq('recette_id',id).then(function(){
-          var pCatE=prixCatOverride||(ccat>0?parseFloat((ccat/(margeSpecE?(1-margeSpecE/100):(marges[marque]||0.60))).toFixed(2)):null);
-          var hdata={recette_id:id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),prix_catalyseur:pCatE,date_prix:datePrix,marge_speciale:margeSpecE};
-          return sb.from('prix').insert(hdata).then(function(){
-            return sb.from('prix_historique').insert(hdata);
-          });
+          var div_e=margeSpecE?(1-margeSpecE/100):(marges[marque]||0.60);
+          var pCatE=prixCatOverride||null;
+          var hdata={recette_id:id,cost_base:cb,cost_colorant:cc,cost_catalyseur:0,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),prix_catalyseur:pCatE,date_prix:datePrix,marge_speciale:margeSpecE};
+          return sb.from('prix').insert(hdata).then(function(){return sb.from('prix_historique').insert(hdata);});
         });
       }
       Promise.all([p1,p2]).then(function(){
@@ -1367,7 +1290,7 @@ function saveEdit(id){
         Q('ftit').textContent='Nouvelle recette client';
         Q('savebtn').textContent='Sauvegarder';
         resetForm();
-        loadRecs().then(function(){ openDetail(id); });
+        loadRecs().then(function(){openDetail(id);});
       });
     });
   });
@@ -1375,7 +1298,7 @@ function saveEdit(id){
 
 function resetForm(){
   curHex='#cccccc';updateHex('#cccccc');
-  ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fdateprix','fmarge','fprixgal','fprixcat'].forEach(function(id){var el=Q(id);if(el)el.value='';});  
+  ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fdateprix','fmarge','fprixgal','fprixcat'].forEach(function(id){var el=Q(id);if(el)el.value='';});
   Q('fm').value='';
   Q('fdate').value=new Date().toISOString().slice(0,10);
   if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
@@ -1389,129 +1312,101 @@ function resetForm(){
 }
 
 // RECALCUL TOUS LES PRIX
-document.getElementById('recalcbtn').addEventListener('click', async function(){
-  var btn = document.getElementById('recalcbtn');
-  var svd = document.getElementById('recalcsvd');
-  btn.textContent = 'Recalcul en cours...'; btn.disabled = true;
-  svd.style.display = 'none';
-  
-  // Reload latest catalogues and marges
+document.getElementById('recalcbtn').addEventListener('click',async function(){
+  var btn=document.getElementById('recalcbtn');
+  var svd=document.getElementById('recalcsvd');
+  btn.textContent='Recalcul en cours...';btn.disabled=true;
+  svd.style.display='none';
   await loadCatalogues();
-  
-  var updated = 0, errors = 0;
-  
-  for(var i=0; i<recs.length; i++){
-    var r = recs[i];
-    var marque = r.marque;
-    var produit = (r.produit||'').toLowerCase();
-    var isSyn = marque==='Pepin' && produit.indexOf('synthane')>=0;
-    var qty = r.quantite||'Gallon';
-    
-    // Calculate cost base and catalyseur from bases table
-    var cb = 0, ccat_auto = 0;
+  var updated=0,errors=0;
+  for(var i=0;i<recs.length;i++){
+    var r=recs[i];
+    var marque=r.marque;
+    var produit=(r.produit||'').toLowerCase();
+    var isSyn=marque==='Pepin'&&produit.indexOf('synthane')>=0;
+    var qty=r.quantite||'Gallon';
+    var cb=0,ccat_auto=0;
     if(!isSyn){
-      var baseCandidates = allBases.filter(function(b){
-        var matchProd = !r.produit || b.produit.toLowerCase()===r.produit.toLowerCase();
-        var matchBase = !r.numero_base || (b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
-        var matchMarque = !marque || b.marque.toLowerCase()===marque.toLowerCase();
-        return matchProd && matchBase && matchMarque;
+      var baseCandidates=allBases.filter(function(b){
+        var matchProd=!r.produit||b.produit.toLowerCase()===r.produit.toLowerCase();
+        var matchBase=!r.numero_base||(b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
+        var matchMarque=!marque||b.marque.toLowerCase()===marque.toLowerCase();
+        return matchProd&&matchBase&&matchMarque;
       });
-      // Prefer base with catalyseur
-      var base = baseCandidates.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0] || baseCandidates[0];
+      var base=baseCandidates.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0]||baseCandidates[0];
       if(base){
-        if(qty==='3 gallons' && base.cout_3gal) cb = parseFloat(base.cout_3gal);
-        else if(qty==='5 gallons' && base.cout_5gal) cb = parseFloat(base.cout_5gal);
-        else if(base.cout_1gal) cb = parseFloat(base.cout_1gal);
-        else if(base.cout_gallon) cb = parseFloat(base.cout_gallon);
-        // 1gl/Pinte -> 1L cata, 5gl -> 1gl cata, special 5gl -> 5gl cata
-        if(qty==='5 gallons' && base.catalyseur_cout_5gal) ccat_auto = parseFloat(base.catalyseur_cout_5gal);
-        else if(qty==='5 gallons' && base.catalyseur_cout_1gal) ccat_auto = parseFloat(base.catalyseur_cout_1gal);
-        else if(base.catalyseur_cout_1l) ccat_auto = parseFloat(base.catalyseur_cout_1l);
+        if(qty==='3 gallons'&&base.cout_3gal)cb=parseFloat(base.cout_3gal);
+        else if(qty==='5 gallons'&&base.cout_5gal)cb=parseFloat(base.cout_5gal);
+        else if(base.cout_1gal)cb=parseFloat(base.cout_1gal);
+        else if(base.cout_gallon)cb=parseFloat(base.cout_gallon);
+        if(qty==='5 gallons'&&base.catalyseur_cout_5gal)ccat_auto=parseFloat(base.catalyseur_cout_5gal);
+        else if(qty==='5 gallons'&&base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
+        else if(base.catalyseur_cout_1l)ccat_auto=parseFloat(base.catalyseur_cout_1l);
+        else if(base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
       }
     }
-    
-    // Calculate cost colorant from colorants
-    var cc = 0;
-    var cols = (r.colorants||[]);
-    for(var j=0; j<cols.length; j++){
-      var col = cols[j];
-      var cp = allCP.filter(function(c){ return c.nom.toLowerCase()===col.nom.toLowerCase(); })[0];
-      if(!cp) continue;
-      var coutGal = parseFloat(cp.cout_gallon)||0;
-      if(!coutGal) continue;
-      
-      // Parse quantity
-      var qtyStr = col.quantite||'0';
-      var unite = col.unite||'OZ';
-      
+    var cc=0;
+    var cols=(r.colorants||[]);
+    for(var j=0;j<cols.length;j++){
+      var col=cols[j];
+      var cp=allCP.filter(function(c){return c.nom.toLowerCase()===col.nom.toLowerCase();})[0];
+      if(!cp)continue;
+      var coutGal=parseFloat(cp.cout_gallon)||0;
+      if(!coutGal)continue;
+      var qtyStr=col.quantite||'0';
+      var unite=col.unite||'OZ';
       if(unite==='GR'){
-        // Synthane: grammes * cout_gr_direct
-        var gr = parseFloat(qtyStr)||0;
-        var coutGr = cp.cout_gr_direct ? parseFloat(cp.cout_gr_direct) : (cp.poids_gr_gal ? coutGal/parseFloat(cp.poids_gr_gal) : 0);
-        cc += gr * coutGr;
-      } else {
-        // Pepin or Inter/Devoe
-        var parts = qtyStr.split(' ');
-        var oz=0, f2=0, f3=0;
+        var gr=parseFloat(qtyStr)||0;
+        var coutGr=cp.cout_gr_direct?parseFloat(cp.cout_gr_direct):(cp.poids_gr_gal?coutGal/parseFloat(cp.poids_gr_gal):0);
+        cc+=gr*coutGr;
+      }else{
+        var parts=qtyStr.split(' ');
+        var oz=0,f2=0,f3=0;
         parts.forEach(function(p){
-          if(p.indexOf('oz')>=0) oz=parseFloat(p)||0;
-          else if(p.indexOf('/48')>=0) f2=parseInt(p)||0;
-          else if(p.indexOf('/64')>=0) f2=parseInt(p)||0;
-          else if(p.indexOf('/128')>=0) f3=parseInt(p)||0;
-          else if(!isNaN(parseFloat(p))) oz=parseFloat(p);
+          if(p.indexOf('oz')>=0)oz=parseFloat(p)||0;
+          else if(p.indexOf('/48')>=0)f2=parseInt(p)||0;
+          else if(p.indexOf('/64')>=0)f2=parseInt(p)||0;
+          else if(p.indexOf('/128')>=0)f3=parseInt(p)||0;
+          else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
         });
-        var coutBase = coutGal/126;
-        if(marque==='Pepin'){
-          cc += (oz + f2/64) * coutBase;
-        } else {
-          cc += (oz + f2/64 + f3/128) * coutBase;
-        }
+        var coutBase=coutGal/126;
+        if(marque==='Pepin')cc+=(oz+f2/64)*coutBase;
+        else cc+=(oz+f2/64+f3/128)*coutBase;
       }
     }
-    
-    // Add Synthane fixed costs
-    if(isSyn) cc += 17.25;
-    
-    // Skip if no costs
-    if(cc <= 0 && cb <= 0) continue;
-    
-    var ccat_r = ccat_auto > 0 ? ccat_auto : (r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0);
-    var tot = cb + cc; // catalyseur calcule separement
-    var p = calcPrix(marque, tot, isSyn);
-    var now = new Date();
-    var today = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-    
-    // Upsert prix
-    try {
-      var existing = r.prix && r.prix[0];
+    if(isSyn)cc+=17.25;
+    if(cc<=0&&cb<=0)continue;
+    var ccat_r=ccat_auto>0?ccat_auto:(r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0);
+    var tot=cb+cc;
+    var p=calcPrix(marque,tot,isSyn);
+    var now=new Date();
+    var today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    try{
+      var existing=r.prix&&r.prix[0];
       var div_r=marges[marque]||0.60;
       var pCat_r=ccat_r>0?parseFloat((ccat_r/div_r).toFixed(2)):null;
       var histData={recette_id:r.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_catalyseur:pCat_r,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:today};
       if(existing){
-        await sb.from('prix').update({cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_gallon:histData.prix_gallon,prix_pinte:histData.prix_pinte,prix_canette:histData.prix_canette,prix_catalyseur:pCat_r,date_prix:today}).eq('id', existing.id);
-      } else {
-        await sb.from('prix').insert(Object.assign({},histData,{cost_catalyseur:0}));
+        await sb.from('prix').update({cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_gallon:histData.prix_gallon,prix_pinte:histData.prix_pinte,prix_canette:histData.prix_canette,prix_catalyseur:pCat_r,date_prix:today}).eq('id',existing.id);
+      }else{
+        await sb.from('prix').insert(histData);
       }
-      // Only insert historique if prix changed
       var existingPrix=existing?parseFloat(existing.prix_gallon||0):0;
       if(!existing||Math.abs(existingPrix-histData.prix_gallon)>0.01){
         await sb.from('prix_historique').insert(histData);
       }
       updated++;
-    } catch(e) {
-      errors++;
-    }
+    }catch(e){errors++;}
   }
-  
   await loadRecs();
-  btn.textContent = 'Recalculer tous les prix'; btn.disabled = false;
-  svd.textContent = updated + ' recettes mises a jour' + (errors?' ('+errors+' erreurs)':'') + '!';
-  svd.style.display = 'inline-block';
-  setTimeout(function(){ svd.style.display='none'; }, 5000);
-  toast(updated + ' prix recalcules!');
+  btn.textContent='Recalculer tous les prix';btn.disabled=false;
+  svd.textContent=updated+' recettes mises a jour'+(errors?' ('+errors+' erreurs)':'')+'!';
+  svd.style.display='inline-block';
+  setTimeout(function(){svd.style.display='none';},5000);
+  toast(updated+' prix recalcules!');
 });
 
-// CATALYSEURS SECTION
+// CATALYSEURS
 function loadCats(){
   sb.from('bases').select('id,produit,numero_base,marque,catalyseur_nom,catalyseur_cout_1l,catalyseur_cout_1gal,catalyseur_cout_5gal').order('produit').then(function(r){
     var c=Q('catrows');if(!c)return;c.innerHTML='';
@@ -1525,7 +1420,6 @@ function loadCats(){
 function addCatRow(baseId,prod,catNom,marque,c1L,c1,c5){
   baseId=baseId||'';prod=prod||'';catNom=catNom||'';marque=marque||'';c1L=c1L||'';c1=c1||'';c5=c5||'';
   var row=document.createElement('div');row.className='brow';row.style.gridTemplateColumns='1.5fr 1fr 70px 70px 70px 28px';row.dataset.baseid=baseId;
-  // Select produit from allBases
   var sel=document.createElement('select');sel.className='catp';
   var defOpt=document.createElement('option');defOpt.value='';defOpt.textContent='Choisir un produit...';sel.appendChild(defOpt);
   allBases.forEach(function(b){
@@ -1535,7 +1429,7 @@ function addCatRow(baseId,prod,catNom,marque,c1L,c1,c5){
     if(b.id===baseId)o.selected=true;
     sel.appendChild(o);
   });
-  var n=document.createElement('input');n.type='text';n.className='catn';n.placeholder='Ex: VKA044';n.value=catNom;
+  var n=document.createElement('input');n.type='text';n.className='catn';n.placeholder='Ex: VKA046';n.value=catNom;
   var i1L=document.createElement('input');i1L.type='number';i1L.className='cat1l';i1L.placeholder='1L';i1L.step='0.01';i1L.value=c1L;
   var i1=document.createElement('input');i1.type='number';i1.className='cat1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i5=document.createElement('input');i5.type='number';i5.className='cat5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
