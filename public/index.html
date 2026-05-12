@@ -807,8 +807,11 @@ function openEdit(id){
 function parseQtyFields(qty){
   if(!qty)return{oz:0,f64:0,f128:0,f48:0};
   var oz=0,f64=0,f128=0,f48=0;
-  qty.split(' ').forEach(function(p){
-    if(p.indexOf('oz')>=0)oz=parseFloat(p)||0;
+  // Normaliser: "1 oz" → "1oz", "4 /48" → "4/48"
+  var s=qty.replace(/(\d+)\s+oz/gi,'$1oz').replace(/(\d+)\s*\/\s*(\d+)/g,'$1/$2');
+  s.split(' ').forEach(function(p){
+    p=p.trim();if(!p)return;
+    if(p.toLowerCase().indexOf('oz')>=0){oz=parseFloat(p)||0;}
     else if(p.indexOf('/48')>=0)f48=parseInt(p)||0;
     else if(p.indexOf('/64')>=0)f64=parseInt(p)||0;
     else if(p.indexOf('/128')>=0)f128=parseInt(p)||0;
