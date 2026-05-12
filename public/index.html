@@ -756,7 +756,7 @@ Q('mconfdel').addEventListener('click',function(){
 });
 
 // EDIT
-var editId=null;
+var editId=null,isLoading=false;
 function getEditMode(marque,produit){
   var p=(produit||'').toLowerCase();
   if(marque==='Pepin'&&p.indexOf('synthane')>=0)return'gr';
@@ -764,7 +764,7 @@ function getEditMode(marque,produit){
   return'inter';
 }
 function openEdit(id){
-  editId=id;
+  editId=id;isLoading=true;
   var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
   Q('fc').value=r.client||'';Q('fcoul').value=r.couleur||'';Q('fnum').value=r.numero_couleur||'';
   Q('fm').value=r.marque||'';Q('fprod').value=r.produit||'';Q('fbase').value=r.numero_base||'';
@@ -798,6 +798,7 @@ function openEdit(id){
     else addCRow(c.nom,pf.oz,pf.f64,pf.f128);
   });
   if(!cols.length)addCRow();
+  setTimeout(function(){isLoading=false;},500);
   Q('ftit').textContent='Modifier la recette';
   Q('savebtn').textContent='Sauvegarder les modifications';
   Q('savebtn').dataset.editid=id;
@@ -868,8 +869,9 @@ function autofillBase(){
     if(cost>0){Q('fcb').value=cost.toFixed(2);if(hint)hint.textContent='Auto: '+found.produit+' '+qty;updatePrev();}
   }else{if(hint)hint.textContent='';}
 }
-Q('fprod').addEventListener('blur',function(){setTimeout(function(){autofillBase();updateCformHeader();},300);});
+Q('fprod').addEventListener('blur',function(){if(isLoading)return;setTimeout(function(){autofillBase();updateCformHeader();},300);});
 Q('fprod').addEventListener('input',function(){
+  if(isLoading)return;
   setTimeout(function(){
     updateCformHeader();updateQtyOptions();
     if(isSynthane()){Q('fcb').value='';var hint=Q('base-hint');if(hint)hint.textContent='';}
@@ -879,6 +881,7 @@ Q('fprod').addEventListener('input',function(){
 Q('fbase').addEventListener('blur',function(){setTimeout(autofillBase,300);});
 Q('fqty').addEventListener('change',function(){autofillBase();updatePrev();});
 Q('fm').addEventListener('change',function(){
+  if(isLoading)return;
   updateCformHeader();updateQtyOptions();
   if(isSynthane()){Q('fcb').value='';var hint=Q('base-hint');if(hint)hint.textContent='';}
   updatePrev();
