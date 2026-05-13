@@ -529,7 +529,21 @@ function dbdg(ds){
   return'<span class="db '+cls+'">'+fmtD(ds)+'</span>';
 }
 function mcls(m){return{Pepin:'bp',International:'bi',Devoe:'bv',Disolac:'bd'}[m]||'bq';}
-function inits(n){return n.split(' ').map(function(w){return w[0]||'';}).join('').substring(0,2).toUpperCase();}
+function inits(n){
+  // Garder & comme lettre, retirer les mots parasites, max 4 lettres
+  var skip=['de','du','des','le','la','les','et','en','un','une','l','d'];
+  // Remplacer & par un token spécial
+  var s=n.replace(/&/g,' & ');
+  var words=s.split(/[\s\-\.]+/).filter(function(w){return w.length>0;});
+  var letters=[];
+  words.forEach(function(w){
+    if(w==='&'){letters.push('&');}
+    else if(skip.indexOf(w.toLowerCase())<0&&w.length>0){
+      letters.push(w[0].toUpperCase());
+    }
+  });
+  return letters.slice(0,4).join('');
+}
 function calcPrix(m,t,isSyn,margeSpec){
   var div;
   if(margeSpec&&parseFloat(margeSpec)>0){div=1-(parseFloat(margeSpec)/100);}
@@ -659,7 +673,9 @@ function renderClients(){
   g.innerHTML='';
   sorted.forEach(function(name){
     var div=document.createElement('div');div.className='ccard';
-    div.innerHTML='<div class="cinit">'+inits(name)+'</div><div class="cname">'+name+'</div><div class="ccount">'+map[name]+' recette'+(map[name]!==1?'s':'')+'</div>';
+    var acr=inits(name);
+    var fs=acr.length<=2?'17px':acr.length===3?'14px':'12px';
+    div.innerHTML='<div class="cinit" style="font-size:'+fs+'">'+acr+'</div><div class="cname">'+name+'</div><div class="ccount">'+map[name]+' recette'+(map[name]!==1?'s':'')+'</div>';
     div.addEventListener('click',function(){openClient(name);});
     g.appendChild(div);
   });
