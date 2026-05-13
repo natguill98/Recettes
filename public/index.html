@@ -1207,8 +1207,9 @@ Q('savebtn').addEventListener('click',function(){
       var margeSpecS=Q('fmarge')?parseFloat(Q('fmarge').value)||null:null;
       var pc=calcPrix(marque,tot,synF,margeSpecS);
       var prixGalOverride=Q('fprixgal')&&Q('fprixgal').value?parseFloat(Q('fprixgal').value):null;
+      var prixCatNew=Q('fprixcat')&&Q('fprixcat').value?parseFloat(Q('fprixcat').value):null;
       if(prixGalOverride)pc.gal=prixGalOverride;
-      var pdata={recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:0,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),date_prix:datePrix,marge_speciale:margeSpecS};
+      var pdata={recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:0,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),prix_catalyseur:prixCatNew,date_prix:datePrix,marge_speciale:margeSpecS};
       return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_historique').insert(pdata);});
     }()):Promise.resolve();
     Promise.all([p1,p2]).then(function(){
