@@ -501,6 +501,17 @@ table.ct tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="mo" id="mhist">
+  <div class="mb">
+    <div class="mt">Supprimer cette entree?</div>
+    <p style="font-size:13px;color:var(--tx2)">Cette entree sera retiree de l'historique des prix.</p>
+    <div class="ma">
+      <button class="btn" id="mcancelhist">Annuler</button>
+      <button class="bx" id="mconfhist">Supprimer</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1780,14 +1791,21 @@ document.getElementById('savecatspepin').addEventListener('click',function(){
 addCRow();updateHex('#cccccc');
 
 // Fonction globale pour supprimer une ligne d'historique (admin seulement)
-window.delHistorique=function(hid){
-  if(role!=='admin')return;
-  if(!confirm('Supprimer cette entree de l\'historique?'))return;
+var pendHist=null;
+Q('mcancelhist').addEventListener('click',function(){Q('mhist').classList.remove('on');pendHist=null;});
+Q('mconfhist').addEventListener('click',function(){
+  if(!pendHist)return;
+  var hid=pendHist;pendHist=null;
+  Q('mhist').classList.remove('on');
   sb.from('prix_historique').delete().eq('id',hid).then(function(){
     toast('Entree supprimee!');
-    // Recharger la fiche
     if(selId)openDetail(selId);
   });
+});
+window.delHistorique=function(hid){
+  if(role!=='admin')return;
+  pendHist=hid;
+  Q('mhist').classList.add('on');
 };
 })();
 </script>
