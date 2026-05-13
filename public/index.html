@@ -763,6 +763,7 @@ function openDetail(id){
   histDiv.innerHTML='<div class="stit">Historique des prix</div><div style="font-size:12px;color:var(--tx3)">Chargement...</div>';
   Q('detpan').appendChild(histDiv);
   sb.from('prix_historique').select('*').eq('recette_id',id).order('created_at',{ascending:false}).limit(10).then(function(hr){
+    if(!canP()){histDiv.innerHTML='';return;}
     var rows=hr.data||[];
     if(!rows.length){histDiv.innerHTML='<div class="stit">Historique des prix</div><div style="font-size:12px;color:var(--tx3);padding:8px 0">Aucun historique disponible</div>';return;}
     var isSynH=(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0);
