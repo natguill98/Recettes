@@ -767,13 +767,15 @@ function openDetail(id){
     if(!rows.length){histDiv.innerHTML='<div class="stit">Historique des prix</div><div style="font-size:12px;color:var(--tx3);padding:8px 0">Aucun historique disponible</div>';return;}
     var isSynH=(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0);
     var hasKit=rows.some(function(h){return parseFloat(h.prix_catalyseur||0)>0;});
-    var tbl='<div class="stit">Historique des prix</div><table class="ct"><thead><tr><th>Date</th><th>Cost total</th><th>Prix gallon</th>'+(isSynH?'<th>Prix pinte</th>':'')+(hasKit?'<th>Prix kit</th>':'')+'</tr></thead><tbody>';
+    var isAdmin=role==='admin';
+    var tbl='<div class="stit">Historique des prix</div><table class="ct"><thead><tr><th>Date</th><th>Cost total</th><th>Prix gallon</th>'+(isSynH?'<th>Prix pinte</th>':'')+(hasKit?'<th>Prix kit</th>':'')+(isAdmin?'<th></th>':'')+'</tr></thead><tbody>';
     rows.forEach(function(h,i){
       var htot=(parseFloat(h.cost_base||0)+parseFloat(h.cost_colorant||0)+parseFloat(h.cost_catalyseur||0));
       var pCatH=parseFloat(h.prix_catalyseur||0);
       var pGalH=parseFloat(h.prix_gallon||0);
       var kitH=pCatH>0?(pGalH+pCatH).toFixed(2):'-';
-      tbl+='<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td>'+fmtD(h.date_prix)+'</td><td>'+htot.toFixed(2)+' $</td><td style="font-weight:600;color:var(--green)">'+pGalH.toFixed(2)+' $</td>'+(isSynH?'<td>'+parseFloat(h.prix_pinte||0).toFixed(2)+' $</td>':'')+(hasKit?'<td style="font-weight:600;color:var(--green)">'+kitH+(kitH!=='-'?' $':'')+'</td>':'')+'</tr>';
+      var delBtn=isAdmin?'<td><button onclick="delHistorique(\''+h.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:14px;padding:2px 6px;border-radius:4px" title="Supprimer">x</button></td>':'';
+      tbl+='<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td>'+fmtD(h.date_prix)+'</td><td>'+htot.toFixed(2)+' $</td><td style="font-weight:600;color:var(--green)">'+pGalH.toFixed(2)+' $</td>'+(isSynH?'<td>'+parseFloat(h.prix_pinte||0).toFixed(2)+' $</td>':'')+(hasKit?'<td style="font-weight:600;color:var(--green)">'+kitH+(kitH!=='-'?' $':'')+'</td>':'')+delBtn+'</tr>';
     });
     tbl+='</tbody></table>';
     histDiv.innerHTML=tbl;
@@ -1616,6 +1618,17 @@ document.getElementById('savecatspepin').addEventListener('click',function(){
 });
 
 addCRow();updateHex('#cccccc');
+
+// Fonction globale pour supprimer une ligne d'historique (admin seulement)
+window.delHistorique=function(hid){
+  if(role!=='admin')return;
+  if(!confirm('Supprimer cette entree de l\'historique?'))return;
+  sb.from('prix_historique').delete().eq('id',hid).then(function(){
+    toast('Entree supprimee!');
+    // Recharger la fiche
+    if(selId)openDetail(selId);
+  });
+};
 })();
 </script>
 </body>
