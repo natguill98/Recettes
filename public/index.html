@@ -374,9 +374,26 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="cs">
           <div class="cst">Couts des bases</div>
           <div class="csd">Entrez le prix par taille. Le cost base se remplira automatiquement selon la quantite choisie dans la recette.</div>
+
+          <div style="font-size:12px;font-weight:600;color:var(--blue);margin:12px 0 6px">Pepin</div>
           <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
-          <div id="brows"></div>
-          <button class="addbtn" id="addbtn">+ Ajouter une base</button>
+          <div id="brows-pepin"></div>
+          <button class="addbtn" id="addbtn-pepin">+ Ajouter (Pepin)</button>
+
+          <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">International / Devoe</div>
+            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
+            <div id="brows-inter"></div>
+            <button class="addbtn" id="addbtn-inter">+ Ajouter (Inter/Devoe)</button>
+          </div>
+
+          <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px">Disolac</div>
+            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
+            <div id="brows-disolac"></div>
+            <button class="addbtn" id="addbtn-disolac">+ Ajouter (Disolac)</button>
+          </div>
+
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
             <button class="sbtn" id="savebases">Sauvegarder les bases</button>
             <span class="svd" id="bsvd">Sauvegarde!</span>
@@ -408,9 +425,19 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="cs">
           <div class="cst">Couts des colorants</div>
           <div class="csd">Entrez le prix au gallon. Le cost colorant se calculera automatiquement ($/gal divise par 128 = $/oz).</div>
+
+          <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px">Pepin (NUM / FA / STX)</div>
           <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span></span></div>
-          <div id="crows"></div>
-          <button class="addbtn" id="addcol">+ Ajouter un colorant</button>
+          <div id="crows-pepin"></div>
+          <button class="addbtn" id="addcol-pepin">+ Ajouter (Pepin)</button>
+
+          <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">International / Devoe (GVA)</div>
+            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span></span></div>
+            <div id="crows-inter"></div>
+            <button class="addbtn" id="addcol-inter">+ Ajouter (Inter/Devoe)</button>
+          </div>
+
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
             <button class="sbtn" id="savecols">Sauvegarder les colorants</button>
             <span class="svd" id="csvd">Sauvegarde!</span>
@@ -1369,14 +1396,17 @@ function loadBases(){
   sb.from('bases').select('*').order('produit').then(function(r){allBases=r.data||[];renderBases();});
 }
 function renderBases(){
-  var c=Q('brows');if(!c)return;c.innerHTML='';
-  allBases.forEach(function(b){addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal);});
+  ['pepin','inter','disolac'].forEach(function(k){var c=Q('brows-'+k);if(c)c.innerHTML='';});
+  allBases.forEach(function(b){
+    var k=b.marque==='Pepin'?'pepin':b.marque==='Disolac'?'disolac':'inter';
+    addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal,k);
+  });
 }
-function addBRow(id,prod,num,marque,c1,c3,c5){
-  id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';
+function addBRow(id,prod,num,marque,c1,c3,c5,section){
+  id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';section=section||'pepin';
   var row=document.createElement('div');row.className='brow';row.dataset.id=id;
-  var p=document.createElement('input');p.type='text';p.className='bp';p.placeholder='Ex: Intergard 345';p.value=prod;
-  var n=document.createElement('input');n.type='text';n.className='bn';n.placeholder='Ex: AAA100';n.value=num;
+  var p=document.createElement('input');p.type='text';p.className='bp';p.placeholder='Ex: NORTHANE';p.value=prod;
+  var n=document.createElement('input');n.type='text';n.className='bn';n.placeholder='Ex: NT4201C';n.value=num;
   var sel=document.createElement('select');sel.className='bm';sel.innerHTML='<option value="">Marque...</option>';
   ['Pepin','International','Devoe','Disolac'].forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;if(m===marque)o.selected=true;sel.appendChild(o);});
   var i1=document.createElement('input');i1.type='number';i1.className='bc1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
@@ -1388,12 +1418,18 @@ function addBRow(id,prod,num,marque,c1,c3,c5){
     if(rid){sb.from('bases').delete().eq('id',rid).then(function(){loadBases();toast('Base supprimee!');});}else{row.remove();}
   });
   row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);row.appendChild(btn);
-  Q('brows').appendChild(row);
+  var container=Q('brows-'+section);if(container)container.appendChild(row);
 }
-Q('addbtn').addEventListener('click',function(){addBRow();});
+Q('addbtn-pepin').addEventListener('click',function(){addBRow('','','','Pepin','','','','pepin');});
+Q('addbtn-inter').addEventListener('click',function(){addBRow('','','','International','','','','inter');});
+Q('addbtn-disolac').addEventListener('click',function(){addBRow('','','','Disolac','','','','disolac');});
 Q('savebases').addEventListener('click',function(){
-  var rows=Q('brows').querySelectorAll('.brow');var proms=[];
-  rows.forEach(function(row){
+  var allRows=[];
+  ['brows-pepin','brows-inter','brows-disolac'].forEach(function(id){
+    var c=Q(id);if(c)c.querySelectorAll('.brow').forEach(function(r){allRows.push(r);});
+  });
+  var proms=[];
+  allRows.forEach(function(row){
     var id=row.dataset.id,prod=row.querySelector('.bp').value.trim(),num=row.querySelector('.bn').value.trim()||null,marque=row.querySelector('.bm').value;
     var c1=parseFloat(row.querySelector('.bc1').value)||null,c3=parseFloat(row.querySelector('.bc3').value)||null,c5=parseFloat(row.querySelector('.bc5').value)||null;
     if(!prod||!marque)return;
@@ -1414,24 +1450,35 @@ function loadCP(){
   sb.from('colorants_prix').select('*').order('nom').then(function(r){allCP=r.data||[];renderCP();});
 }
 function renderCP(){
-  var c=Q('crows');if(!c)return;c.innerHTML='';
-  allCP.forEach(function(c2){addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct);});
+  ['pepin','inter'].forEach(function(k){var c=Q('crows-'+k);if(c)c.innerHTML='';});
+  allCP.forEach(function(c2){
+    var nom=c2.nom.toLowerCase();
+    var k=nom.indexOf('gva')>=0?'inter':'pepin';
+    addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct,k);
+  });
 }
-function addCPRow(id,nom,coutGal,poids){
-  id=id||'';nom=nom||'';coutGal=coutGal||'';poids=poids||'';
+function addCPRow(id,nom,coutGal,poids,section){
+  id=id||'';nom=nom||'';coutGal=coutGal||'';poids=poids||'';section=section||'pepin';
   var row=document.createElement('div');row.className='crow3';row.dataset.id=id;
-  var n=document.createElement('input');n.type='text';n.className='cpn';n.placeholder='Ex: GVA 902';n.value=nom;
+  var n=document.createElement('input');n.type='text';n.className='cpn';
+  n.placeholder=section==='stx'?'Ex: STX10':section==='inter'?'Ex: GVA 902':'Ex: NUM 301';
+  n.value=nom;
   var g=document.createElement('input');g.type='number';g.className='cpg';g.placeholder='$/gal';g.step='0.01';g.value=coutGal;
   var p=document.createElement('input');p.type='number';p.className='cpp';p.placeholder='0.0000';p.step='0.0001';p.value=poids;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){if(id)sb.from('colorants_prix').delete().eq('id',id);row.remove();});
   row.appendChild(n);row.appendChild(g);row.appendChild(p);row.appendChild(btn);
-  Q('crows').appendChild(row);
+  var container=Q('crows-'+section);if(container)container.appendChild(row);
 }
-Q('addcol').addEventListener('click',function(){addCPRow();});
+Q('addcol-pepin').addEventListener('click',function(){addCPRow('','','','','pepin');});
+Q('addcol-inter').addEventListener('click',function(){addCPRow('','','','','inter');});
 Q('savecols').addEventListener('click',function(){
-  var rows=Q('crows').querySelectorAll('.crow3');var proms=[];
-  rows.forEach(function(row){
+  var allRows=[];
+  ['crows-pepin','crows-inter'].forEach(function(id){
+    var c=Q(id);if(c)c.querySelectorAll('.crow3').forEach(function(r){allRows.push(r);});
+  });
+  var proms=[];
+  allRows.forEach(function(row){
     var id=row.dataset.id,nom=row.querySelector('.cpn').value.trim(),coutGal=parseFloat(row.querySelector('.cpg').value)||null;
     var poids=parseFloat(row.querySelector('.cpp').value)||null;
     if(!nom)return;
