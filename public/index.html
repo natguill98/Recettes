@@ -433,6 +433,18 @@ table.ct tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="mo" id="mcopy">
+  <div class="mb">
+    <div class="mt">Copier la recette?</div>
+    <p style="font-size:13px;color:var(--tx2);margin-bottom:6px">Une nouvelle recette sera creee avec les memes colorants et couts.</p>
+    <p style="font-size:13px;color:var(--tx2)">Vous pourrez changer le client et modifier tous les champs avant de sauvegarder.</p>
+    <div class="ma">
+      <button class="btn" id="mcancelcopy">Annuler</button>
+      <button class="be" id="mconfcopy">Oui, copier</button>
+    </div>
+  </div>
+</div>
+
 <div class="mo" id="medit">
   <div class="mb">
     <div class="mt">Modifier la recette</div>
@@ -771,14 +783,78 @@ function openDetail(id){
   var be=document.createElement('button');be.className='be';be.textContent='Modifier';
   be.dataset.rid=id;
   be.addEventListener('click',function(){openEdit(this.dataset.rid);});
+  var bc2=document.createElement('button');bc2.className='be';bc2.textContent='Copier';bc2.style.cssText='background:var(--green-l);color:var(--green);border-color:var(--green)';
+  bc2.dataset.rid=id;
+  bc2.addEventListener('click',function(){if(canP())confirmCopy(this.dataset.rid);});
   var bx=document.createElement('button');bx.className='bx';bx.textContent='Supprimer';
   bx.dataset.rid=id;
   bx.addEventListener('click',function(){confirmDel(this.dataset.rid);});
-  eb.appendChild(be);eb.appendChild(bx);Q('detpan').appendChild(eb);
+  eb.appendChild(be);
+  if(canP())eb.appendChild(bc2);
+  eb.appendChild(bx);Q('detpan').appendChild(eb);
   Q('tdetail').style.display='';showView('detail');
 }
 
-// DELETE
+// COPY
+var pendCopy=null;
+function confirmCopy(id){pendCopy=id;Q('mcopy').classList.add('on');}
+Q('mcancelcopy').addEventListener('click',function(){Q('mcopy').classList.remove('on');pendCopy=null;});
+Q('mconfcopy').addEventListener('click',function(){
+  if(!pendCopy)return;
+  Q('mcopy').classList.remove('on');
+  var r=recs.filter(function(x){return x.id===pendCopy;})[0];
+  pendCopy=null;
+  if(!r)return;
+  // Remplir le formulaire comme openEdit mais client vide
+  isLoading=true;
+  Q('fc').value=''; // client vide — à remplir
+  Q('fcoul').value=r.couleur||'';
+  Q('fnum').value=r.numero_couleur||'';
+  Q('fm').value=r.marque||'';
+  Q('fprod').value=r.produit||'';
+  Q('fbase').value=r.numero_base||'';
+  Q('fqty').value=r.quantite||'Gallon';
+  Q('fnotes').value=r.notes||'';
+  Q('fdate').value=new Date().toISOString().slice(0,10);
+  if(r.couleur_hex){updateHex(r.couleur_hex);}else{updateHex('#cccccc');}
+  // Prix
+  var p=r.prix&&r.prix[0]||null;
+  if(p&&canP()){
+    Q('fcb').value=parseFloat(p.cost_base||0)||'';
+    Q('fcc').value=parseFloat(p.cost_colorant||0)||'';
+    if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
+    if(Q('fmarge'))Q('fmarge').value=p.marge_speciale||'';
+    if(Q('fprixgal'))Q('fprixgal').value=''; // prix à recalculer
+    if(Q('fprixcat'))Q('fprixcat').value=p.prix_catalyseur||'';
+  }
+  updateQtyOptions();
+  Q('cform').innerHTML='';
+  // Header colorants
+  var mode=getEditMode(r.marque,r.produit);
+  var chd=Q('cform').previousElementSibling;
+  if(chd){
+    if(mode==='gr'){chd.style.gridTemplateColumns='1fr 70px 28px';chd.innerHTML='<span>Colorant</span><span>Grammes</span><span></span>';}
+    else if(mode==='pepin'){chd.style.gridTemplateColumns='1fr 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/48</span><span></span>';}
+    else{chd.style.gridTemplateColumns='1fr 50px 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span>';}
+  }
+  // Colorants
+  var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
+  cols.forEach(function(c){
+    var pf=parseQtyFields(c.quantite);
+    if(mode==='gr')addCRow(c.nom,pf.oz||c.quantite,'');
+    else if(mode==='pepin')addCRow(c.nom,pf.oz,pf.f48);
+    else addCRow(c.nom,pf.oz,pf.f64,pf.f128);
+  });
+  if(!cols.length)addCRow();
+  setTimeout(function(){isLoading=false;},500);
+  // Titre et mode nouvelle recette
+  Q('ftit').textContent='Copie de '+r.couleur+' — choisir un client';
+  Q('savebtn').textContent='Sauvegarder la copie';
+  delete Q('savebtn').dataset.editid; // mode nouvelle recette
+  updatePrev();
+  showView('ajouter');
+  toast('Recette copiee — entrez le client et sauvegardez!',3500);
+});
 var pendDel=null;
 function confirmDel(id){pendDel=id;Q('mdel').classList.add('on');}
 Q('mcanceldel').addEventListener('click',function(){Q('mdel').classList.remove('on');pendDel=null;});
