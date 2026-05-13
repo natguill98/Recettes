@@ -824,13 +824,13 @@ function printFiche(id){
   function makeColTable(){
     var hdr,rows2='';
     if(colMode==='gr'){
-      hdr='<tr><th>Colorant</th><th>Grammes</th></tr>';
+      hdr='<tr><th>Colorant</th><th class="num">Grammes</th></tr>';
       cols.forEach(function(c){rows2+='<tr><td>'+c.nom+'</td><td class="num">'+c.quantite+'</td></tr>';});
     }else if(colMode==='pepin'){
-      hdr='<tr><th>Colorant</th><th>Oz</th><th>1/48</th></tr>';
+      hdr='<tr><th>Colorant</th><th class="num">Oz</th><th class="num">1/48</th></tr>';
       cols.forEach(function(c){var pf=parseQtyFields(c.quantite);rows2+='<tr><td>'+c.nom+'</td><td class="num">'+(pf.oz||'')+'</td><td class="num">'+(pf.f48||'')+'</td></tr>';});
     }else{
-      hdr='<tr><th>Colorant</th><th>Oz</th><th>1/64</th><th>1/128</th></tr>';
+      hdr='<tr><th>Colorant</th><th class="num">Oz</th><th class="num">1/64</th><th class="num">1/128</th></tr>';
       cols.forEach(function(c){var pf=parseQtyFields(c.quantite);rows2+='<tr><td>'+c.nom+'</td><td class="num">'+(pf.oz||'')+'</td><td class="num">'+(pf.f64||'')+'</td><td class="num">'+(pf.f128||'')+'</td></tr>';});
     }
     return'<table>'+hdr+rows2+'</table>';
@@ -882,10 +882,11 @@ function printFiche(id){
     '.infos{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:4px}'+
     '.infos .lbl{font-size:10px;color:#888;margin-right:4px}'+
     '.infos .val{font-size:12px;font-weight:500}'+
-    'table{width:100%;border-collapse:collapse;margin-bottom:8px}'+
+    'table{width:100%;border-collapse:collapse;margin-bottom:8px;table-layout:fixed}'+
     'th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#666;font-weight:500;padding:5px 8px;border-bottom:1px solid #ddd;text-align:left}'+
+    'th.num{text-align:center;width:80px}'+
     'td{padding:8px 8px;border-bottom:0.5px solid #eee;font-size:13px}'+
-    'td.num{font-size:18px;font-weight:700;color:#1A8FD1;text-align:right}'+
+    'td.num{font-size:22px;font-weight:700;color:#1A8FD1;text-align:center;width:80px}'+
     'tr.prix-row td{font-weight:600;font-size:14px}'+
     'tr.prix-row td:last-child{color:#3B6D11}'+
     '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{padding:12px 16px}}'+
