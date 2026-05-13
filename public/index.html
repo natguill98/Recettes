@@ -794,11 +794,106 @@ function openDetail(id){
   bx.addEventListener('click',function(){confirmDel(this.dataset.rid);});
   eb.appendChild(be);
   if(canP())eb.appendChild(bc2);
+  // Bouton Imprimer
+  var bp=document.createElement('button');bp.className='be';bp.textContent='Imprimer';
+  bp.style.cssText='background:var(--gray-l);color:var(--gray);border-color:var(--gray)';
+  bp.addEventListener('click',function(){printFiche(id);});
+  eb.appendChild(bp);
   eb.appendChild(bx);Q('detpan').appendChild(eb);
   Q('tdetail').style.display='';showView('detail');
 }
 
-// COPY
+// IMPRESSION
+function printFiche(id){
+  var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
+  var p=r.prix&&r.prix[0]||null;
+  var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
+  var isSynRec=(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0);
+  var colMode=getEditMode(r.marque,r.produit);
+  var isPepin=r.marque==='Pepin';
+  var total=p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+(isPepin?parseFloat(p.cost_catalyseur||0):0)):0;
+  var margeSpec=p&&p.marge_speciale?parseFloat(p.marge_speciale):null;
+  var pc=p&&total>0?calcPrix(r.marque,total,isSynRec,margeSpec):null;
+  if(pc&&p&&p.prix_gallon)pc.gal=parseFloat(p.prix_gallon);
+  if(pc&&p&&p.prix_pinte)pc.pinte=parseFloat(p.prix_pinte);
+  var qtyLbl=r.quantite==='3 gallons'?'3 gal':r.quantite==='5 gallons'?'5 gal':r.quantite==='Pinte'?'pinte':'gallon';
+  var pCatRaw=p&&p.prix_catalyseur?parseFloat(p.prix_catalyseur):null;
+  var prixKit=pc&&pCatRaw?parseFloat((pc.gal+pCatRaw).toFixed(2)):null;
+
+  // Tableau colorants
+  function makeColTable(){
+    var hdr,rows2='';
+    if(colMode==='gr'){
+      hdr='<tr><th>Colorant</th><th>Grammes</th></tr>';
+      cols.forEach(function(c){rows2+='<tr><td>'+c.nom+'</td><td class="num">'+c.quantite+'</td></tr>';});
+    }else if(colMode==='pepin'){
+      hdr='<tr><th>Colorant</th><th>Oz</th><th>1/48</th></tr>';
+      cols.forEach(function(c){var pf=parseQtyFields(c.quantite);rows2+='<tr><td>'+c.nom+'</td><td class="num">'+(pf.oz||'')+'</td><td class="num">'+(pf.f48||'')+'</td></tr>';});
+    }else{
+      hdr='<tr><th>Colorant</th><th>Oz</th><th>1/64</th><th>1/128</th></tr>';
+      cols.forEach(function(c){var pf=parseQtyFields(c.quantite);rows2+='<tr><td>'+c.nom+'</td><td class="num">'+(pf.oz||'')+'</td><td class="num">'+(pf.f64||'')+'</td><td class="num">'+(pf.f128||'')+'</td></tr>';});
+    }
+    return'<table>'+hdr+rows2+'</table>';
+  }
+
+  // Section infos
+  function makeInfos(){
+    return'<div class="infos"><div><span class="lbl">Client</span><span class="val">'+r.client+'</span></div><div><span class="lbl">Couleur</span><span class="val">'+r.couleur+(r.numero_couleur?' #'+r.numero_couleur:'')+'</span></div><div><span class="lbl">Produit</span><span class="val">'+(r.produit||'-')+'</span></div><div><span class="lbl">Base</span><span class="val">'+(r.numero_base||'-')+'</span></div><div><span class="lbl">Format</span><span class="val">'+(r.quantite||'Gallon')+'</span></div><div><span class="lbl">Marque</span><span class="val">'+r.marque+'</span></div>'+(r.notes?'<div style="grid-column:1/-1"><span class="lbl">Notes</span><span class="val">'+r.notes+'</span></div>':'')+'</div>';
+  }
+
+  // Section prix
+  function makePrix(){
+    if(!pc||!p)return'';
+    var pCatDisplay=pCatRaw?pCatRaw.toFixed(2):'';
+    var rows3='<tr><td>Cost base</td><td>'+parseFloat(p.cost_base||0).toFixed(2)+' $</td></tr>';
+    rows3+='<tr><td>Cost colorant</td><td>'+(isSynRec?Math.max(0,parseFloat(p.cost_colorant||0)-17.25).toFixed(2):parseFloat(p.cost_colorant||0).toFixed(2))+' $</td></tr>';
+    rows3+='<tr><td>Total cost</td><td>'+total.toFixed(2)+' $</td></tr>';
+    rows3+='<tr class="prix-row"><td>Prix '+qtyLbl+'</td><td>'+pc.gal.toFixed(2)+' $</td></tr>';
+    if(prixKit)rows3+='<tr class="prix-row"><td>Prix part B</td><td>'+pCatDisplay+' $</td></tr><tr class="prix-row"><td>Prix kit</td><td>'+prixKit.toFixed(2)+' $</td></tr>';
+    if(isSynRec&&pc.pinte)rows3+='<tr class="prix-row"><td>Prix pinte</td><td>'+pc.pinte.toFixed(2)+' $</td></tr>';
+    return'<div class="section-title">Prix</div><table>'+rows3+'</table>'+(margeSpec?'<p style="font-size:10px;margin-top:4px">Profit special: '+margeSpec+'%</p>':'');
+  }
+
+  function makePage(avecPrix,copieLabel){
+    return'<div class="page"><div class="header"><img src="https://raw.githubusercontent.com/natguill98/Recettes/main/Techno%20logo%20site.jpg" alt="Technocolor"><div class="header-right"><div class="date-print">'+new Date().toLocaleDateString('fr-CA')+'</div>'+(copieLabel?'<div class="copie-badge">'+copieLabel+'</div>':'')+'</div></div><div class="section-title">Informations</div>'+makeInfos()+'<div class="section-title">Colorants</div>'+makeColTable()+(avecPrix?makePrix():'')+'</div>';
+  }
+
+  var pages='';
+  if(canP()){
+    // Comptoir/Admin: 2 copies — avec prix + sans prix
+    pages=makePage(true,'Copie comptoir')+makePage(false,'Copie production');
+  }else{
+    // Production: 1 copie sans prix
+    pages=makePage(false,'');
+  }
+
+  var win=window.open('','_blank','width=800,height=900');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recette - '+r.couleur+'</title><style>'+
+    '*{box-sizing:border-box;margin:0;padding:0}'+
+    'body{font-family:system-ui,sans-serif;font-size:12px;color:#111;background:#fff}'+
+    '.page{padding:20px 24px;max-width:780px;margin:0 auto;page-break-after:always}'+
+    '.page:last-child{page-break-after:avoid}'+
+    '.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1.5px solid #1a2a3a}'+
+    '.header img{height:36px}'+
+    '.header-right{text-align:right}'+
+    '.date-print{font-size:11px;color:#666}'+
+    '.copie-badge{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#1A8FD1;margin-top:2px}'+
+    '.section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#666;margin:14px 0 6px;padding-bottom:3px;border-bottom:0.5px solid #ddd}'+
+    '.infos{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:4px}'+
+    '.infos .lbl{font-size:10px;color:#888;margin-right:4px}'+
+    '.infos .val{font-size:12px;font-weight:500}'+
+    'table{width:100%;border-collapse:collapse;margin-bottom:8px}'+
+    'th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#666;font-weight:500;padding:5px 8px;border-bottom:1px solid #ddd;text-align:left}'+
+    'td{padding:8px 8px;border-bottom:0.5px solid #eee;font-size:13px}'+
+    'td.num{font-size:18px;font-weight:700;color:#1A8FD1;text-align:right}'+
+    'tr.prix-row td{font-weight:600;font-size:14px}'+
+    'tr.prix-row td:last-child{color:#3B6D11}'+
+    '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{padding:12px 16px}}'+
+    '</style></head><body>'+pages+'</body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(function(){win.print();},400);
+}
 var pendCopy=null;
 function confirmCopy(id){pendCopy=id;Q('mcopy').classList.add('on');}
 Q('mcancelcopy').addEventListener('click',function(){Q('mcopy').classList.remove('on');pendCopy=null;});
