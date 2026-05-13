@@ -36,13 +36,14 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .r-production{background:var(--green-l);color:var(--green);border:0.5px solid #639922}
 .uname{font-size:12px;color:rgba(255,255,255,0.7)}
 .lout{font-size:12px;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:var(--r);padding:4px 10px;cursor:pointer}
-.tabs{display:flex;background:var(--sur);border-bottom:0.5px solid var(--bd);padding:0 20px;overflow-x:auto}
-.tab{font-size:13px;padding:10px 16px;color:var(--tx2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap}
-.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.tabs{display:flex;background:#1a2a3a;padding:0 16px;overflow-x:auto;gap:4px;align-items:center}
+.tab{font-size:13px;padding:7px 16px;color:rgba(255,255,255,0.6);cursor:pointer;border:none;border-radius:20px;margin:6px 0;background:none;white-space:nowrap;font-weight:400;transition:all 0.15s}
+.tab.on{background:rgba(255,255,255,0.18);color:#fff;font-weight:500}
+.tab:hover:not(.on){background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85)}
 .pg{max-width:960px;margin:0 auto;padding:20px}
 .view{display:none}.view.on{display:block}
-.bbtn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;margin-bottom:14px}
-.bbtn:hover{text-decoration:underline}
+.bbtn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--tx);background:var(--sur);border:0.5px solid var(--bd2);border-radius:20px;padding:6px 14px;cursor:pointer;margin-bottom:14px}
+.bbtn:hover{background:var(--bg);border-color:var(--blue)}
 .bc{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tx3);margin-bottom:16px;flex-wrap:wrap}
 .bc a{color:var(--blue);cursor:pointer}.bc a:hover{text-decoration:underline}
 .bc span{color:var(--tx2);font-weight:500}
@@ -234,7 +235,7 @@ table.ct tr:last-child td{border-bottom:none}
     </div>
 
     <div class="view" id="v-produits">
-      <button class="bbtn" id="bprod">Retour aux clients</button>
+      <button class="bbtn" id="bprod">← Retour aux clients</button>
       <div class="bc" id="bcp"></div>
       <div class="tb">
         <div class="sw"><span class="si">Q</span><input type="text" id="sp" placeholder="Rechercher une couleur..."></div>
@@ -248,7 +249,7 @@ table.ct tr:last-child td{border-bottom:none}
     </div>
 
     <div class="view" id="v-detail">
-      <button class="bbtn" id="bdet">Retour</button>
+      <button class="bbtn" id="bdet">← Retour</button>
       <div class="bc" id="bcd"></div>
       <div class="det" id="detpan"></div>
     </div>
