@@ -720,7 +720,30 @@ function openDetail(id){
     prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span>'+(margeSpec?'<span style="font-size:11px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:500">Profit special: '+margeSpec+'%</span>':'')+'</div></div><div class="pcards">'+baseCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost colorant</div><div class="pv" style="color:var(--tx)">'+(isSynRec?Math.max(0,parseFloat(p.cost_colorant||0)-17.25).toFixed(2):parseFloat(p.cost_colorant||0).toFixed(2))+' $</div></div>'+fraisCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Total cost</div><div class="pv" style="color:var(--tx)">'+total.toFixed(2)+' $</div></div>'+galCard+pinteCard+catCard+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+total.toFixed(2)+' $ / '+pc.div+' = '+pc.gal.toFixed(2)+' $/'+qtyLbl+' - Marge '+pc.mg+'%'+formuleKit+'</div>':'')+'</div>';
   }else if(!canP()){prixHTML='<div class="hbox">Prix non disponibles - vue Production</div>';}
 
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div><table class="ct"><thead><tr><th>Colorant</th><th style="text-align:right">Quantite</th><th>Unite</th></tr></thead><tbody>'+cols.map(function(c,i){return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td><td class="tu">'+c.unite+'</td></tr>';}).join('')+'</tbody></table>'+prixHTML;
+  // Tableau colorants avec colonnes selon mode
+  var colMode=getEditMode(r.marque,r.produit);
+  var colHeader,colRows;
+  if(colMode==='gr'){
+    colHeader='<tr><th>Colorant</th><th style="text-align:right">Grammes</th></tr>';
+    colRows=cols.map(function(c,i){
+      return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+c.quantite+'</td></tr>';
+    }).join('');
+  }else if(colMode==='pepin'){
+    colHeader='<tr><th>Colorant</th><th style="text-align:right">Oz</th><th style="text-align:right">1/48</th></tr>';
+    colRows=cols.map(function(c,i){
+      var pf=parseQtyFields(c.quantite);
+      return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+(pf.oz||'')+'</td><td class="tq">'+(pf.f48||'')+'</td></tr>';
+    }).join('');
+  }else{
+    colHeader='<tr><th>Colorant</th><th style="text-align:right">Oz</th><th style="text-align:right">1/64</th><th style="text-align:right">1/128</th></tr>';
+    colRows=cols.map(function(c,i){
+      var pf=parseQtyFields(c.quantite);
+      return'<tr style="'+(i%2===1?'background:var(--bg)':'')+'"><td><strong>'+c.nom+'</strong></td><td class="tq">'+(pf.oz||'')+'</td><td class="tq">'+(pf.f64||'')+'</td><td class="tq">'+(pf.f128||'')+'</td></tr>';
+    }).join('');
+  }
+  var colTable='<table class="ct"><thead>'+colHeader+'</thead><tbody>'+colRows+'</tbody></table>';
+
+  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div>'+colTable+prixHTML;
 
   // Historique des prix
   var histDiv=document.createElement('div');
