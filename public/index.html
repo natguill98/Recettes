@@ -861,7 +861,11 @@ Q('mcanceldel').addEventListener('click',function(){Q('mdel').classList.remove('
 Q('mconfdel').addEventListener('click',function(){
   if(!pendDel)return;
   var btn=Q('mconfdel');btn.textContent='...';btn.disabled=true;
-  sb.from('colorants').delete().eq('recette_id',pendDel).then(function(){return sb.from('prix').delete().eq('recette_id',pendDel);}).then(function(){return sb.from('recettes').delete().eq('id',pendDel);}).then(function(){
+  sb.from('colorants').delete().eq('recette_id',pendDel)
+    .then(function(){return sb.from('prix_historique').delete().eq('recette_id',pendDel);})
+    .then(function(){return sb.from('prix').delete().eq('recette_id',pendDel);})
+    .then(function(){return sb.from('recettes').delete().eq('id',pendDel);})
+    .then(function(){
     btn.textContent='Supprimer';btn.disabled=false;Q('mdel').classList.remove('on');pendDel=null;
     toast('Recette supprimee!');selClient=null;loadRecs();showView('clients');
   });
