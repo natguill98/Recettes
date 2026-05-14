@@ -512,6 +512,39 @@ table.ct tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="mo" id="mbase">
+  <div class="mb">
+    <div class="mt">Supprimer cette base?</div>
+    <p style="font-size:13px;color:var(--tx2)">Cette action est irreversible.</p>
+    <div class="ma">
+      <button class="btn" id="mcancelbase">Annuler</button>
+      <button class="bx" id="mconfbase">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="mcol">
+  <div class="mb">
+    <div class="mt">Supprimer ce colorant?</div>
+    <p style="font-size:13px;color:var(--tx2)">Cette action est irreversible.</p>
+    <div class="ma">
+      <button class="btn" id="mcancelcol">Annuler</button>
+      <button class="bx" id="mconfcol">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="mcat">
+  <div class="mb">
+    <div class="mt">Supprimer ce catalyseur?</div>
+    <p style="font-size:13px;color:var(--tx2)">Cette action est irreversible.</p>
+    <div class="ma">
+      <button class="btn" id="mcancelcat">Annuler</button>
+      <button class="bx" id="mconfcat">Supprimer</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1441,8 +1474,8 @@ function addBRow(id,prod,num,marque,c1,c3,c5,section){
   var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){
-    var rid=row.dataset.id;
-    if(rid){sb.from('bases').delete().eq('id',rid).then(function(){loadBases();toast('Base supprimee!');});}else{row.remove();}
+    pendBase={id:row.dataset.id,row:row};
+    Q('mbase').classList.add('on');
   });
   row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);row.appendChild(btn);
   var container=Q('brows-'+section);if(container)container.appendChild(row);
@@ -1493,7 +1526,7 @@ function addCPRow(id,nom,coutGal,poids,section){
   var g=document.createElement('input');g.type='number';g.className='cpg';g.placeholder='$/gal';g.step='0.01';g.value=coutGal;
   var p=document.createElement('input');p.type='number';p.className='cpp';p.placeholder='0.0000';p.step='0.0001';p.value=poids;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
-  btn.addEventListener('click',function(){if(id)sb.from('colorants_prix').delete().eq('id',id);row.remove();});
+  btn.addEventListener('click',function(){pendCol={id:id,row:row};Q('mcol').classList.add('on');});
   row.appendChild(n);row.appendChild(g);row.appendChild(p);row.appendChild(btn);
   var container=Q('crows-'+section);if(container)container.appendChild(row);
 }
@@ -1715,11 +1748,7 @@ function addCatRow(id,prod,marque,catNom,c1L,c1,c5){
   var i1=document.createElement('input');i1.type='number';i1.className='cat1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i5=document.createElement('input');i5.type='number';i5.className='cat5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
-  btn.addEventListener('click',function(){
-    var rid=row.dataset.id;
-    if(rid){sb.from('produits_catalyseurs').delete().eq('id',rid).then(function(){loadCats();toast('Catalyseur retire!');});}
-    else{row.remove();}
-  });
+  btn.addEventListener('click',function(){pendCat={type:'inter',id:id,row:row};Q('mcat').classList.add('on');});
   row.appendChild(p);row.appendChild(sel);row.appendChild(n);row.appendChild(i1L);row.appendChild(i1);row.appendChild(i5);row.appendChild(btn);
   Q('catrows').appendChild(row);
 }
@@ -1739,11 +1768,7 @@ function addCatPepinRow(baseId,prod,numBase,catNom,c1L,c1,c5){
   var i1=document.createElement('input');i1.type='number';i1.className='cat1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i5=document.createElement('input');i5.type='number';i5.className='cat5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
-  btn.addEventListener('click',function(){
-    var bid=row.dataset.baseid||sel.value;
-    if(bid){sb.from('bases').update({catalyseur_nom:null,catalyseur_cout_1l:null,catalyseur_cout_1gal:null,catalyseur_cout_5gal:null}).eq('id',bid).then(function(){loadCats();toast('Catalyseur retire!');});}
-    else{row.remove();}
-  });
+  btn.addEventListener('click',function(){pendCat={type:'pepin',bid:row.dataset.baseid||sel.value,row:row};Q('mcat').classList.add('on');});
   row.appendChild(sel);row.appendChild(n);row.appendChild(i1L);row.appendChild(i1);row.appendChild(i5);row.appendChild(btn);
   Q('catrows-pepin').appendChild(row);
 }
@@ -1789,6 +1814,34 @@ document.getElementById('savecatspepin').addEventListener('click',function(){
 });
 
 addCRow();updateHex('#cccccc');
+
+var pendBase=null;
+Q('mcancelbase').addEventListener('click',function(){Q('mbase').classList.remove('on');pendBase=null;});
+Q('mconfbase').addEventListener('click',function(){
+  if(!pendBase)return;
+  var rid=pendBase.id,row=pendBase.row;pendBase=null;Q('mbase').classList.remove('on');
+  if(rid){sb.from('bases').delete().eq('id',rid).then(function(){loadBases();toast('Base supprimee!');});}else{row.remove();}
+});
+
+var pendCol=null;
+Q('mcancelcol').addEventListener('click',function(){Q('mcol').classList.remove('on');pendCol=null;});
+Q('mconfcol').addEventListener('click',function(){
+  if(!pendCol)return;
+  var rid=pendCol.id,row=pendCol.row;pendCol=null;Q('mcol').classList.remove('on');
+  if(rid){sb.from('colorants_prix').delete().eq('id',rid).then(function(){loadCP();toast('Colorant supprime!');});}else{row.remove();}
+});
+
+var pendCat=null;
+Q('mcancelcat').addEventListener('click',function(){Q('mcat').classList.remove('on');pendCat=null;});
+Q('mconfcat').addEventListener('click',function(){
+  if(!pendCat)return;
+  var data=pendCat;pendCat=null;Q('mcat').classList.remove('on');
+  if(data.type==='inter'){
+    if(data.id){sb.from('produits_catalyseurs').delete().eq('id',data.id).then(function(){loadCats();toast('Catalyseur supprime!');});}else{data.row.remove();}
+  }else{
+    if(data.bid){sb.from('bases').update({catalyseur_nom:null,catalyseur_cout_1l:null,catalyseur_cout_1gal:null,catalyseur_cout_5gal:null}).eq('id',data.bid).then(function(){loadCats();toast('Catalyseur retire!');});}else{data.row.remove();}
+  }
+});
 
 // Fonction globale pour supprimer une ligne d'historique (admin seulement)
 var pendHist=null;
