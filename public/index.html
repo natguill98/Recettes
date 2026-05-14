@@ -1310,7 +1310,7 @@ function addCRow(nom,oz,f2,f3){
     acDiv.innerHTML='';
     items.slice(0,8).forEach(function(item){
       var d=document.createElement('div');d.className='aci';
-      d.textContent=item.nom+(item.cout_gallon?' - '+parseFloat(item.cout_gallon).toFixed(2)+'$/gal':'');
+      d.textContent=item.nom+(canP()&&item.cout_gallon?' - '+parseFloat(item.cout_gallon).toFixed(2)+'$/gal':'');
       d.addEventListener('mousedown',function(e){e.preventDefault();n.value=item.nom;acDiv.classList.remove('on');calcColTotal();});
       acDiv.appendChild(d);
     });
