@@ -1398,6 +1398,41 @@ Q('savebtn').addEventListener('click',function(){
       var pc=calcPrix(marque,tot,synF,margeSpecS);
       var prixGalOverride=Q('fprixgal')&&Q('fprixgal').value?parseFloat(Q('fprixgal').value):null;
       var prixCatNew=Q('fprixcat')&&Q('fprixcat').value?parseFloat(Q('fprixcat').value):null;
+      // Auto-chercher le catalyseur si pas saisi manuellement
+      if(!prixCatNew){
+        var div_new=margeSpecS?(1-margeSpecS/100):(marges[marque]||0.60);
+        var qty_new=Q('fqty').value;
+        if(marque==='Pepin'){
+          // Chercher dans bases par produit+base
+          var baseProd=Q('fprod').value.trim(),baseNum=Q('fbase').value.trim();
+          var baseFound=allBases.filter(function(b){
+            return b.marque==='Pepin'&&
+              (!baseProd||b.produit.toLowerCase()===baseProd.toLowerCase())&&
+              (!baseNum||(b.numero_base&&b.numero_base.toLowerCase()===baseNum.toLowerCase()));
+          })[0];
+          if(baseFound){
+            var ccat_new=0;
+            if(qty_new==='5 gallons'&&baseFound.catalyseur_cout_5gal)ccat_new=parseFloat(baseFound.catalyseur_cout_5gal);
+            else if(qty_new==='5 gallons'&&baseFound.catalyseur_cout_1gal)ccat_new=parseFloat(baseFound.catalyseur_cout_1gal);
+            else if(baseFound.catalyseur_cout_1l)ccat_new=parseFloat(baseFound.catalyseur_cout_1l);
+            else if(baseFound.catalyseur_cout_1gal)ccat_new=parseFloat(baseFound.catalyseur_cout_1gal);
+            if(ccat_new>0)prixCatNew=parseFloat((ccat_new/div_new).toFixed(2));
+          }
+        }else{
+          // Chercher dans produits_catalyseurs par produit+marque
+          var pcFound=allPC.filter(function(pc){
+            return pc.marque===marque&&pc.produit.toLowerCase()===(Q('fprod').value.trim().toLowerCase());
+          })[0];
+          if(pcFound){
+            var ccat_new2=0;
+            if(qty_new==='5 gallons'&&pcFound.catalyseur_cout_5gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_5gal);
+            else if(qty_new==='5 gallons'&&pcFound.catalyseur_cout_1gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_1gal);
+            else if(pcFound.catalyseur_cout_1l)ccat_new2=parseFloat(pcFound.catalyseur_cout_1l);
+            else if(pcFound.catalyseur_cout_1gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_1gal);
+            if(ccat_new2>0)prixCatNew=parseFloat((ccat_new2/div_new).toFixed(2));
+          }
+        }
+      }
       if(prixGalOverride)pc.gal=prixGalOverride;
       var pdata={recette_id:rec.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:0,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),prix_catalyseur:prixCatNew,date_prix:datePrix,marge_speciale:margeSpecS};
       return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_historique').insert(pdata);});
@@ -1589,6 +1624,37 @@ function saveEdit(id){
         var margeSpecE=Q('fmarge')?parseFloat(Q('fmarge').value)||null:null;
         var prixGalOverride=Q('fprixgal')&&Q('fprixgal').value?parseFloat(Q('fprixgal').value):null;
         var prixCatOverride=Q('fprixcat')&&Q('fprixcat').value?parseFloat(Q('fprixcat').value):null;
+        // Auto-chercher le catalyseur si pas saisi manuellement
+        if(!prixCatOverride){
+          var div_e2=margeSpecE?(1-margeSpecE/100):(marges[marque]||0.60);
+          var qty_e=Q('fqty').value;
+          if(marque==='Pepin'){
+            var baseProdE=Q('fprod').value.trim(),baseNumE=Q('fbase').value.trim();
+            var baseFoundE=allBases.filter(function(b){
+              return b.marque==='Pepin'&&(!baseProdE||b.produit.toLowerCase()===baseProdE.toLowerCase())&&(!baseNumE||(b.numero_base&&b.numero_base.toLowerCase()===baseNumE.toLowerCase()));
+            })[0];
+            if(baseFoundE){
+              var ccatE=0;
+              if(qty_e==='5 gallons'&&baseFoundE.catalyseur_cout_5gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_5gal);
+              else if(qty_e==='5 gallons'&&baseFoundE.catalyseur_cout_1gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_1gal);
+              else if(baseFoundE.catalyseur_cout_1l)ccatE=parseFloat(baseFoundE.catalyseur_cout_1l);
+              else if(baseFoundE.catalyseur_cout_1gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_1gal);
+              if(ccatE>0)prixCatOverride=parseFloat((ccatE/div_e2).toFixed(2));
+            }
+          }else{
+            var pcFoundE=allPC.filter(function(pc){
+              return pc.marque===marque&&pc.produit.toLowerCase()===(Q('fprod').value.trim().toLowerCase());
+            })[0];
+            if(pcFoundE){
+              var ccatE2=0;
+              if(qty_e==='5 gallons'&&pcFoundE.catalyseur_cout_5gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_5gal);
+              else if(qty_e==='5 gallons'&&pcFoundE.catalyseur_cout_1gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_1gal);
+              else if(pcFoundE.catalyseur_cout_1l)ccatE2=parseFloat(pcFoundE.catalyseur_cout_1l);
+              else if(pcFoundE.catalyseur_cout_1gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_1gal);
+              if(ccatE2>0)prixCatOverride=parseFloat((ccatE2/div_e2).toFixed(2));
+            }
+          }
+        }
         var pc=calcPrix(marque,tot,synFe,margeSpecE);
         // Si prix gallon manuel: l'utiliser tel quel sans recalcul
         var finalGal=prixGalOverride||parseFloat(pc.gal.toFixed(2));
