@@ -221,6 +221,7 @@ table.ct tr:last-child td{border-bottom:none}
   <div class="tabs">
     <button class="tab on" data-tab="clients">Recettes</button>
     <button class="tab" data-tab="ajouter">+ Ajouter</button>
+    <button class="tab" data-tab="conversions">Conversions</button>
     <button class="tab" data-tab="couts" id="tcouts">Couts et Prix</button>
     <button class="tab" data-tab="detail" id="tdetail" style="display:none">Fiche</button>
   </div>
@@ -330,7 +331,107 @@ table.ct tr:last-child td{border-bottom:none}
       </div>
     </div>
 
-    <div class="view" id="v-couts">
+    <div class="view" id="v-conversions">
+      <div class="cgr">
+
+        <!-- PEPIN : Y → Grammes -->
+        <div class="cs">
+          <div class="cst" style="color:#3B6D11">Pepin — Oz/Y vers Grammes</div>
+          <div class="csd">Entrez les quantites en oz et fractions pour chaque colorant. Le poids en grammes sera calcule automatiquement.</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <div class="fg" style="flex:1;min-width:140px">
+              <label>Format</label>
+              <select id="cv-pepin-qty" style="padding:8px 10px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);width:100%">
+                <option value="gallon">Gallon</option>
+                <option value="pinte">Pinte</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 50px 50px 70px;gap:5px;margin-bottom:4px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Colorant</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Oz</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">1/48</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:right">Grammes</span>
+          </div>
+          <div id="cv-pepin-rows"></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid var(--bd);font-size:12px;color:var(--tx3)">
+            Total: <strong id="cv-pepin-total" style="color:#3B6D11;font-size:15px">0.00 g</strong>
+          </div>
+        </div>
+
+        <!-- INTER/DEVOE : Y/64 → Grammes -->
+        <div class="cs">
+          <div class="cst" style="color:var(--blue)">Inter/Devoe — Oz/Y vers Grammes</div>
+          <div class="csd">Entrez les quantites en oz et fractions. Le poids en grammes sera calcule automatiquement.</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <div class="fg" style="flex:1;min-width:140px">
+              <label>Format</label>
+              <select id="cv-inter-qty" style="padding:8px 10px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);width:100%">
+                <option value="gallon">Gallon</option>
+                <option value="pinte">Pinte</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 50px 50px 50px 70px;gap:5px;margin-bottom:4px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Colorant</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Oz</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">1/64</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">1/128</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:right">Grammes</span>
+          </div>
+          <div id="cv-inter-rows"></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid var(--bd);font-size:12px;color:var(--tx3)">
+            Total: <strong id="cv-inter-total" style="color:var(--blue);font-size:15px">0.00 g</strong>
+          </div>
+        </div>
+
+        <!-- GRAMMES → Y/OZ Pepin -->
+        <div class="cs">
+          <div class="cst" style="color:#3B6D11">Pepin — Grammes vers Oz/Y</div>
+          <div class="csd">Entrez le poids en grammes pour chaque colorant. La quantite en oz et fractions sera calculee automatiquement.</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <div class="fg" style="flex:1;min-width:140px">
+              <label>Format</label>
+              <select id="cv-pepin-gr-qty" style="padding:8px 10px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);width:100%">
+                <option value="gallon">Gallon</option>
+                <option value="pinte">Pinte</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 70px 60px 60px;gap:5px;margin-bottom:4px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Colorant</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Grammes</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Oz</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">1/48</span>
+          </div>
+          <div id="cv-pepin-gr-rows"></div>
+        </div>
+
+        <!-- GRAMMES → Y/OZ Inter -->
+        <div class="cs">
+          <div class="cst" style="color:var(--blue)">Inter/Devoe — Grammes vers Oz/Y</div>
+          <div class="csd">Entrez le poids en grammes pour chaque colorant. La quantite en oz et fractions sera calculee automatiquement.</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <div class="fg" style="flex:1;min-width:140px">
+              <label>Format</label>
+              <select id="cv-inter-gr-qty" style="padding:8px 10px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);width:100%">
+                <option value="gallon">Gallon</option>
+                <option value="pinte">Pinte</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 70px 50px 50px 50px;gap:5px;margin-bottom:4px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Colorant</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Grammes</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Oz</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">1/64</span>
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">1/128</span>
+          </div>
+          <div id="cv-inter-gr-rows"></div>
+        </div>
+
+      </div>
+    </div>
       <div class="cgr">
         <div class="cs">
           <div class="cst">Marges par marque</div>
@@ -641,14 +742,15 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
     if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();}
+    if(t.dataset.tab==='conversions'){initConversions();}
     showView(t.dataset.tab);
   });
 });
 function showView(name){
-  ['clients','produits','detail','ajouter','couts'].forEach(function(v){Q('v-'+v).classList.remove('on');});
+  ['clients','produits','detail','ajouter','couts','conversions'].forEach(function(v){Q('v-'+v).classList.remove('on');});
   Q('v-'+name).classList.add('on');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts'};
+  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
@@ -1879,7 +1981,157 @@ document.getElementById('savecatspepin').addEventListener('click',function(){
   });
 });
 
-addCRow();updateHex('#cccccc');
+// CONVERSIONS
+var PEPIN_COLORANTS={
+  '301':1.24,'302':0.69,'303':0.67,'304':0.99,'305':1.38,'306':0.67,'307':0.68,
+  '308':1.22,'309':0.66,'310':1.28,'311':0.69,'312':0.91,'313':0.68,'314':0.66,
+  '315':0.63,'316':0.69,'317':0.68,'318':0.65,'319':0.68,'320':0.99,'321':0.70,'322':0.69
+};
+var INTER_COLORANTS={
+  'GVA902':0.53,'GVA903':0.53,'GVA904':0.563,'GVA905':1.04,'GVA906':0.977,
+  'GVA907':0.561,'GVA908':0.545,'GVA909':0.776,'GVA910':0.563,'GVA911':0.553,
+  'GVA912':0.519,'GVA913':0.923,'GVA914':0.555
+};
+// Pour Inter: poids/Y varie selon la base. On utilise les valeurs moyennes (feuille PHA150)
+// 1 Y = poids_unite g, gallon = 126Y, pinte = 126/4 Y
+var PEPIN_Y_GAL=126, PEPIN_Y_PINTE=31.5;
+var INTER_Y_GAL=126, INTER_Y_PINTE=31.5;
+
+function buildCvPepinYtoGr(){
+  var cont=document.getElementById('cv-pepin-rows');if(!cont)return;
+  cont.innerHTML='';
+  Object.keys(PEPIN_COLORANTS).forEach(function(nom){
+    var poids=PEPIN_COLORANTS[nom];
+    var row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1fr 50px 50px 70px;gap:5px;align-items:center;margin-bottom:5px';
+    row.innerHTML='<span style="font-size:13px;font-weight:500">'+nom+'</span>';
+    var oz=document.createElement('input');oz.type='number';oz.min='0';oz.step='1';oz.placeholder='0';
+    oz.style.cssText='padding:5px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center;width:100%';
+    var f48=document.createElement('input');f48.type='number';f48.min='0';f48.step='1';f48.placeholder='0';
+    f48.style.cssText=oz.style.cssText;
+    var res=document.createElement('span');res.style.cssText='font-size:14px;font-weight:700;color:#3B6D11;text-align:right';res.textContent='0.00';
+    function calc(){
+      var qty=document.getElementById('cv-pepin-qty').value;
+      var yParGal=qty==='pinte'?PEPIN_Y_PINTE:PEPIN_Y_GAL;
+      var ozV=parseFloat(oz.value)||0,f48V=parseFloat(f48.value)||0;
+      var totalY=ozV+(f48V/64);
+      var gr=(totalY*poids).toFixed(2);
+      res.textContent=gr+' g';
+      updatePepinTotal();
+    }
+    oz.addEventListener('input',calc);f48.addEventListener('input',calc);
+    row.appendChild(oz);row.appendChild(f48);row.appendChild(res);
+    cont.appendChild(row);
+  });
+}
+function updatePepinTotal(){
+  var tot=0;
+  document.querySelectorAll('#cv-pepin-rows span[style*="3B6D11"]').forEach(function(s){
+    tot+=parseFloat(s.textContent)||0;
+  });
+  var el=document.getElementById('cv-pepin-total');if(el)el.textContent=tot.toFixed(2)+' g';
+}
+
+function buildCvInterYtoGr(){
+  var cont=document.getElementById('cv-inter-rows');if(!cont)return;
+  cont.innerHTML='';
+  Object.keys(INTER_COLORANTS).forEach(function(nom){
+    var poids=INTER_COLORANTS[nom];
+    var row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1fr 50px 50px 50px 70px;gap:5px;align-items:center;margin-bottom:5px';
+    row.innerHTML='<span style="font-size:13px;font-weight:500">'+nom+'</span>';
+    var oz=document.createElement('input');oz.type='number';oz.min='0';oz.step='1';oz.placeholder='0';
+    oz.style.cssText='padding:5px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center;width:100%';
+    var f64=document.createElement('input');f64.type='number';f64.min='0';f64.step='1';f64.placeholder='0';f64.style.cssText=oz.style.cssText;
+    var f128=document.createElement('input');f128.type='number';f128.min='0';f128.step='1';f128.placeholder='0';f128.style.cssText=oz.style.cssText;
+    var res=document.createElement('span');res.style.cssText='font-size:14px;font-weight:700;color:var(--blue);text-align:right';res.textContent='0.00';
+    function calc(){
+      var ozV=parseFloat(oz.value)||0,f64V=parseFloat(f64.value)||0,f128V=parseFloat(f128.value)||0;
+      var totalY=ozV+(f64V/64)+(f128V/128);
+      var gr=(totalY*poids).toFixed(2);
+      res.textContent=gr+' g';
+      updateInterTotal();
+    }
+    oz.addEventListener('input',calc);f64.addEventListener('input',calc);f128.addEventListener('input',calc);
+    row.appendChild(oz);row.appendChild(f64);row.appendChild(f128);row.appendChild(res);
+    cont.appendChild(row);
+  });
+}
+function updateInterTotal(){
+  var tot=0;
+  document.querySelectorAll('#cv-inter-rows span[style*="blue"]').forEach(function(s){
+    tot+=parseFloat(s.textContent)||0;
+  });
+  var el=document.getElementById('cv-inter-total');if(el)el.textContent=tot.toFixed(2)+' g';
+}
+
+function buildCvPepinGrToY(){
+  var cont=document.getElementById('cv-pepin-gr-rows');if(!cont)return;
+  cont.innerHTML='';
+  Object.keys(PEPIN_COLORANTS).forEach(function(nom){
+    var poids=PEPIN_COLORANTS[nom];
+    var row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1fr 70px 60px 60px;gap:5px;align-items:center;margin-bottom:5px';
+    row.innerHTML='<span style="font-size:13px;font-weight:500">'+nom+'</span>';
+    var gr=document.createElement('input');gr.type='number';gr.min='0';gr.step='0.01';gr.placeholder='0';
+    gr.style.cssText='padding:5px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center;width:100%';
+    var rOz=document.createElement('span');rOz.style.cssText='font-size:14px;font-weight:700;color:#3B6D11;text-align:center';rOz.textContent='0';
+    var rF48=document.createElement('span');rF48.style.cssText='font-size:14px;font-weight:700;color:#3B6D11;text-align:center';rF48.textContent='0';
+    function calc(){
+      var grV=parseFloat(gr.value)||0;
+      var totalY=grV/poids;
+      var ozInt=Math.floor(totalY);
+      var reste=(totalY-ozInt);
+      var f48=Math.round(reste*64);
+      rOz.textContent=ozInt||'';
+      rF48.textContent=f48||'';
+    }
+    gr.addEventListener('input',calc);
+    row.appendChild(gr);row.appendChild(rOz);row.appendChild(rF48);
+    cont.appendChild(row);
+  });
+}
+
+function buildCvInterGrToY(){
+  var cont=document.getElementById('cv-inter-gr-rows');if(!cont)return;
+  cont.innerHTML='';
+  Object.keys(INTER_COLORANTS).forEach(function(nom){
+    var poids=INTER_COLORANTS[nom];
+    var row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1fr 70px 50px 50px 50px;gap:5px;align-items:center;margin-bottom:5px';
+    row.innerHTML='<span style="font-size:13px;font-weight:500">'+nom+'</span>';
+    var gr=document.createElement('input');gr.type='number';gr.min='0';gr.step='0.01';gr.placeholder='0';
+    gr.style.cssText='padding:5px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center;width:100%';
+    var rOz=document.createElement('span');rOz.style.cssText='font-size:14px;font-weight:700;color:var(--blue);text-align:center';rOz.textContent='0';
+    var rF64=document.createElement('span');rF64.style.cssText='font-size:14px;font-weight:700;color:var(--blue);text-align:center';rF64.textContent='0';
+    var rF128=document.createElement('span');rF128.style.cssText='font-size:14px;font-weight:700;color:var(--blue);text-align:center';rF128.textContent='0';
+    function calc(){
+      var grV=parseFloat(gr.value)||0;
+      var totalY=grV/poids;
+      var ozInt=Math.floor(totalY);
+      var reste=totalY-ozInt;
+      var f64=Math.floor(reste*64);
+      var reste2=reste-(f64/64);
+      var f128=Math.round(reste2*128);
+      rOz.textContent=ozInt||'';
+      rF64.textContent=f64||'';
+      rF128.textContent=f128||'';
+    }
+    gr.addEventListener('input',calc);
+    row.appendChild(gr);row.appendChild(rOz);row.appendChild(rF64);row.appendChild(rF128);
+    cont.appendChild(row);
+  });
+}
+
+function initConversions(){
+  buildCvPepinYtoGr();
+  buildCvInterYtoGr();
+  buildCvPepinGrToY();
+  buildCvInterGrToY();
+  // Rebuild quand format change
+  document.getElementById('cv-pepin-qty').addEventListener('change',buildCvPepinYtoGr);
+  document.getElementById('cv-inter-qty').addEventListener('change',buildCvInterYtoGr);
+}
 
 var pendBase=null;
 Q('mcancelbase').addEventListener('click',function(){Q('mbase').classList.remove('on');pendBase=null;});
@@ -1909,6 +2161,8 @@ Q('mconfcat').addEventListener('click',function(){
   }
 });
 
+addCRow();updateHex('#cccccc');
+
 // Fonction globale pour supprimer une ligne d'historique (admin seulement)
 var pendHist=null;
 Q('mcancelhist').addEventListener('click',function(){Q('mhist').classList.remove('on');pendHist=null;});
@@ -1926,6 +2180,8 @@ window.delHistorique=function(hid){
   pendHist=hid;
   Q('mhist').classList.add('on');
 };
+
+addCRow();updateHex('#cccccc');
 })();
 </script>
 </body>
