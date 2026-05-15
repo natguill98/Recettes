@@ -230,6 +230,7 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="view on" id="v-clients">
       <div class="tb">
         <div class="sw"><span class="si">Q</span><input type="text" id="sc" placeholder="Rechercher un client..."></div>
+        <div class="sw"><span class="si">Q</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
       </div>
       <div class="cnt" id="ccnt"></div>
       <div class="cgrid" id="cgrid"></div>
@@ -827,6 +828,21 @@ function loadRecs(){
 // CLIENTS
 function renderClients(){
   var q=(Q('sc').value||'').toLowerCase();
+  var qcoul=(Q('scoul')&&Q('scoul').value||'').toLowerCase();
+  if(qcoul){
+    var matches=recs.filter(function(r){return r.couleur&&r.couleur.toLowerCase().indexOf(qcoul)>=0;});
+    var g=Q('cgrid');g.innerHTML='';
+    Q('ccnt').textContent=matches.length+' recette'+(matches.length!==1?'s':'')+' trouvee'+(matches.length!==1?'s':'');
+    if(!matches.length){g.innerHTML='<div class="empty">Aucune couleur trouvee</div>';return;}
+    matches.forEach(function(r){
+      var div=document.createElement('div');div.className='ccard';
+      var sw=r.couleur_hex?'<div style="width:32px;height:32px;border-radius:6px;background:'+r.couleur_hex+';border:0.5px solid var(--bd2);margin-bottom:8px"></div>':'';
+      div.innerHTML=sw+'<div class="cname" style="font-size:13px">'+r.couleur+'</div><div class="ccount">'+r.client+'</div><div class="ccount" style="color:var(--blue)">'+( r.produit||r.marque||'')+'</div>';
+      div.addEventListener('click',function(){openDetail(r.id);});
+      g.appendChild(div);
+    });
+    return;
+  }
   var map={};
   recs.forEach(function(r){if(!q||r.client.toLowerCase().indexOf(q)>=0){map[r.client]=(map[r.client]||0)+1;}});
   var sorted=Object.keys(map).sort(function(a,b){return a.localeCompare(b,'fr');});
@@ -844,6 +860,7 @@ function renderClients(){
   });
 }
 Q('sc').addEventListener('input',renderClients);
+if(Q('scoul'))Q('scoul').addEventListener('input',renderClients);
 Q('bprod').addEventListener('click',function(){showView('clients');});
 
 // PRODUITS
