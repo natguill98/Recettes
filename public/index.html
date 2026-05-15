@@ -799,11 +799,15 @@ function loadCatalogues(){
 // DATA
 function loadRecs(){
   Q('cgrid').innerHTML='<div class="empty">Chargement...</div>';
-  return sb.from('recettes').select('*,colorants(*)').order('client').range(0,9999).then(function(r){
+  return sb.from('recettes').select('*').order('client').range(0,9999).then(function(r){
     var rdata=r.data||[];
-    return sb.from('prix').select('*').range(0,9999).then(function(pr){
-      var pm={};(pr.data||[]).forEach(function(p){pm[p.recette_id]=p;});
-      recs=rdata.map(function(rec){return Object.assign({},rec,{prix:pm[rec.id]?[pm[rec.id]]:[]});});
+    return Promise.all([
+      sb.from('colorants').select('*').range(0,99999),
+      sb.from('prix').select('*').range(0,9999)
+    ]).then(function(results){
+      var colMap={};(results[0].data||[]).forEach(function(c){if(!colMap[c.recette_id])colMap[c.recette_id]=[];colMap[c.recette_id].push(c);});
+      var pm={};(results[1].data||[]).forEach(function(p){pm[p.recette_id]=p;});
+      recs=rdata.map(function(rec){return Object.assign({},rec,{colorants:colMap[rec.id]||[],prix:pm[rec.id]?[pm[rec.id]]:[]});});
       renderClients();
     });
   });
