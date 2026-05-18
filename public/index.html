@@ -830,7 +830,7 @@ function renderClients(){
   var q=(Q('sc').value||'').toLowerCase();
   var qc=(Q('scoul')&&Q('scoul').value||'').toLowerCase();
   var g=Q('cgrid');
-  // Mode recherche couleur: afficher recettes groupées par produit
+  // Mode recherche couleur: afficher recettes groupées par produit (vue paysage)
   if(qc){
     var matched=recs.filter(function(r){
       var mc=!q||r.client.toLowerCase().indexOf(q)>=0;
@@ -838,31 +838,39 @@ function renderClients(){
       return mc&&mcoul;
     });
     Q('ccnt').textContent=matched.length+' recette'+(matched.length!==1?'s':'')+' trouvees';
-    g.innerHTML='';
-    if(!matched.length){g.innerHTML='<div class="empty">Aucune recette trouvee</div>';return;}
-    // Grouper par produit
+    g.style.display='none';
+    var pl=Q('plist-search');
+    if(!pl){pl=document.createElement('div');pl.id='plist-search';pl.className='plist';g.parentNode.insertBefore(pl,g.nextSibling);}
+    pl.style.display='';
+    pl.innerHTML='';
+    if(!matched.length){pl.innerHTML='<div class="empty">Aucune recette trouvee</div>';return;}
     var prods={};
     matched.forEach(function(r){var k=r.produit||'Sans produit';if(!prods[k])prods[k]=[];prods[k].push(r);});
     var sorted=Object.keys(prods).sort(function(a,b){return a.localeCompare(b,'fr');});
-    sorted.forEach(function(prod){
+    sorted.forEach(function(prod,pi){
       var rs=prods[prod];
-      var card=document.createElement('div');card.className='pcard';card.style.marginBottom='10px';
+      var card=document.createElement('div');card.className='pcard';
       var head=document.createElement('div');head.className='phead';
-      head.innerHTML='<div class="pname">'+prod+'</div><div class="pmeta"><span class="pcount">'+rs.length+' couleur'+(rs.length!==1?'s':'')+'</span></div>';
-      var body=document.createElement('div');body.className='pbody open';body.style.display='block';
+      head.innerHTML='<div class="pname">'+prod+'</div><div class="pmeta"><span class="pcount">'+rs.length+' couleur'+(rs.length!==1?'s':'')+'</span><span class="pchev open" id="sch-'+pi+'">></span></div>';
+      var body=document.createElement('div');body.className='pbody open';body.id='spb-'+pi;
       rs.forEach(function(r){
         var p=r.prix&&r.prix[0]||null;
         var row=document.createElement('div');row.className='crow2';
         var sw=r.couleur_hex?'<div class="csw" style="background:'+r.couleur_hex+'"></div>':'';
         var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
-        row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+'</div></div></div><div class="cright">'+pi2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
+        var db2=canP()&&p?dbdg(p.date_prix):'';
+        row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
         row.addEventListener('click',function(){openDetail(r.id);});
         body.appendChild(row);
       });
-      card.appendChild(head);card.appendChild(body);g.appendChild(card);
+      head.addEventListener('click',function(){body.classList.toggle('open');var ch=document.getElementById('sch-'+pi);if(ch)ch.classList.toggle('open');});
+      card.appendChild(head);card.appendChild(body);pl.appendChild(card);
     });
     return;
   }
+  // Cacher plist-search si on revient en mode client
+  var pl=Q('plist-search');if(pl)pl.style.display='none';
+  g.style.display='';
   // Mode normal: afficher par client
   var map={};
   recs.forEach(function(r){
