@@ -231,7 +231,6 @@ table.ct tr:last-child td{border-bottom:none}
       <div class="tb">
         <div class="sw"><span class="si">Q</span><input type="text" id="sc" placeholder="Rechercher un client..."></div>
         <div class="sw"><span class="si">Q</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
-        <div class="sw"><span class="si">Q</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
       </div>
       <div class="cnt" id="ccnt"></div>
       <div class="cgrid" id="cgrid"></div>
@@ -829,31 +828,48 @@ function loadRecs(){
 // CLIENTS
 function renderClients(){
   var q=(Q('sc').value||'').toLowerCase();
-  var qcoul=(Q('scoul')&&Q('scoul').value||'').toLowerCase();
-  if(qcoul){
-    var matches=recs.filter(function(r){return r.couleur&&r.couleur.toLowerCase().indexOf(qcoul)>=0;});
-    var g=Q('cgrid');g.innerHTML='';
-    Q('ccnt').textContent=matches.length+' recette'+(matches.length!==1?'s':'')+' trouvee'+(matches.length!==1?'s':'');
-    if(!matches.length){g.innerHTML='<div class="empty">Aucune couleur trouvee</div>';return;}
-    matches.forEach(function(r){
-      var div=document.createElement('div');div.className='ccard';
-      var sw=r.couleur_hex?'<div style="width:32px;height:32px;border-radius:6px;background:'+r.couleur_hex+';border:0.5px solid var(--bd2);margin-bottom:8px"></div>':'';
-      div.innerHTML=sw+'<div class="cname" style="font-size:13px">'+r.couleur+'</div><div class="ccount">'+r.client+'</div><div class="ccount" style="color:var(--blue)">'+( r.produit||r.marque||'')+'</div>';
-      div.addEventListener('click',function(){openDetail(r.id);});
-      g.appendChild(div);
+  var qc=(Q('scoul')&&Q('scoul').value||'').toLowerCase();
+  var g=Q('cgrid');
+  // Mode recherche couleur: afficher recettes groupées par produit
+  if(qc){
+    var matched=recs.filter(function(r){
+      var mc=!q||r.client.toLowerCase().indexOf(q)>=0;
+      var mcoul=r.couleur.toLowerCase().indexOf(qc)>=0||(r.numero_couleur||'').toLowerCase().indexOf(qc)>=0;
+      return mc&&mcoul;
+    });
+    Q('ccnt').textContent=matched.length+' recette'+(matched.length!==1?'s':'')+' trouvees';
+    g.innerHTML='';
+    if(!matched.length){g.innerHTML='<div class="empty">Aucune recette trouvee</div>';return;}
+    // Grouper par produit
+    var prods={};
+    matched.forEach(function(r){var k=r.produit||'Sans produit';if(!prods[k])prods[k]=[];prods[k].push(r);});
+    var sorted=Object.keys(prods).sort(function(a,b){return a.localeCompare(b,'fr');});
+    sorted.forEach(function(prod){
+      var rs=prods[prod];
+      var card=document.createElement('div');card.className='pcard';card.style.marginBottom='10px';
+      var head=document.createElement('div');head.className='phead';
+      head.innerHTML='<div class="pname">'+prod+'</div><div class="pmeta"><span class="pcount">'+rs.length+' couleur'+(rs.length!==1?'s':'')+'</span></div>';
+      var body=document.createElement('div');body.className='pbody open';body.style.display='block';
+      rs.forEach(function(r){
+        var p=r.prix&&r.prix[0]||null;
+        var row=document.createElement('div');row.className='crow2';
+        var sw=r.couleur_hex?'<div class="csw" style="background:'+r.couleur_hex+'"></div>':'';
+        var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
+        row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+'</div></div></div><div class="cright">'+pi2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
+        row.addEventListener('click',function(){openDetail(r.id);});
+        body.appendChild(row);
+      });
+      card.appendChild(head);card.appendChild(body);g.appendChild(card);
     });
     return;
   }
-  var qc=(Q('scoul')&&Q('scoul').value||'').toLowerCase();
+  // Mode normal: afficher par client
   var map={};
   recs.forEach(function(r){
-    var mc=!q||r.client.toLowerCase().indexOf(q)>=0;
-    var mcoul=!qc||r.couleur.toLowerCase().indexOf(qc)>=0||(r.numero_couleur||'').toLowerCase().indexOf(qc)>=0;
-    if(mc&&mcoul){map[r.client]=(map[r.client]||0)+1;}
+    if(!q||r.client.toLowerCase().indexOf(q)>=0){map[r.client]=(map[r.client]||0)+1;}
   });
   var sorted=Object.keys(map).sort(function(a,b){return a.localeCompare(b,'fr');});
   Q('ccnt').textContent=sorted.length+' client'+(sorted.length!==1?'s':'');
-  var g=Q('cgrid');
   if(!sorted.length){g.innerHTML='<div class="empty">Aucun client trouve</div>';return;}
   g.innerHTML='';
   sorted.forEach(function(name){
