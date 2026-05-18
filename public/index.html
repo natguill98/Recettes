@@ -231,6 +231,7 @@ table.ct tr:last-child td{border-bottom:none}
       <div class="tb">
         <div class="sw"><span class="si">Q</span><input type="text" id="sc" placeholder="Rechercher un client..."></div>
         <div class="sw"><span class="si">Q</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
+        <div class="sw"><span class="si">Q</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
       </div>
       <div class="cnt" id="ccnt"></div>
       <div class="cgrid" id="cgrid"></div>
@@ -843,8 +844,13 @@ function renderClients(){
     });
     return;
   }
+  var qc=(Q('scoul')&&Q('scoul').value||'').toLowerCase();
   var map={};
-  recs.forEach(function(r){if(!q||r.client.toLowerCase().indexOf(q)>=0){map[r.client]=(map[r.client]||0)+1;}});
+  recs.forEach(function(r){
+    var mc=!q||r.client.toLowerCase().indexOf(q)>=0;
+    var mcoul=!qc||r.couleur.toLowerCase().indexOf(qc)>=0||(r.numero_couleur||'').toLowerCase().indexOf(qc)>=0;
+    if(mc&&mcoul){map[r.client]=(map[r.client]||0)+1;}
+  });
   var sorted=Object.keys(map).sort(function(a,b){return a.localeCompare(b,'fr');});
   Q('ccnt').textContent=sorted.length+' client'+(sorted.length!==1?'s':'');
   var g=Q('cgrid');
@@ -860,6 +866,7 @@ function renderClients(){
   });
 }
 Q('sc').addEventListener('input',renderClients);
+if(Q('scoul'))Q('scoul').addEventListener('input',renderClients);
 if(Q('scoul'))Q('scoul').addEventListener('input',renderClients);
 Q('bprod').addEventListener('click',function(){showView('clients');});
 
