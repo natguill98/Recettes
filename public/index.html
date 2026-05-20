@@ -741,6 +741,31 @@ function initApp(u){
 }
 sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.user)initApp(r.data.session.user);});
 
+// Auto-déconnexion après 8h
+(function(){
+  var TIMEOUT=8*60*60*1000; // 8 heures
+  var timer;
+  function resetTimer(){
+    clearTimeout(timer);
+    timer=setTimeout(function(){
+      if(user){
+        sb.auth.signOut().then(function(){
+          user=null;role=null;recs=[];
+          Q('app').style.display='none';
+          Q('login').style.display='flex';
+          Q('lbtn').textContent='Se connecter';
+          Q('lbtn').disabled=false;
+          alert('Session expirée après 8h. Veuillez vous reconnecter.');
+        });
+      }
+    },TIMEOUT);
+  }
+  ['click','keypress','mousemove','touchstart'].forEach(function(e){
+    document.addEventListener(e,resetTimer,true);
+  });
+  resetTimer();
+}());
+
 // TABS
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
