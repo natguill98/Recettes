@@ -1306,9 +1306,9 @@ function parseQtyFields(qty){
   s.split(' ').forEach(function(p){
     p=p.trim();if(!p)return;
     if(p.toLowerCase().indexOf('oz')>=0){oz=parseFloat(p)||0;}
-    else if(p.indexOf('/48')>=0)f48=parseInt(p)||0;
-    else if(p.indexOf('/64')>=0)f64=parseInt(p)||0;
-    else if(p.indexOf('/128')>=0)f128=parseInt(p)||0;
+    else if(p.indexOf('/48')>=0)f48=parseFloat(p)||0;
+    else if(p.indexOf('/64')>=0)f64=parseFloat(p)||0;
+    else if(p.indexOf('/128')>=0)f128=parseFloat(p)||0;
     else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
   });
   return{oz:oz,f64:f64,f128:f128,f48:f48};
@@ -1442,7 +1442,7 @@ function updatePrev(){
 
 // COLORANTS FORM
 function mkNumIn(cls,val){
-  var i=document.createElement('input');i.type='number';i.className=cls;i.placeholder='0';i.value=val||'';i.min='0';i.step='1';
+  var i=document.createElement('input');i.type='number';i.className=cls;i.placeholder='0';i.value=val||'';i.min='0';i.step='0.5';
   i.style.cssText='padding:5px 3px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%;text-align:center';
   return i;
 }
@@ -1574,7 +1574,7 @@ Q('savebtn').addEventListener('click',function(){
       if(nom){
         var qtyStr='0',unite='OZ';
         if(saveMode==='gr'){var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;qtyStr=gr?gr.toString():'0';unite='GR';}
-        else if(saveMode==='pepin'){var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');qtyStr=parts.length?parts.join(' '):'0';}
+        else if(saveMode==='pepin'){var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f48=parseFloat((row.querySelector('.c48')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');qtyStr=parts.length?parts.join(' '):'0';}
         else{var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');qtyStr=parts.length?parts.join(' '):'0';}
         cols.push({recette_id:rec.id,nom:nom,quantite:qtyStr,unite:unite,ordre:i});
       }
@@ -1800,7 +1800,7 @@ function saveEdit(id){
         if(nom){
           var qtyStr='0',unite='OZ';
           if(saveMode==='gr'){var gr=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;qtyStr=gr?gr.toString():'0';unite='GR';}
-          else if(saveMode==='pepin'){var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f48=parseInt((row.querySelector('.c48')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');qtyStr=parts.length?parts.join(' '):'0';}
+          else if(saveMode==='pepin'){var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f48=parseFloat((row.querySelector('.c48')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f48>0)parts.push(f48+'/48');qtyStr=parts.length?parts.join(' '):'0';}
           else{var oz=parseInt((row.querySelector('.cq')||{value:0}).value)||0;var f64=parseInt((row.querySelector('.c64')||{value:0}).value)||0;var f128=parseInt((row.querySelector('.c128')||{value:0}).value)||0;var parts=[];if(oz>0)parts.push(oz+' oz');if(f64>0)parts.push(f64+'/64');if(f128>0)parts.push(f128+'/128');qtyStr=parts.length?parts.join(' '):'0';}
           cols.push({recette_id:id,nom:nom,quantite:qtyStr,unite:unite,ordre:i});
         }
@@ -1926,9 +1926,9 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
         var parts=qtyStr.split(' '),oz=0,f2=0,f3=0;
         parts.forEach(function(p){
           if(p.indexOf('oz')>=0)oz=parseFloat(p)||0;
-          else if(p.indexOf('/48')>=0)f2=parseInt(p)||0;
-          else if(p.indexOf('/64')>=0)f2=parseInt(p)||0;
-          else if(p.indexOf('/128')>=0)f3=parseInt(p)||0;
+          else if(p.indexOf('/48')>=0)f2=parseFloat(p)||0;
+          else if(p.indexOf('/64')>=0)f2=parseFloat(p)||0;
+          else if(p.indexOf('/128')>=0)f3=parseFloat(p)||0;
           else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
         });
         var coutBase=coutGal/126;
@@ -2259,7 +2259,7 @@ Q('mcancelhist').addEventListener('click',function(){Q('mhist').classList.remove
 Q('mconfhist').addEventListener('click',function(){
   if(!pendHist)return;
   var hid=pendHist;pendHist=null;
-  Q('mhist').classList.remove('on');
+  Q('mhist').classList.remove('on')
   sb.from('prix_historique').delete().eq('id',hid).then(function(){
     toast('Entree supprimee!');
     if(selId)openDetail(selId);
