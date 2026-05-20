@@ -27,15 +27,15 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .lfg input{padding:10px 12px;font-size:14px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx)}
 .lbtn{width:100%;padding:11px;font-size:14px;font-weight:600;background:#1A8FD1;color:#fff;border:none;border-radius:var(--r);cursor:pointer;margin-top:8px}
 #app{display:none}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:linear-gradient(135deg,#1a2a3a,#2d4a6a);position:sticky;top:0;z-index:100}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#fff;position:sticky;top:0;z-index:100;border-bottom:0.5px solid var(--bd);box-shadow:0 1px 6px rgba(0,0,0,0.04)}
 .topbar img{height:34px}
 .tr{display:flex;align-items:center;gap:10px}
 .rpill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
 .r-admin{background:var(--blue-l);color:var(--blue);border:0.5px solid var(--blue-m)}
 .r-comptoir{background:var(--amber-l);color:var(--amber);border:0.5px solid #EF9F27}
 .r-production{background:var(--green-l);color:var(--green);border:0.5px solid #639922}
-.uname{font-size:12px;color:rgba(255,255,255,0.7)}
-.lout{font-size:12px;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:var(--r);padding:4px 10px;cursor:pointer}
+.uname{font-size:12px;color:var(--tx2)}
+.lout{font-size:12px;color:var(--tx2);background:var(--gray-l);border:0.5px solid var(--bd);border-radius:var(--r);padding:4px 10px;cursor:pointer}
 .tabs{display:flex;background:#1a2a3a;padding:0 16px;overflow-x:auto;gap:4px;align-items:center}
 .tab{font-size:13px;padding:7px 16px;color:rgba(255,255,255,0.6);cursor:pointer;border:none;border-radius:20px;margin:6px 0;background:none;white-space:nowrap;font-weight:400;transition:all 0.15s}
 .tab.on{background:rgba(255,255,255,0.18);color:#fff;font-weight:500}
@@ -50,7 +50,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .tb{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .sw{flex:1;min-width:180px;position:relative}
 .sw input{width:100%;padding:8px 12px 8px 34px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx)}
-.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx3);pointer-events:none}
+.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx3);pointer-events:none;font-size:13px;line-height:1}
 .sf{font-size:13px;padding:8px 12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);cursor:pointer}
 .cnt{font-size:12px;color:var(--tx3);margin-bottom:10px}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
@@ -195,6 +195,29 @@ table.ct tr:last-child td{border-bottom:none}
 .toast{position:fixed;bottom:24px;right:24px;background:#1a2a3a;color:#fff;font-size:13px;padding:10px 18px;border-radius:var(--r);z-index:999;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
 .toast.on{display:block}
 .info-badge{font-size:11px;color:var(--blue);background:var(--blue-l);padding:2px 8px;border-radius:20px;margin-left:6px}
+
+/* Portail interne */
+.portal-hero{background:linear-gradient(135deg,#fff,#E3F4FC);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:14px}
+.portal-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.portal-sub{font-size:13px;color:var(--tx2);line-height:1.5}
+.portal-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;align-items:start}
+.portal-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px}
+.portal-form{display:grid;gap:10px}
+.portal-feed{display:grid;gap:10px}
+.portal-post{background:var(--sur);border:0.5px solid var(--bd);border-left:4px solid var(--blue);border-radius:var(--r);padding:14px}
+.portal-post.conge{border-left-color:var(--amber)}
+.portal-post.idee{border-left-color:var(--green)}
+.portal-post.note{border-left-color:var(--blue)}
+.portal-post-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
+.portal-post-title{font-size:15px;font-weight:700}
+.portal-post-meta{font-size:11px;color:var(--tx3);margin-top:2px}
+.portal-post-msg{font-size:13px;color:var(--tx);line-height:1.5;white-space:pre-wrap}
+.portal-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--blue-l);color:var(--blue);white-space:nowrap}
+.portal-tag.conge{background:var(--amber-l);color:var(--amber)}
+.portal-tag.idee{background:var(--green-l);color:var(--green)}
+.portal-del{font-size:11px;color:var(--red);background:var(--red-l);border:0.5px solid var(--red);border-radius:var(--r);padding:4px 8px;cursor:pointer;margin-top:8px}
+@media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -222,6 +245,7 @@ table.ct tr:last-child td{border-bottom:none}
     <button class="tab on" data-tab="clients">Recettes</button>
     <button class="tab" data-tab="ajouter">+ Ajouter</button>
     <button class="tab" data-tab="conversions">Conversions</button>
+    <button class="tab" data-tab="portail">Portail</button>
     <button class="tab" data-tab="couts" id="tcouts">Couts et Prix</button>
     <button class="tab" data-tab="detail" id="tdetail" style="display:none">Fiche</button>
   </div>
@@ -229,8 +253,8 @@ table.ct tr:last-child td{border-bottom:none}
 
     <div class="view on" id="v-clients">
       <div class="tb">
-        <div class="sw"><span class="si">Q</span><input type="text" id="sc" placeholder="Rechercher un client..."></div>
-        <div class="sw"><span class="si">Q</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
+        <div class="sw"><span class="si" aria-hidden="true">&#128269;</span><input type="text" id="sc" placeholder="Rechercher un client..."></div>
+        <div class="sw"><span class="si" aria-hidden="true">&#128269;</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
       </div>
       <div class="cnt" id="ccnt"></div>
       <div class="cgrid" id="cgrid"></div>
@@ -240,7 +264,7 @@ table.ct tr:last-child td{border-bottom:none}
       <button class="bbtn" id="bprod">← Retour aux clients</button>
       <div class="bc" id="bcp"></div>
       <div class="tb">
-        <div class="sw"><span class="si">Q</span><input type="text" id="sp" placeholder="Rechercher une couleur..."></div>
+        <div class="sw"><span class="si" aria-hidden="true">&#128269;</span><input type="text" id="sp" placeholder="Rechercher une couleur..."></div>
         <select class="sf" id="sfm">
           <option value="">Toutes les marques</option>
           <option>Pepin</option><option>International</option><option>Devoe</option><option>Disolac</option>
@@ -431,6 +455,51 @@ table.ct tr:last-child td{border-bottom:none}
           <div id="cv-inter-gr-rows"></div>
         </div>
 
+      </div>
+    </div>
+
+
+    <div class="view" id="v-portail">
+      <div class="portal-hero">
+        <div class="portal-title">Portail interne</div>
+        <div class="portal-sub">Publiez les congés, avis importants, idées d’amélioration ou messages à l’équipe.</div>
+      </div>
+
+      <div class="portal-grid">
+        <div class="portal-card">
+          <div class="ftit">Nouvelle communication</div>
+          <div class="portal-form">
+            <div class="fg">
+              <label>Type</label>
+              <select id="pt_type">
+                <option value="note">Avis / message</option>
+                <option value="conge">Congé / fermeture</option>
+                <option value="idee">Idée / amélioration</option>
+              </select>
+            </div>
+            <div class="fg"><label>Titre *</label><input id="pt_titre" placeholder="Ex: Fermeture lundi"></div>
+            <div class="fg"><label>Message *</label><textarea id="pt_msg" placeholder="Écrivez votre communication..."></textarea></div>
+            <div class="fg2">
+              <div class="fg"><label>Date début</label><input type="date" id="pt_debut"></div>
+              <div class="fg"><label>Date fin</label><input type="date" id="pt_fin"></div>
+            </div>
+            <button class="btn btnp" id="pt_save">Publier</button>
+            <div class="fbox" id="pt_info">Note : pour que le portail soit partagé entre tous les postes, ajoutez la table Supabase indiquée avec le fichier SQL fourni. Sans cette table, les messages restent seulement sur ce navigateur.</div>
+          </div>
+        </div>
+
+        <div class="portal-card">
+          <div class="ftit">Communications récentes</div>
+          <div class="tb">
+            <select class="sf" id="pt_filtre">
+              <option value="">Tous les types</option>
+              <option value="note">Avis / message</option>
+              <option value="conge">Congé / fermeture</option>
+              <option value="idee">Idée / amélioration</option>
+            </select>
+          </div>
+          <div class="portal-feed" id="pt_feed"></div>
+        </div>
       </div>
     </div>
 
@@ -771,17 +840,107 @@ document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
     if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();}
     if(t.dataset.tab==='conversions'){initConversions();}
+    if(t.dataset.tab==='portail'){loadPortail();}
     showView(t.dataset.tab);
   });
 });
 function showView(name){
-  ['clients','produits','detail','ajouter','couts','conversions'].forEach(function(v){Q('v-'+v).classList.remove('on');});
+  ['clients','produits','detail','ajouter','couts','conversions','portail'].forEach(function(v){Q('v-'+v).classList.remove('on');});
   Q('v-'+name).classList.add('on');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions'};
+  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
+
+
+// PORTAIL
+var portailUseDb=null,portailRows=[];
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pTypeLabel(t){return t==='conge'?'Congé':t==='idee'?'Idée':'Avis';}
+function pDateFmt(s){return s?fmtD(s):'';}
+function portalLocalGet(){
+  try{return JSON.parse(localStorage.getItem('technocolor_portail')||'[]');}
+  catch(e){return[];}
+}
+function portalLocalSet(rows){localStorage.setItem('technocolor_portail',JSON.stringify(rows));}
+function loadPortail(){
+  var feed=Q('pt_feed');
+  if(!feed)return;
+  feed.innerHTML='<div class="empty">Chargement...</div>';
+  sb.from('portail_messages').select('*').order('created_at',{ascending:false}).limit(100).then(function(r){
+    if(r.error){
+      portailUseDb=false;
+      portailRows=portalLocalGet();
+      renderPortail();
+      return;
+    }
+    portailUseDb=true;
+    portailRows=r.data||[];
+    renderPortail();
+  });
+}
+function renderPortail(){
+  var feed=Q('pt_feed'),f=(Q('pt_filtre')&&Q('pt_filtre').value)||'';
+  if(!feed)return;
+  var rows=portailRows.filter(function(x){return !f||x.type===f;});
+  if(!rows.length){feed.innerHTML='<div class="empty">Aucune communication pour le moment.</div>';return;}
+  feed.innerHTML=rows.map(function(x){
+    var dates='';
+    if(x.date_debut||x.date_fin){
+      dates=' • '+(pDateFmt(x.date_debut)||'')+(x.date_fin?' au '+pDateFmt(x.date_fin):'');
+    }
+    var canDel=(role==='admin')||(!portailUseDb&&x.auteur_email===user.email);
+    return '<div class="portal-post '+esc(x.type)+'">'+
+      '<div class="portal-post-head"><div><div class="portal-post-title">'+esc(x.titre)+'</div>'+
+      '<div class="portal-post-meta">'+esc(x.auteur_nom||x.auteur_email||'Équipe')+dates+'</div></div>'+
+      '<span class="portal-tag '+esc(x.type)+'">'+pTypeLabel(x.type)+'</span></div>'+
+      '<div class="portal-post-msg">'+esc(x.message)+'</div>'+
+      (canDel?'<button class="portal-del" onclick="delPortail(\''+esc(x.id)+'\')">Supprimer</button>':'')+
+      '</div>';
+  }).join('');
+}
+function savePortail(){
+  var type=Q('pt_type').value,titre=Q('pt_titre').value.trim(),msg=Q('pt_msg').value.trim();
+  if(!titre||!msg){toast('Titre et message requis.');return;}
+  var row={type:type,titre:titre,message:msg,date_debut:Q('pt_debut').value||null,date_fin:Q('pt_fin').value||null,auteur_email:user?user.email:'',auteur_nom:Q('uname')?Q('uname').textContent:''};
+  Q('pt_save').disabled=true;
+  if(portailUseDb!==false){
+    sb.from('portail_messages').insert(row).select().single().then(function(r){
+      Q('pt_save').disabled=false;
+      if(r.error){portailUseDb=false;savePortailLocal(row);return;}
+      Q('pt_titre').value='';Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
+      toast('Communication publiée!');
+      loadPortail();
+    });
+  }else{
+    Q('pt_save').disabled=false;
+    savePortailLocal(row);
+  }
+}
+function savePortailLocal(row){
+  row.id='local_'+Date.now();
+  row.created_at=new Date().toISOString();
+  var rows=portalLocalGet();
+  rows.unshift(row);
+  portalLocalSet(rows);
+  Q('pt_titre').value='';Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
+  portailRows=rows;
+  toast('Communication publiée localement.');
+  renderPortail();
+}
+window.delPortail=function(id){
+  if(!confirm('Supprimer cette communication?'))return;
+  if(portailUseDb){
+    sb.from('portail_messages').delete().eq('id',id).then(function(){toast('Communication supprimée.');loadPortail();});
+  }else{
+    var rows=portalLocalGet().filter(function(x){return String(x.id)!==String(id);});
+    portalLocalSet(rows);portailRows=rows;renderPortail();toast('Communication supprimée.');
+  }
+};
+document.addEventListener('click',function(e){if(e.target&&e.target.id==='pt_save')savePortail();});
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='pt_filtre')renderPortail();});
+
 
 // MARGES
 function loadMarges(){
@@ -1169,7 +1328,30 @@ function printFiche(id){
     'tr.prix-row td{font-weight:600;font-size:14px}'+
     'tr.prix-row td:last-child{color:#3B6D11}'+
     '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{padding:12px 16px}}'+
-    '</style></head><body>'+pages+'</body></html>');
+    '
+/* Portail interne */
+.portal-hero{background:linear-gradient(135deg,#fff,#E3F4FC);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:14px}
+.portal-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.portal-sub{font-size:13px;color:var(--tx2);line-height:1.5}
+.portal-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;align-items:start}
+.portal-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px}
+.portal-form{display:grid;gap:10px}
+.portal-feed{display:grid;gap:10px}
+.portal-post{background:var(--sur);border:0.5px solid var(--bd);border-left:4px solid var(--blue);border-radius:var(--r);padding:14px}
+.portal-post.conge{border-left-color:var(--amber)}
+.portal-post.idee{border-left-color:var(--green)}
+.portal-post.note{border-left-color:var(--blue)}
+.portal-post-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
+.portal-post-title{font-size:15px;font-weight:700}
+.portal-post-meta{font-size:11px;color:var(--tx3);margin-top:2px}
+.portal-post-msg{font-size:13px;color:var(--tx);line-height:1.5;white-space:pre-wrap}
+.portal-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--blue-l);color:var(--blue);white-space:nowrap}
+.portal-tag.conge{background:var(--amber-l);color:var(--amber)}
+.portal-tag.idee{background:var(--green-l);color:var(--green)}
+.portal-del{font-size:11px;color:var(--red);background:var(--red-l);border:0.5px solid var(--red);border-radius:var(--r);padding:4px 8px;cursor:pointer;margin-top:8px}
+@media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
+
+</style></head><body>'+pages+'</body></html>');
   win.document.close();
   win.focus();
   setTimeout(function(){win.print();},400);
