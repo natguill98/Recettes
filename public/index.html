@@ -28,7 +28,6 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .lbtn{width:100%;padding:11px;font-size:14px;font-weight:600;background:#1A8FD1;color:#fff;border:none;border-radius:var(--r);cursor:pointer;margin-top:8px}
 #app{display:none}
 
-/* MODIFICATION : Topbar Blanche */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#ffffff;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100}
 .topbar img{height:34px}
 .tr{display:flex;align-items:center;gap:10px}
@@ -54,7 +53,6 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .tb{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .sw{flex:1;min-width:180px;position:relative}
 
-/* MODIFICATION : Ajustement Loupe SVG */
 .sw input{width:100%;padding:8px 12px 8px 36px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx)}
 .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);pointer-events:none;display:flex;align-items:center}
 .si svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -204,7 +202,6 @@ table.ct tr:last-child td{border-bottom:none}
 .toast.on{display:block}
 .info-badge{font-size:11px;color:var(--blue);background:var(--blue-l);padding:2px 8px;border-radius:20px;margin-left:6px}
 
-/* STYLE AJOUTÉ : Styles Spécifiques au Portail Portal */
 .p-msg-box{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;margin-bottom:12px;box-shadow:0 2px 4px rgba(0,0,0,0.02)}
 .p-msg-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px dashed var(--bd)}
 .p-badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold;text-transform:uppercase}
@@ -226,7 +223,6 @@ table.ct tr:last-child td{border-bottom:none}
 </div>
 
 <div id="app">
-  <!-- EN-TÊTE MODIFIÉE : Fond Blanc -->
   <div class="topbar">
     <img src="https://raw.githubusercontent.com/natguill98/Recettes/main/Techno%20logo%20site.jpg" alt="Technocolor">
     <div class="tr">
@@ -236,7 +232,6 @@ table.ct tr:last-child td{border-bottom:none}
     </div>
   </div>
   
-  <!-- BARRE DES ONGLETS MODIFIÉE : Ajout Portail -->
   <div class="tabs">
     <button class="tab on" data-tab="clients">Recettes</button>
     <button class="tab" data-tab="ajouter">+ Ajouter</button>
@@ -249,7 +244,6 @@ table.ct tr:last-child td{border-bottom:none}
 
     <div class="view on" id="v-clients">
       <div class="tb">
-        <!-- MODIFICATION : Loupe SVG à la place du Q -->
         <div class="sw">
           <span class="si"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
           <input type="text" id="sc" placeholder="Rechercher un client...">
@@ -267,7 +261,6 @@ table.ct tr:last-child td{border-bottom:none}
       <button class="bbtn" id="bprod">← Retour aux clients</button>
       <div class="bc" id="bcp"></div>
       <div class="tb">
-        <!-- MODIFICATION : Loupe SVG à la place du Q -->
         <div class="sw">
           <span class="si"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
           <input type="text" id="sp" placeholder="Rechercher une couleur...">
@@ -365,7 +358,6 @@ table.ct tr:last-child td{border-bottom:none}
 
     <div class="view" id="v-conversions">
       <div class="cgr">
-        <!-- PEPIN : Y → Grammes -->
         <div class="cs">
           <div class="cst" style="color:#3B6D11">Pepin — Oz/Y vers Grammes</div>
           <div class="csd">Entrez les quantités en oz et fractions pour chaque colorant. Le poids en grammes sera calculé automatiquement.</div>
@@ -390,7 +382,6 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
         </div>
 
-        <!-- INTER/DEVOE : Y/64 → Grammes -->
         <div class="cs">
           <div class="cst" style="color:var(--blue)">Inter/Devoe — Oz/Y vers Grammes</div>
           <div class="csd">Entrez les quantités en oz et fractions. Le poids en grammes sera calculé automatiquement.</div>
@@ -416,7 +407,6 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
         </div>
 
-        <!-- GRAMMES → Y/OZ Pepin -->
         <div class="cs">
           <div class="cst" style="color:#3B6D11">Pepin — Grammes vers Oz/Y</div>
           <div class="csd">Entrez le poids en grammes pour chaque colorant. La quantité en oz et fractions sera calculée automatiquement.</div>
@@ -438,7 +428,6 @@ table.ct tr:last-child td{border-bottom:none}
           <div id="cv-pepin-gr-rows"></div>
         </div>
 
-        <!-- GRAMMES → Y/OZ Inter -->
         <div class="cs">
           <div class="cst" style="color:var(--blue)">Inter/Devoe — Grammes vers Oz/Y</div>
           <div class="csd">Entrez le poids en grammes pour chaque colorant. La quantité en oz et fractions sera calculée automatiquement.</div>
@@ -483,7 +472,7 @@ table.ct tr:last-child td{border-bottom:none}
       </div>
     </div>
 
-    <!-- SECTION NOUVELLE : Vue du Portail Collaboratif -->
+    <!-- VUE PORTAIL (CORRIGÉE : form refermé proprement) -->
     <div class="view" id="v-portail">
       <div class="fw" style="margin-bottom: 20px;">
         <div class="ftit">Partager une communication ou demande</div>
@@ -499,7 +488,7 @@ table.ct tr:last-child td{border-bottom:none}
             </div>
             <div class="fg">
               <label>Sujet / Titre *</label>
-              <input type="text" id="p-title" placeholder="Ex: Vacances de Juillet ou Réorganisation étagères" required>
+              <input type="text" id="p-title" placeholder="Ex: Vacances de Juillet" required>
             </div>
             <div class="fg full">
               <label>Message / Détails *</label>
@@ -509,14 +498,13 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="acts">
             <button type="submit" class="btn btnp">Publier sur le babillard</button>
           </div>
-        </form>
+        </form> <!-- Correction ici: fermeture propre du formulaire -->
       </div>
 
       <div class="cs">
         <div class="cst">Babillard d'équipe</div>
         <div class="csd">Historique des communications partagées par l'équipe.</div>
         <div id="portal-feed">
-          <!-- Les messages s'afficheront ici -->
           <div class="empty">Aucun message pour le moment. Soyez le premier à publier !</div>
         </div>
       </div>
@@ -550,48 +538,47 @@ document.querySelectorAll('.tab').forEach(tab => {
 const portalForm = document.getElementById('portal-form');
 const portalFeed = document.getElementById('portal-feed');
 
-portalForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  
-  const type = document.getElementById('p-type').value;
-  const title = document.getElementById('p-title').value;
-  const desc = document.getElementById('p-desc').value;
-  const user = document.getElementById('uname').textContent || "Employé";
-  const dateStr = new Date().toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+if (portalForm) {
+  portalForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const type = document.getElementById('p-type').value;
+    const title = document.getElementById('p-title').value;
+    const desc = document.getElementById('p-desc').value;
+    const user = document.getElementById('uname').textContent || "Employé";
+    const dateStr = new Date().toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-  let badgeClass = "pb-autre";
-  let badgeLabel = "Général";
-  if (type === "conge") { badgeClass = "pb-conge"; badgeLabel = "Congé"; }
-  if (type === "idee") { badgeClass = "pb-idee"; badgeLabel = "Idée"; }
+    let badgeClass = "pb-autre";
+    let badgeLabel = "Général";
+    if (type === "conge") { badgeClass = "pb-conge"; badgeLabel = "Congé"; }
+    if (type === "idee") { badgeClass = "pb-idee"; badgeLabel = "Idée"; }
 
-  const msgDiv = document.createElement('div');
-  msgDiv.className = 'p-msg-box';
-  msgDiv.innerHTML = `
-    <div class="p-msg-head">
-      <div><strong>${user}</strong> • <span class="p-badge ${badgeClass}">${badgeLabel}</span></div>
-      <div style="color:var(--tx3)">${dateStr}</div>
-    </div>
-    <div style="font-weight:600; margin-bottom:4px;">${title}</div>
-    <div style="font-size:13px; color:var(--tx2); white-space:pre-wrap;">${desc}</div>
-  `;
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'p-msg-box';
+    msgDiv.innerHTML = `
+      <div class="p-msg-head">
+        <div><strong>${user}</strong> • <span class="p-badge ${badgeClass}">${badgeLabel}</span></div>
+        <div style="color:var(--tx3)">${dateStr}</div>
+      </div>
+      <div style="font-weight:600; margin-bottom:4px;">${title}</div>
+      <div style="font-size:13px; color:var(--tx2); white-space:pre-wrap;">${desc}</div>
+    `;
 
-  // Retirer le message vide s'il existe
-  const emptyMsg = portalFeed.querySelector('.empty');
-  if(emptyMsg) emptyMsg.remove();
+    const emptyMsg = portalFeed.querySelector('.empty');
+    if(emptyMsg) emptyMsg.remove();
 
-  // Insérer le nouveau message en haut du fil
-  portalFeed.insertBefore(msgDiv, portalFeed.firstChild);
-
-  // Réinitialiser le formulaire
-  portalForm.reset();
-  showToast("Votre message a été publié !");
-});
+    portalFeed.insertBefore(msgDiv, portalFeed.firstChild);
+    portalForm.reset();
+    showToast("Votre message a été publié !");
+  });
+}
 
 // --- APPARENCE DU FORMULAIRE DE COLORANTS ---
 const cform = document.getElementById('cform');
 const addcbtn = document.getElementById('addcbtn');
 
 function createColorantRow() {
+  if(!cform) return;
   const div = document.createElement('div');
   div.className = 'cr';
   div.innerHTML = `
@@ -604,7 +591,7 @@ function createColorantRow() {
   div.querySelector('.rm').addEventListener('click', () => div.remove());
   cform.appendChild(div);
 }
-addcbtn.addEventListener('click', createColorantRow);
+if(addcbtn) addcbtn.addEventListener('click', createColorantRow);
 createColorantRow();
 
 // --- CONVERSIONS ---
@@ -626,12 +613,14 @@ initConversionTables();
 
 function showToast(message) {
   const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.classList.add('on');
-  setTimeout(() => toast.classList.remove('on'), 3000);
+  if(toast) {
+    toast.textContent = message;
+    toast.classList.add('on');
+    setTimeout(() => toast.classList.remove('on'), 3000);
+  }
 }
 
-// --- CONNEXION FICTIVE ---
+// --- LOGIQUE DE CONNEXION FICTIVE ---
 document.getElementById('lbtn').addEventListener('click', () => {
   document.getElementById('login').style.display = 'none';
   document.getElementById('app').style.display = 'block';
