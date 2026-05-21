@@ -44,6 +44,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .tab{font-size:13px;padding:7px 16px;color:rgba(255,255,255,0.6);cursor:pointer;border:none;border-radius:20px;margin:6px 0;background:none;white-space:nowrap;font-weight:400;transition:all 0.15s}
 .tab.on{background:rgba(255,255,255,0.18);color:#fff;font-weight:500}
 .tab:hover:not(.on){background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85)}
+.tab-right-first{margin-left:auto}
 .pg{max-width:960px;margin:0 auto;padding:20px}
 .view{display:none}.view.on{display:block}
 .bbtn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--tx);background:var(--sur);border:0.5px solid var(--bd2);border-radius:20px;padding:6px 14px;cursor:pointer;margin-bottom:14px}
@@ -270,8 +271,8 @@ table.ct tr:last-child td{border-bottom:none}
     <button class="tab" data-tab="ajouter">+ Ajouter</button>
     <button class="tab" data-tab="conversions">Conversions</button>
     <button class="tab" data-tab="portail">Portail</button>
+    <button class="tab tab-right-first" data-tab="couts" id="tcouts">Couts et Prix</button>
     <button class="tab" data-tab="reglages" id="treglages" style="display:none">Réglages</button>
-    <button class="tab" data-tab="couts" id="tcouts">Couts et Prix</button>
     <button class="tab" data-tab="detail" id="tdetail" style="display:none">Fiche</button>
   </div>
   <div class="pg">
