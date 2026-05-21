@@ -1687,7 +1687,12 @@ Q('mconfdel').addEventListener('click',function(){
     .then(function(){return sb.from('recettes').delete().eq('id',pendDel);})
     .then(function(){
     btn.textContent='Supprimer';btn.disabled=false;Q('mdel').classList.remove('on');pendDel=null;
-    toast('Recette supprimee!');selClient=null;loadRecs();showView('clients');
+    toast('Recette supprimee!');
+    selClient=null;
+    loadRecs().then(function(){
+      showView('clients');
+      restoreClientsScroll();
+    });
   });
 });
 
