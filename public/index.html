@@ -206,6 +206,7 @@ table.ct tr:last-child td{border-bottom:none}
 .portal-feed{display:grid;gap:10px}
 .portal-post{background:var(--sur);border:0.5px solid var(--bd);border-left:4px solid var(--blue);border-radius:var(--r);padding:14px}
 .portal-post.conge{border-left-color:var(--amber)}
+.portal-post.fermeture{border-left-color:var(--red)}
 .portal-post.idee{border-left-color:var(--green)}
 .portal-post.note{border-left-color:var(--blue)}
 .portal-post-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
@@ -214,6 +215,7 @@ table.ct tr:last-child td{border-bottom:none}
 .portal-post-msg{font-size:13px;color:var(--tx);line-height:1.5;white-space:pre-wrap}
 .portal-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--blue-l);color:var(--blue);white-space:nowrap}
 .portal-tag.conge{background:var(--amber-l);color:var(--amber)}
+.portal-tag.fermeture{background:var(--red-l);color:var(--red)}
 .portal-tag.idee{background:var(--green-l);color:var(--green)}
 .portal-del{font-size:11px;color:var(--red);background:var(--red-l);border:0.5px solid var(--red);border-radius:var(--r);padding:4px 8px;cursor:pointer;margin-top:8px}
 .portal-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
@@ -468,7 +470,7 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="view" id="v-portail">
       <div class="portal-hero">
         <div class="portal-title">Portail interne</div>
-        <div class="portal-sub">Publiez les congés, avis importants, idées d’amélioration ou messages à l’équipe.</div>
+        <div class="portal-sub">Publiez les demandes de congé, fermetures, avis importants, idées d’amélioration ou messages à l’équipe.</div>
       </div>
 
       <div class="portal-grid">
@@ -479,7 +481,8 @@ table.ct tr:last-child td{border-bottom:none}
               <label>Type</label>
               <select id="pt_type">
                 <option value="note">Avis / message</option>
-                <option value="conge">Congé / fermeture</option>
+                <option value="conge">Demande de congé</option>
+                <option value="fermeture">Fermeture</option>
                 <option value="idee">Idée / amélioration</option>
               </select>
             </div>
@@ -500,7 +503,8 @@ table.ct tr:last-child td{border-bottom:none}
             <select class="sf" id="pt_filtre">
               <option value="">Tous les types</option>
               <option value="note">Avis / message</option>
-              <option value="conge">Congé / fermeture</option>
+              <option value="conge">Demande de congé</option>
+                <option value="fermeture">Fermeture</option>
               <option value="idee">Idée / amélioration</option>
             </select>
           </div>
@@ -863,7 +867,7 @@ function showView(name){
 // PORTAIL
 var portailUseDb=null,portailRows=[];
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function pTypeLabel(t){return t==='conge'?'Congé':t==='idee'?'Idée':'Avis';}
+function pTypeLabel(t){return t==='conge'?'Demande de congé':t==='fermeture'?'Fermeture':t==='idee'?'Idée':'Avis';}
 function pStatutLabel(s){return s==='accepte'?'Accepté':s==='refuse'?'Refusé':'En attente';}
 function pStatutClass(s){return s==='accepte'?'df':s==='refuse'?'ds':'do';}
 function pDateFmt(s){return s?fmtD(s):'';}
@@ -883,6 +887,12 @@ function isAdmin(){return role==='admin';}
 function isPortalAuteur(x){return user&&x&&x.created_by===user.id;}
 function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente');}
 function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente')||(!portailUseDb&&user&&x.auteur_email===user.email&&x.statut==='en_attente');}
+function canSeePortal(x){
+  x=normalizePortalRow(x);
+  if(x.categorie!=='conge')return true;
+  if(x.statut==='accepte')return true;
+  return isAdmin()||isPortalAuteur(x)||(!portailUseDb&&user&&x.auteur_email===user.email);
+}
 function loadPortail(){
   var feed=Q('pt_feed');
   if(!feed)return;
@@ -903,7 +913,7 @@ function loadPortail(){
 function renderPortail(){
   var feed=Q('pt_feed'),f=(Q('pt_filtre')&&Q('pt_filtre').value)||'';
   if(!feed)return;
-  var rows=portailRows.map(normalizePortalRow).filter(function(x){return !f||x.categorie===f;});
+  var rows=portailRows.map(normalizePortalRow).filter(canSeePortal).filter(function(x){return !f||x.categorie===f;});
   if(!rows.length){feed.innerHTML='<div class="empty">Aucune communication pour le moment.</div>';return;}
   feed.innerHTML=rows.map(function(x){
     var cat=x.categorie;
