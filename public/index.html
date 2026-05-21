@@ -29,6 +29,10 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 #app{display:none}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#fff;position:sticky;top:0;z-index:100;border-bottom:0.5px solid var(--bd);box-shadow:0 1px 6px rgba(0,0,0,0.04)}
 .topbar img{height:34px}
+.logo-btn{background:none;border:none;padding:0;margin:0;cursor:pointer;display:flex;align-items:center;border-radius:6px}
+.logo-btn img{height:34px;display:block}
+.logo-btn:hover{opacity:.85}
+.logo-btn:focus-visible{outline:2px solid rgba(26,143,209,.55);outline-offset:3px}
 .tr{display:flex;align-items:center;gap:10px}
 .rpill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
 .r-admin{background:var(--blue-l);color:var(--blue);border:0.5px solid var(--blue-m)}
@@ -242,7 +246,9 @@ table.ct tr:last-child td{border-bottom:none}
 
 <div id="app">
   <div class="topbar">
-    <img src="https://raw.githubusercontent.com/natguill98/Recettes/main/Techno%20logo%20site.jpg" alt="Technocolor">
+    <button class="logo-btn" id="logoHomeBtn" type="button" title="Retour aux recettes" aria-label="Retour aux recettes">
+      <img src="https://raw.githubusercontent.com/natguill98/Recettes/main/Techno%20logo%20site.jpg" alt="Technocolor">
+    </button>
     <div class="tr">
       <span class="rpill" id="rpill"></span>
       <span class="uname" id="uname"></span>
@@ -861,6 +867,15 @@ function showView(name){
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
+
+Q('logoHomeBtn').addEventListener('click',function(){
+  selClient=null;
+  selId=null;
+  if(Q('sc'))Q('sc').value='';
+  if(Q('scoul'))Q('scoul').value='';
+  showView('clients');
+  renderClients();
+});
 
 
 // PORTAIL
