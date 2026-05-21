@@ -1328,30 +1328,7 @@ function printFiche(id){
     'tr.prix-row td{font-weight:600;font-size:14px}'+
     'tr.prix-row td:last-child{color:#3B6D11}'+
     '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{padding:12px 16px}}'+
-    '
-/* Portail interne */
-.portal-hero{background:linear-gradient(135deg,#fff,#E3F4FC);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:14px}
-.portal-title{font-size:20px;font-weight:700;margin-bottom:4px}
-.portal-sub{font-size:13px;color:var(--tx2);line-height:1.5}
-.portal-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;align-items:start}
-.portal-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px}
-.portal-form{display:grid;gap:10px}
-.portal-feed{display:grid;gap:10px}
-.portal-post{background:var(--sur);border:0.5px solid var(--bd);border-left:4px solid var(--blue);border-radius:var(--r);padding:14px}
-.portal-post.conge{border-left-color:var(--amber)}
-.portal-post.idee{border-left-color:var(--green)}
-.portal-post.note{border-left-color:var(--blue)}
-.portal-post-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
-.portal-post-title{font-size:15px;font-weight:700}
-.portal-post-meta{font-size:11px;color:var(--tx3);margin-top:2px}
-.portal-post-msg{font-size:13px;color:var(--tx);line-height:1.5;white-space:pre-wrap}
-.portal-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--blue-l);color:var(--blue);white-space:nowrap}
-.portal-tag.conge{background:var(--amber-l);color:var(--amber)}
-.portal-tag.idee{background:var(--green-l);color:var(--green)}
-.portal-del{font-size:11px;color:var(--red);background:var(--red-l);border:0.5px solid var(--red);border-radius:var(--r);padding:4px 8px;cursor:pointer;margin-top:8px}
-@media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
-
-</style></head><body>'+pages+'</body></html>');
+    '</style></head><body>'+pages+'</body></html>');
   win.document.close();
   win.focus();
   setTimeout(function(){win.print();},400);
