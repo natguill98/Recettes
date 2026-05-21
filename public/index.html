@@ -216,6 +216,12 @@ table.ct tr:last-child td{border-bottom:none}
 .portal-tag.conge{background:var(--amber-l);color:var(--amber)}
 .portal-tag.idee{background:var(--green-l);color:var(--green)}
 .portal-del{font-size:11px;color:var(--red);background:var(--red-l);border:0.5px solid var(--red);border-radius:var(--r);padding:4px 8px;cursor:pointer;margin-top:8px}
+.portal-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.portal-edit,.portal-ok,.portal-warn{font-size:11px;border-radius:var(--r);padding:4px 8px;cursor:pointer;margin-top:8px}
+.portal-edit{color:var(--blue);background:var(--blue-l);border:0.5px solid var(--blue)}
+.portal-ok{color:var(--green);background:var(--green-l);border:0.5px solid var(--green)}
+.portal-warn{color:var(--amber);background:var(--amber-l);border:0.5px solid var(--amber)}
+
 @media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
 
 </style>
@@ -858,59 +864,107 @@ function showView(name){
 var portailUseDb=null,portailRows=[];
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function pTypeLabel(t){return t==='conge'?'Congé':t==='idee'?'Idée':'Avis';}
+function pStatutLabel(s){return s==='accepte'?'Accepté':s==='refuse'?'Refusé':'En attente';}
+function pStatutClass(s){return s==='accepte'?'df':s==='refuse'?'ds':'do';}
 function pDateFmt(s){return s?fmtD(s):'';}
 function portalLocalGet(){
   try{return JSON.parse(localStorage.getItem('technocolor_portail')||'[]');}
   catch(e){return[];}
 }
 function portalLocalSet(rows){localStorage.setItem('technocolor_portail',JSON.stringify(rows));}
+function normalizePortalRow(x){
+  x=x||{};
+  x.categorie=x.categorie||x.type||'note';
+  x.statut=x.statut||'en_attente';
+  x.auteur=x.auteur||x.auteur_nom||x.auteur_email||'Équipe';
+  return x;
+}
+function isAdmin(){return role==='admin';}
+function isPortalAuteur(x){return user&&x&&x.created_by===user.id;}
+function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente');}
+function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente')||(!portailUseDb&&user&&x.auteur_email===user.email&&x.statut==='en_attente');}
 function loadPortail(){
   var feed=Q('pt_feed');
   if(!feed)return;
   feed.innerHTML='<div class="empty">Chargement...</div>';
-  sb.from('portail_messages').select('*').order('created_at',{ascending:false}).limit(100).then(function(r){
+  sb.from('portail_messages').select('*').eq('actif',true).order('created_at',{ascending:false}).limit(100).then(function(r){
     if(r.error){
+      console.warn('Portail Supabase indisponible, mode local.',r.error);
       portailUseDb=false;
-      portailRows=portalLocalGet();
+      portailRows=portalLocalGet().map(normalizePortalRow);
       renderPortail();
       return;
     }
     portailUseDb=true;
-    portailRows=r.data||[];
+    portailRows=(r.data||[]).map(normalizePortalRow);
     renderPortail();
   });
 }
 function renderPortail(){
   var feed=Q('pt_feed'),f=(Q('pt_filtre')&&Q('pt_filtre').value)||'';
   if(!feed)return;
-  var rows=portailRows.filter(function(x){return !f||x.type===f;});
+  var rows=portailRows.map(normalizePortalRow).filter(function(x){return !f||x.categorie===f;});
   if(!rows.length){feed.innerHTML='<div class="empty">Aucune communication pour le moment.</div>';return;}
   feed.innerHTML=rows.map(function(x){
+    var cat=x.categorie;
     var dates='';
     if(x.date_debut||x.date_fin){
       dates=' • '+(pDateFmt(x.date_debut)||'')+(x.date_fin?' au '+pDateFmt(x.date_fin):'');
     }
-    var canDel=(role==='admin')||(!portailUseDb&&x.auteur_email===user.email);
-    return '<div class="portal-post '+esc(x.type)+'">'+
+    var meta=esc(x.auteur||'Équipe')+dates+' • '+(x.created_at?esc(fmtD(String(x.created_at).slice(0,10))):'');
+    var btns='';
+    if(isAdmin()){
+      if(x.statut!=='accepte')btns+='<button class="portal-ok" onclick="acceptPortail(\''+esc(x.id)+'\')">Accepter</button>';
+      if(x.statut!=='refuse')btns+='<button class="portal-warn" onclick="refusePortail(\''+esc(x.id)+'\')">Refuser</button>';
+    }
+    if(canEditPortal(x))btns+='<button class="portal-edit" onclick="editPortail(\''+esc(x.id)+'\')">Modifier</button>';
+    if(canDeletePortal(x))btns+='<button class="portal-del" onclick="delPortail(\''+esc(x.id)+'\')">Retirer</button>';
+    return '<div class="portal-post '+esc(cat)+'">'+
       '<div class="portal-post-head"><div><div class="portal-post-title">'+esc(x.titre)+'</div>'+
-      '<div class="portal-post-meta">'+esc(x.auteur_nom||x.auteur_email||'Équipe')+dates+'</div></div>'+
-      '<span class="portal-tag '+esc(x.type)+'">'+pTypeLabel(x.type)+'</span></div>'+
+      '<div class="portal-post-meta">'+meta+'</div></div>'+
+      '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end">'+
+        '<span class="portal-tag '+esc(cat)+'">'+pTypeLabel(cat)+'</span>'+
+        '<span class="db '+pStatutClass(x.statut)+'">'+pStatutLabel(x.statut)+'</span>'+
+      '</div></div>'+
       '<div class="portal-post-msg">'+esc(x.message)+'</div>'+
-      (canDel?'<button class="portal-del" onclick="delPortail(\''+esc(x.id)+'\')">Supprimer</button>':'')+
+      (btns?'<div class="portal-actions">'+btns+'</div>':'')+
       '</div>';
   }).join('');
 }
+function buildPortalMessage(msg,dateDebut,dateFin){
+  var dates='';
+  if(dateDebut||dateFin){
+    dates='Dates : '+(dateDebut||'')+(dateFin?' au '+dateFin:'');
+  }
+  return dates?dates+'\n\n'+msg:msg;
+}
 function savePortail(){
-  var type=Q('pt_type').value,titre=Q('pt_titre').value.trim(),msg=Q('pt_msg').value.trim();
+  var cat=Q('pt_type').value,titre=Q('pt_titre').value.trim(),msg=Q('pt_msg').value.trim();
   if(!titre||!msg){toast('Titre et message requis.');return;}
-  var row={type:type,titre:titre,message:msg,date_debut:Q('pt_debut').value||null,date_fin:Q('pt_fin').value||null,auteur_email:user?user.email:'',auteur_nom:Q('uname')?Q('uname').textContent:''};
+  var fullMsg=buildPortalMessage(msg,Q('pt_debut').value||'',Q('pt_fin').value||'');
+  var row={
+    titre:titre,
+    categorie:cat,
+    message:fullMsg,
+    auteur:(Q('uname')&&Q('uname').textContent)||((user&&user.email)||''),
+    role_auteur:role||'',
+    created_by:user?user.id:null,
+    statut:'en_attente',
+    important:false,
+    actif:true
+  };
   Q('pt_save').disabled=true;
   if(portailUseDb!==false){
     sb.from('portail_messages').insert(row).select().single().then(function(r){
       Q('pt_save').disabled=false;
-      if(r.error){portailUseDb=false;savePortailLocal(row);return;}
-      Q('pt_titre').value='';Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
-      toast('Communication publiée!');
+      if(r.error){
+        console.warn('Publication Supabase impossible, mode local.',r.error);
+        portailUseDb=false;
+        savePortailLocal(row);
+        return;
+      }
+      clearPortailForm();
+      toast('Communication publiée en attente.');
       loadPortail();
     });
   }else{
@@ -918,24 +972,74 @@ function savePortail(){
     savePortailLocal(row);
   }
 }
+function clearPortailForm(){
+  Q('pt_titre').value='';Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
+}
 function savePortailLocal(row){
   row.id='local_'+Date.now();
   row.created_at=new Date().toISOString();
-  var rows=portalLocalGet();
+  row.auteur_email=user?user.email:'';
+  row.created_by=user?user.id:null;
+  var rows=portalLocalGet().map(normalizePortalRow);
   rows.unshift(row);
   portalLocalSet(rows);
-  Q('pt_titre').value='';Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
+  clearPortailForm();
   portailRows=rows;
   toast('Communication publiée localement.');
   renderPortail();
 }
+function updatePortalDb(id,changes,okMsg){
+  sb.from('portail_messages').update(changes).eq('id',id).then(function(r){
+    if(r.error){console.error(r.error);toast('Non autorisé ou erreur.');return;}
+    toast(okMsg||'Portail mis à jour.');
+    loadPortail();
+  });
+}
+function updatePortalLocal(id,changes,okMsg){
+  var rows=portalLocalGet().map(normalizePortalRow).map(function(x){
+    if(String(x.id)===String(id)){Object.assign(x,changes,{updated_at:new Date().toISOString()});}
+    return x;
+  });
+  portalLocalSet(rows);portailRows=rows;renderPortail();toast(okMsg||'Portail mis à jour.');
+}
+window.acceptPortail=function(id){
+  if(!isAdmin()){toast('Admin seulement.');return;}
+  if(portailUseDb)updatePortalDb(id,{statut:'accepte'},'Communication acceptée.');
+  else updatePortalLocal(id,{statut:'accepte'},'Communication acceptée.');
+};
+window.refusePortail=function(id){
+  if(!isAdmin()){toast('Admin seulement.');return;}
+  if(portailUseDb)updatePortalDb(id,{statut:'refuse'},'Communication refusée.');
+  else updatePortalLocal(id,{statut:'refuse'},'Communication refusée.');
+};
+window.editPortail=function(id){
+  var row=(portailRows||[]).map(normalizePortalRow).find(function(x){return String(x.id)===String(id);});
+  if(!row){toast('Message introuvable.');return;}
+  if(!canEditPortal(row)){toast('Modification non autorisée.');return;}
+  var nt=prompt('Titre',row.titre||'');
+  if(nt===null)return;
+  nt=nt.trim();
+  if(!nt){toast('Titre requis.');return;}
+  var nm=prompt('Message',row.message||'');
+  if(nm===null)return;
+  nm=nm.trim();
+  if(!nm){toast('Message requis.');return;}
+  var changes={titre:nt,message:nm};
+  if(portailUseDb)updatePortalDb(id,changes,'Communication modifiée.');
+  else updatePortalLocal(id,changes,'Communication modifiée.');
+};
 window.delPortail=function(id){
-  if(!confirm('Supprimer cette communication?'))return;
+  var row=(portailRows||[]).map(normalizePortalRow).find(function(x){return String(x.id)===String(id);});
+  if(row&&!canDeletePortal(row)){toast('Retrait non autorisé.');return;}
+  if(!confirm('Retirer cette communication?'))return;
   if(portailUseDb){
-    sb.from('portail_messages').delete().eq('id',id).then(function(){toast('Communication supprimée.');loadPortail();});
+    sb.from('portail_messages').delete().eq('id',id).then(function(r){
+      if(r.error){console.error(r.error);toast('Non autorisé ou erreur.');return;}
+      toast('Communication retirée.');loadPortail();
+    });
   }else{
     var rows=portalLocalGet().filter(function(x){return String(x.id)!==String(id);});
-    portalLocalSet(rows);portailRows=rows;renderPortail();toast('Communication supprimée.');
+    portalLocalSet(rows);portailRows=rows;renderPortail();toast('Communication retirée.');
   }
 };
 document.addEventListener('click',function(e){if(e.target&&e.target.id==='pt_save')savePortail();});
