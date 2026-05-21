@@ -790,6 +790,7 @@ var SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
 var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,role=null,recs=[],selClient=null,selId=null;
+var clientsScrollY=0;
 var curHex='#cccccc',camStream=null;
 var marges={Pepin:0.60,Disolac:0.60,International:0.55,Devoe:0.55};
 var allBases=[],allCP=[],allPC=[];
@@ -925,13 +926,28 @@ function showView(name){
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
 
-Q('logoHomeBtn').addEventListener('click',function(){
-  selClient=null;
-  selId=null;
-  if(Q('sc'))Q('sc').value='';
-  if(Q('scoul'))Q('scoul').value='';
+function saveClientsScroll(){
+  if(Q('v-clients')&&Q('v-clients').classList.contains('on')){
+    clientsScrollY=window.scrollY||document.documentElement.scrollTop||0;
+  }
+}
+function restoreClientsScroll(){
+  var y=clientsScrollY||0;
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){window.scrollTo(0,y);});
+  });
+}
+function backToClientsKeepScroll(){
   showView('clients');
   renderClients();
+  restoreClientsScroll();
+}
+
+Q('logoHomeBtn').addEventListener('click',function(){
+  try{
+    sessionStorage.setItem('techno_start_view','clients');
+  }catch(e){}
+  window.location.reload();
 });
 
 
@@ -1343,14 +1359,14 @@ function renderClients(){
 Q('sc').addEventListener('input',renderClients);
 if(Q('scoul'))Q('scoul').addEventListener('input',renderClients);
 if(Q('scoul'))Q('scoul').addEventListener('input',renderClients);
-Q('bprod').addEventListener('click',function(){showView('clients');});
+Q('bprod').addEventListener('click',backToClientsKeepScroll);
 
 // PRODUITS
-function openClient(name){selClient=name;Q('sp').value='';Q('sfm').value='';renderProduits();showView('produits');}
+function openClient(name){saveClientsScroll();selClient=name;Q('sp').value='';Q('sfm').value='';renderProduits();showView('produits');window.scrollTo(0,0);}
 function renderProduits(){
   var q=(Q('sp').value||'').toLowerCase(),marque=Q('sfm').value;
   var bc=Q('bcp');bc.innerHTML='';
-  var a1=document.createElement('a');a1.textContent='Recettes';a1.addEventListener('click',function(){showView('clients');});bc.appendChild(a1);
+  var a1=document.createElement('a');a1.textContent='Recettes';a1.addEventListener('click',backToClientsKeepScroll);bc.appendChild(a1);
   bc.appendChild(document.createTextNode(' > '));
   var sp=document.createElement('span');sp.textContent=selClient;bc.appendChild(sp);
   var rr=recs.filter(function(r){
@@ -1407,7 +1423,7 @@ function openDetail(id){
   if(pc&&p&&p.prix_pinte)pc.pinte=parseFloat(p.prix_pinte);
   var sw=r.couleur_hex?'<div class="dsw" style="background:'+r.couleur_hex+'"></div>':'';
   var bc=Q('bcd');bc.innerHTML='';
-  var a1=document.createElement('a');a1.textContent='Recettes';a1.addEventListener('click',function(){showView('clients');});bc.appendChild(a1);
+  var a1=document.createElement('a');a1.textContent='Recettes';a1.addEventListener('click',backToClientsKeepScroll);bc.appendChild(a1);
   bc.appendChild(document.createTextNode(' > '));
   var a2=document.createElement('a');a2.textContent=r.client;a2.addEventListener('click',function(){openClient(r.client);});bc.appendChild(a2);
   bc.appendChild(document.createTextNode(' > '));
