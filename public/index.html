@@ -209,16 +209,16 @@ table.ct tr:last-child td{border-bottom:none}
 .portal-form{display:grid;gap:10px}
 .portal-feed{display:grid;gap:10px}
 .portal-post{background:var(--sur);border:0.5px solid var(--bd);border-left:4px solid var(--blue);border-radius:var(--r);padding:14px}
-.portal-post.conge{border-left-color:var(--amber)}
+.portal-post.demande_conge{border-left-color:var(--amber)}
 .portal-post.fermeture{border-left-color:var(--red)}
 .portal-post.idee{border-left-color:var(--green)}
-.portal-post.note{border-left-color:var(--blue)}
+.portal-post.avis{border-left-color:var(--blue)}
 .portal-post-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
 .portal-post-title{font-size:15px;font-weight:700}
 .portal-post-meta{font-size:11px;color:var(--tx3);margin-top:2px}
 .portal-post-msg{font-size:13px;color:var(--tx);line-height:1.5;white-space:pre-wrap}
 .portal-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--blue-l);color:var(--blue);white-space:nowrap}
-.portal-tag.conge{background:var(--amber-l);color:var(--amber)}
+.portal-tag.demande_conge{background:var(--amber-l);color:var(--amber)}
 .portal-tag.fermeture{background:var(--red-l);color:var(--red)}
 .portal-tag.idee{background:var(--green-l);color:var(--green)}
 .portal-del{font-size:11px;color:var(--red);background:var(--red-l);border:0.5px solid var(--red);border-radius:var(--r);padding:4px 8px;cursor:pointer;margin-top:8px}
@@ -227,6 +227,16 @@ table.ct tr:last-child td{border-bottom:none}
 .portal-edit{color:var(--blue);background:var(--blue-l);border:0.5px solid var(--blue)}
 .portal-ok{color:var(--green);background:var(--green-l);border:0.5px solid var(--green)}
 .portal-warn{color:var(--amber);background:var(--amber-l);border:0.5px solid var(--amber)}
+
+
+.settings-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;align-items:start}
+.settings-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px}
+.settings-note{font-size:12px;color:var(--tx2);line-height:1.5;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 12px;margin-top:10px}
+.user-row{display:grid;grid-template-columns:1.2fr 1fr 120px 90px;gap:6px;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--bd)}
+.user-row:last-child{border-bottom:none}
+.user-row input,.user-row select{padding:7px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
+.user-row .uemail{font-size:12px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:760px){.settings-grid{grid-template-columns:1fr}.user-row{grid-template-columns:1fr}}
 
 @media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
 
@@ -239,7 +249,7 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="llogo"><img src="https://raw.githubusercontent.com/natguill98/Recettes/main/Techno%20logo%20site.jpg" alt="Technocolor"></div>
     <div class="lerr" id="lerr"></div>
     <div class="lfg"><label>Courriel</label><input type="email" id="lem" placeholder="votre@courriel.com"></div>
-    <div class="lfg"><label>Mot de passe</label><input type="password" id="lpass" placeholder="..."></div>
+    <div class="lfg"><label>Mot de passe</label><input type="password" id="lpass" placeholder="Votre mot de passe"></div>
     <button class="lbtn" id="lbtn">Se connecter</button>
   </div>
 </div>
@@ -251,7 +261,7 @@ table.ct tr:last-child td{border-bottom:none}
     </button>
     <div class="tr">
       <span class="rpill" id="rpill"></span>
-      <span class="uname" id="uname"></span>
+      <span class="uname" id="uname" title="Prénom utilisateur"></span>
       <button class="lout" id="loutbtn">Deconnexion</button>
     </div>
   </div>
@@ -260,6 +270,7 @@ table.ct tr:last-child td{border-bottom:none}
     <button class="tab" data-tab="ajouter">+ Ajouter</button>
     <button class="tab" data-tab="conversions">Conversions</button>
     <button class="tab" data-tab="portail">Portail</button>
+    <button class="tab" data-tab="reglages" id="treglages" style="display:none">Réglages</button>
     <button class="tab" data-tab="couts" id="tcouts">Couts et Prix</button>
     <button class="tab" data-tab="detail" id="tdetail" style="display:none">Fiche</button>
   </div>
@@ -486,8 +497,8 @@ table.ct tr:last-child td{border-bottom:none}
             <div class="fg">
               <label>Type</label>
               <select id="pt_type">
-                <option value="note">Avis / message</option>
-                <option value="conge">Demande de congé</option>
+                <option value="avis">Avis / message</option>
+                <option value="demande_conge">Demande de congé</option>
                 <option value="fermeture">Fermeture</option>
                 <option value="idee">Idée / amélioration</option>
               </select>
@@ -507,13 +518,50 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="tb">
             <select class="sf" id="pt_filtre">
               <option value="">Tous les types</option>
-              <option value="note">Avis / message</option>
-              <option value="conge">Demande de congé</option>
+              <option value="avis">Avis / message</option>
+              <option value="demande_conge">Demande de congé</option>
                 <option value="fermeture">Fermeture</option>
               <option value="idee">Idée / amélioration</option>
             </select>
           </div>
           <div class="portal-feed" id="pt_feed"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="view" id="v-reglages">
+      <div class="portal-hero">
+        <div class="portal-title">Réglages</div>
+        <div class="portal-sub">Modifier l’affichage utilisateur et gérer les accès. La création complète d’un accès de connexion demande une Edge Function sécurisée.</div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="settings-card">
+          <div class="ftit">Mon profil</div>
+          <div class="portal-form">
+            <div class="fg"><label>Prénom / nom affiché</label><input id="set_nom" placeholder="Ex: Nathan"></div>
+            <button class="btn btnp" id="set_save_profile">Sauvegarder mon nom</button>
+          </div>
+        </div>
+
+        <div class="settings-card" id="admin_settings_box" style="display:none">
+          <div class="ftit">Utilisateurs</div>
+          <div class="settings-note">Admin : vous pouvez modifier le nom affiché et le rôle des profils existants. Pour créer un nouvel accès de connexion sans passer dans Supabase, il faut configurer l’Edge Function <strong>admin-create-user</strong>.</div>
+          <div id="users_list" style="margin-top:12px"></div>
+
+          <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
+            <div class="ftit">Ajouter un utilisateur</div>
+            <div class="portal-form">
+              <div class="fg2">
+                <div class="fg"><label>Courriel *</label><input id="new_user_email" type="email" placeholder="employe@courriel.com"></div>
+                <div class="fg"><label>Nom affiché *</label><input id="new_user_nom" placeholder="Prénom"></div>
+                <div class="fg"><label>Rôle</label><select id="new_user_role"><option value="production">Production</option><option value="comptoir">Comptoir</option><option value="admin">Admin</option></select></div>
+                <div class="fg"><label>Mot de passe temporaire *</label><input id="new_user_password" type="password" placeholder="Mot de passe temporaire"></div>
+              </div>
+              <button class="btn btnp" id="create_user_btn">Créer l’utilisateur</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -803,17 +851,24 @@ Q('lpass').addEventListener('keydown',function(e){if(e.key==='Enter')Q('lbtn').c
 Q('loutbtn').addEventListener('click',function(){
   sb.auth.signOut().then(function(){user=null;role=null;recs=[];Q('app').style.display='none';Q('login').style.display='flex';Q('lbtn').textContent='Se connecter';Q('lbtn').disabled=false;});
 });
+function firstNameFromProfile(nom,email){
+  var base=(nom||'').trim()||(email||'').split('@')[0]||'Utilisateur';
+  return base.split(/\s+/)[0];
+}
+function roleLabel(r){return r==='admin'?'Admin':r==='comptoir'?'Comptoir':r==='production'?'Production':(r||'Utilisateur');}
 function initApp(u){
   user=u;
   sb.from('profiles').select('role,nom').eq('id',u.id).single().then(function(r){
     role=(r.data&&r.data.role)||'production';
     var nom=(r.data&&r.data.nom)||u.email;
-    Q('uname').textContent=nom;
+    Q('uname').textContent=firstNameFromProfile(nom,u.email);
     var pill=Q('rpill');
-    pill.textContent=role.charAt(0).toUpperCase()+role.slice(1);
+    pill.textContent=roleLabel(role);
     pill.className='rpill r-'+role;
+    if(Q('set_nom'))Q('set_nom').value=nom||'';
     Q('psec').style.display=canP()?'':'none';
     Q('tcouts').style.display=canP()?'':'none';
+    if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
     Q('fdate').value=new Date().toISOString().slice(0,10);
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
@@ -856,14 +911,15 @@ document.querySelectorAll('.tab').forEach(function(t){
     if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();}
     if(t.dataset.tab==='conversions'){initConversions();}
     if(t.dataset.tab==='portail'){loadPortail();}
+    if(t.dataset.tab==='reglages'){loadReglages();}
     showView(t.dataset.tab);
   });
 });
 function showView(name){
-  ['clients','produits','detail','ajouter','couts','conversions','portail'].forEach(function(v){Q('v-'+v).classList.remove('on');});
+  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages'].forEach(function(v){Q('v-'+v).classList.remove('on');});
   Q('v-'+name).classList.add('on');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail'};
+  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
@@ -878,10 +934,90 @@ Q('logoHomeBtn').addEventListener('click',function(){
 });
 
 
+// RÉGLAGES
+var settingsUsers=[];
+function loadReglages(){
+  if(Q('set_nom')&&user){
+    sb.from('profiles').select('nom').eq('id',user.id).single().then(function(r){
+      if(r.data&&typeof r.data.nom==='string')Q('set_nom').value=r.data.nom;
+    });
+  }
+  if(Q('admin_settings_box'))Q('admin_settings_box').style.display=isAdmin()?'':'none';
+  if(isAdmin())loadUsersList();
+}
+function saveMyProfile(){
+  if(!user)return;
+  var nom=(Q('set_nom')&&Q('set_nom').value.trim())||'';
+  if(!nom){toast('Nom requis.');return;}
+  sb.from('profiles').update({nom:nom}).eq('id',user.id).then(function(r){
+    if(r.error){console.error(r.error);toast('Erreur lors de la sauvegarde.');return;}
+    Q('uname').textContent=firstNameFromProfile(nom,user.email);
+    toast('Nom mis à jour.');
+    loadUsersList();
+  });
+}
+function loadUsersList(){
+  var box=Q('users_list');
+  if(!box||!isAdmin())return;
+  box.innerHTML='<div class="empty" style="padding:18px">Chargement des utilisateurs...</div>';
+  sb.from('profiles').select('id,nom,role').order('nom',{ascending:true}).then(function(r){
+    if(r.error){console.error(r.error);box.innerHTML='<div class="err" style="display:block">Impossible de lire les profils. Vérifiez les politiques RLS de la table profiles.</div>';return;}
+    settingsUsers=r.data||[];
+    renderUsersList();
+  });
+}
+function renderUsersList(){
+  var box=Q('users_list');
+  if(!box)return;
+  if(!settingsUsers.length){box.innerHTML='<div class="empty" style="padding:18px">Aucun profil trouvé.</div>';return;}
+  box.innerHTML=settingsUsers.map(function(u){
+    var id=esc(u.id);
+    return '<div class="user-row">'+
+      '<input id="u_nom_'+id+'" value="'+esc(u.nom||'')+'" placeholder="Nom affiché">'+
+      '<div class="uemail" title="'+id+'">ID: '+id.slice(0,8)+'...</div>'+
+      '<select id="u_role_'+id+'"><option value="production" '+((u.role||'')==='production'?'selected':'')+'>Production</option><option value="comptoir" '+((u.role||'')==='comptoir'?'selected':'')+'>Comptoir</option><option value="admin" '+((u.role||'')==='admin'?'selected':'')+'>Admin</option></select>'+
+      '<button class="btn" onclick="saveUserProfile(\''+id+'\')">Sauver</button>'+
+      '</div>';
+  }).join('');
+}
+window.saveUserProfile=function(id){
+  if(!isAdmin()){toast('Admin seulement.');return;}
+  var nom=(Q('u_nom_'+id)&&Q('u_nom_'+id).value.trim())||'';
+  var r=(Q('u_role_'+id)&&Q('u_role_'+id).value)||'production';
+  if(!nom){toast('Nom requis.');return;}
+  sb.from('profiles').update({nom:nom,role:r}).eq('id',id).then(function(res){
+    if(res.error){console.error(res.error);toast('Erreur ou non autorisé.');return;}
+    toast('Utilisateur mis à jour.');
+    if(user&&id===user.id){role=r;Q('rpill').textContent=roleLabel(role);Q('rpill').className='rpill r-'+role;Q('uname').textContent=firstNameFromProfile(nom,user.email);}
+    loadUsersList();
+  });
+};
+function createUserFromSettings(){
+  if(!isAdmin()){toast('Admin seulement.');return;}
+  var email=(Q('new_user_email')&&Q('new_user_email').value.trim())||'';
+  var nom=(Q('new_user_nom')&&Q('new_user_nom').value.trim())||'';
+  var pass=(Q('new_user_password')&&Q('new_user_password').value)||'';
+  var r=(Q('new_user_role')&&Q('new_user_role').value)||'production';
+  if(!email||!nom||!pass){toast('Courriel, nom et mot de passe requis.');return;}
+  Q('create_user_btn').disabled=true;
+  sb.functions.invoke('admin-create-user',{body:{email:email,password:pass,nom:nom,role:r}}).then(function(res){
+    Q('create_user_btn').disabled=false;
+    if(res.error){console.error(res.error);toast('Edge Function admin-create-user non configurée ou erreur.');return;}
+    toast('Utilisateur créé.');
+    Q('new_user_email').value='';Q('new_user_nom').value='';Q('new_user_password').value='';Q('new_user_role').value='production';
+    loadUsersList();
+  });
+}
+document.addEventListener('click',function(e){
+  if(e.target&&e.target.id==='set_save_profile')saveMyProfile();
+  if(e.target&&e.target.id==='create_user_btn')createUserFromSettings();
+});
+
+
 // PORTAIL
 var portailUseDb=null,portailRows=[];
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function pTypeLabel(t){return t==='conge'?'Demande de congé':t==='fermeture'?'Fermeture':t==='idee'?'Idée':'Avis';}
+function pTypeLabel(t){return t==='demande_conge'?'Demande de congé':t==='fermeture'?'Fermeture':t==='idee'?'Idée':'Avis';}
 function pStatutLabel(s){return s==='accepte'?'Accepté':s==='refuse'?'Refusé':'En attente';}
 function pStatutClass(s){return s==='accepte'?'df':s==='refuse'?'ds':'do';}
 function pDateFmt(s){return s?fmtD(s):'';}
@@ -892,7 +1028,9 @@ function portalLocalGet(){
 function portalLocalSet(rows){localStorage.setItem('technocolor_portail',JSON.stringify(rows));}
 function normalizePortalRow(x){
   x=x||{};
-  x.categorie=x.categorie||x.type||'note';
+  x.categorie=x.categorie||x.type||'avis';
+  if(x.categorie==='note')x.categorie='avis';
+  if(x.categorie==='conge')x.categorie='demande_conge';
   x.statut=x.statut||'en_attente';
   x.auteur=x.auteur||x.auteur_nom||x.auteur_email||'Équipe';
   return x;
@@ -903,7 +1041,7 @@ function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAut
 function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente')||(!portailUseDb&&user&&x.auteur_email===user.email&&x.statut==='en_attente');}
 function canSeePortal(x){
   x=normalizePortalRow(x);
-  if(x.categorie!=='conge')return true;
+  if(x.categorie!=='demande_conge')return true;
   if(x.statut==='accepte')return true;
   return isAdmin()||isPortalAuteur(x)||(!portailUseDb&&user&&x.auteur_email===user.email);
 }
