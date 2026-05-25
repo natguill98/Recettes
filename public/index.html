@@ -960,6 +960,7 @@ table.ct tr:last-child td{border-bottom:none}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRM — Gestion Clients</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1244,7 +1245,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <script>
-/* ── DATA ── */
+/* ── CRM SUPABASE PERSISTANT ── */
+const SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
+const CRM_ACCESS_TOKEN='__CRM_ACCESS_TOKEN__';
+const crmSb=supabase.createClient(SB_URL,SB_KEY,{global:{headers:CRM_ACCESS_TOKEN&&CRM_ACCESS_TOKEN.indexOf('__CRM_')!==0?{Authorization:'Bearer '+CRM_ACCESS_TOKEN}:{}}});
+
 const STAGES=[
   {name:"Prospection", hf:"#E6F1FB",ht:"#0C447C",cf:"#B5D4F4",ct:"#0C447C"},
   {name:"Qualification",hf:"#FAEEDA",ht:"#633806",cf:"#FAC775",ct:"#633806"},
@@ -1256,36 +1262,46 @@ const STATS={ne_pas_retourner:{l:"Ne pas retourner",f:"#fee2e2",c:"#7f1d1d"},a_r
 const SECTEURS=["Restauration","Commerce de détail","Industrie","Construction","Santé","Transport","Agriculture","Services","Technologie","Hôtellerie","Autre"];
 const AVC=[["#dbeafe","#1e3a5f"],["#d8f3dc","#2d6a4f"],["#fef3c7","#92400e"],["#ede9fe","#4c1d95"],["#fce7f3","#831843"],["#e0f2fe","#0c4a6e"]];
 
-let leads=[
-  {id:1,nom:"Sophie Martin",entreprise:"Retail Pro",email:"s.martin@retailpro.fr",telephone:"514-555-0142",valeur:85,priorite:"haute",stage:3,date:"2 mai",notes:"Très avancé, attend signature"},
-  {id:2,nom:"Lucas Bernard",entreprise:"TechWave",email:"l.bernard@techwave.io",telephone:"514-555-0198",valeur:120,priorite:"haute",stage:2,date:"30 avr",notes:"Soumission remise"},
-  {id:3,nom:"Isabelle Durand",entreprise:"HealthCo",email:"i.durand@healthco.fr",telephone:"450-555-0271",valeur:45,priorite:"moyenne",stage:2,date:"1 mai",notes:""},
-  {id:4,nom:"Thomas Moreau",entreprise:"FinServ",email:"t.moreau@finserv.com",telephone:"514-555-0341",valeur:200,priorite:"haute",stage:1,date:"28 avr",notes:"Gros contrat potentiel"},
-  {id:5,nom:"Marie Petit",entreprise:"EduTech",email:"m.petit@edutech.fr",telephone:"450-555-0411",valeur:30,priorite:"basse",stage:0,date:"3 mai",notes:""},
-  {id:6,nom:"Antoine Leroy",entreprise:"BuildCorp",email:"a.leroy@buildcorp.fr",telephone:"514-555-0533",valeur:65,priorite:"moyenne",stage:0,date:"5 mai",notes:""},
-  {id:7,nom:"Clara Simon",entreprise:"GreenEnergy",email:"c.simon@green.eu",telephone:"450-555-0612",valeur:90,priorite:"moyenne",stage:1,date:"29 avr",notes:""},
-];
-let potentiels=[
-  {id:20,nom:"Jean Tremblay",entreprise:"Épicerie Centrale",secteur:"Commerce de détail",telephone:"514-555-0142",email:"j.tremblay@epicentrale.ca",adresse:"123 rue Principale, Laval",valeur:35,priorite:"haute",notes:"Très intéressé. Soumission demandée pour 200 unités/mois.",source:"Référence",dateAjout:"2026-05-10"},
-  {id:21,nom:"Marie Côté",entreprise:"Restaurant Chez Marie",secteur:"Restauration",telephone:"450-555-0198",email:"marie@chezmarie.ca",adresse:"45 boul. des Laurentides, Laval",valeur:20,priorite:"haute",notes:"Cherche fournisseur nettoyants alimentaires. Remplacer fournisseur actuel en juillet.",source:"Prospection terrain",dateAjout:"2026-05-08"},
-  {id:22,nom:"Robert Gagnon",entreprise:"Gagnon Construction",secteur:"Construction",telephone:"514-555-0271",email:"r.gagnon@gagnonconstruction.ca",adresse:"890 rue Industrielle, Laval",valeur:60,priorite:"moyenne",notes:"Besoin EPI et produits sécurité. Contrat annuel potentiel.",source:"LinkedIn",dateAjout:"2026-05-05"},
-  {id:23,nom:"Lucie Bergeron",entreprise:"Clinique Beauté Plus",secteur:"Santé",telephone:"450-555-0341",email:"lucie@beauteplus.ca",adresse:"34 rue Saint-Martin, Laval",valeur:15,priorite:"basse",notes:"Petite clinique, budget limité pour l'instant.",source:"Démarchage",dateAjout:"2026-05-12"},
-];
-let visites=[
-  {id:30,nom:"Pierre Lavoie",entreprise:"Marché Lavoie",secteur:"Commerce de détail",telephone:"514-555-0422",email:"p.lavoie@marchelavoie.ca",adresse:"567 boul. Cartier, Laval",statut:"ne_pas_retourner",raisonBlocage:"Propriétaire très agressif lors de la visite. A menacé d'appeler la police. Ne pas retourner sous aucun prétexte.",dateVisite:"2026-04-22",visites:[{date:"2026-04-22",note:"Première et dernière visite. Accueil extrêmement hostile."}]},
-  {id:31,nom:"Sylvie Morin",entreprise:"Transport Morin & Fils",secteur:"Transport",telephone:"450-555-0533",email:"s.morin@transportmorin.ca",adresse:"1200 route 117, Laval",statut:"a_recontacter",raisonBlocage:"",dateVisite:"2026-04-15",visites:[{date:"2026-04-15",note:"Intéressée mais budget Q1 épuisé. Rappeler en juin."},{date:"2026-03-10",note:"Premier contact. A demandé une fiche technique."}]},
-  {id:32,nom:"Alain Fortier",entreprise:"Ferme Fortier",secteur:"Agriculture",telephone:"514-555-0611",email:"a.fortier@fermefortier.ca",adresse:"78 rang des Prairies, Laval",statut:"client_actif",raisonBlocage:"",dateVisite:"2026-05-01",visites:[{date:"2026-05-01",note:"Renouvellement contrat signé 2026-2027. Très satisfait."},{date:"2025-11-15",note:"Commande additionnelle produits hiver."},{date:"2025-06-20",note:"Premier contrat signé."}]},
-  {id:33,nom:"Nadia Champagne",entreprise:"Hôtel Le Belvédère",secteur:"Hôtellerie",telephone:"450-555-0799",email:"n.champagne@belvederhotel.ca",adresse:"2000 boul. René-Laennec, Laval",statut:"perdu",raisonBlocage:"",dateVisite:"2026-03-30",visites:[{date:"2026-03-30",note:"A choisi un concurrent (prix -12%). Réévaluer tarifs avant relance."},{date:"2026-02-18",note:"Soumission remise. En attente de réponse."}]},
-];
-
-let nextId=50,editId=null,modalType=null,activeTab="pipeline",detailId=null,detailType=null;
+let leads=[],potentiels=[],visites=[];
+let editId=null,modalType=null,activeTab="pipeline",detailId=null,detailType=null;
+let crmLoading=false;
 
 /* ── UTILS ── */
-function av(id){const c=AVC[id%AVC.length];return`background:${c[0]};color:${c[1]}`;}
-function ini(n){return n.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);}
-function fmtD(d){if(!d)return"";const p=d.split("-");return p[2]+"/"+p[1]+"/"+p[0];}
+function hashId(id){let s=String(id||'0'),h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
+function av(id){const c=AVC[hashId(id)%AVC.length];return`background:${c[0]};color:${c[1]}`;}
+function ini(n){return String(n||'?').split(" ").filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||'?';}
+function fmtD(d){if(!d)return"";const p=String(d).split("-");if(p.length!==3)return d;return p[2]+"/"+p[1]+"/"+p[0];}
 function todayStr(){return new Date().toISOString().split("T")[0];}
 function todayLabel(){const t=new Date();const m=["jan","fév","mar","avr","mai","juin","juil","août","sep","oct","nov","déc"];return t.getDate()+" "+m[t.getMonth()];}
+function safe(v){return String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function toastMsg(m){console.log(m);}
+
+function mapLead(r){return{id:r.id,nom:r.nom||'',entreprise:r.entreprise||'',email:r.email||'',telephone:r.telephone||'',valeur:Number(r.valeur)||0,priorite:r.priorite||'moyenne',stage:Number(r.stage)||0,date:r.date_label||'',notes:r.notes||''};}
+function mapPot(r){return{id:r.id,nom:r.nom||'',entreprise:r.entreprise||'',secteur:r.secteur||'Autre',telephone:r.telephone||'',email:r.email||'',adresse:r.adresse||'',valeur:Number(r.valeur)||0,priorite:r.priorite||'moyenne',notes:r.notes||'',source:r.source||'',dateAjout:r.date_ajout||''};}
+function mapVis(r){return{id:r.id,nom:r.nom||'',entreprise:r.entreprise||'',secteur:r.secteur||'Autre',telephone:r.telephone||'',email:r.email||'',adresse:r.adresse||'',statut:r.statut||'a_recontacter',raisonBlocage:r.raison_blocage||'',dateVisite:r.date_visite||'',visites:(r.crm_visites_notes||[]).map(n=>({id:n.id,date:n.date_note,note:n.note||''}))};}
+
+async function loadCRMData(){
+  if(crmLoading)return;
+  crmLoading=true;
+  try{
+    const [lr,pr,vr]=await Promise.all([
+      crmSb.from('crm_leads').select('*').order('created_at',{ascending:false}),
+      crmSb.from('crm_potentiels').select('*').order('created_at',{ascending:false}),
+      crmSb.from('crm_visites').select('*, crm_visites_notes(*)').order('created_at',{ascending:false})
+    ]);
+    if(lr.error)throw lr.error;
+    if(pr.error)throw pr.error;
+    if(vr.error)throw vr.error;
+    leads=(lr.data||[]).map(mapLead);
+    potentiels=(pr.data||[]).map(mapPot);
+    visites=(vr.data||[]).map(mapVis);
+    visites.forEach(v=>v.visites.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))));
+    renderAll();
+  }catch(e){
+    console.error(e);
+    document.getElementById('pipe-grid').innerHTML='<div class="empty-state">Erreur de chargement CRM. Vérifiez le SQL Supabase et les permissions admin.</div>';
+  }finally{crmLoading=false;}
+}
 
 /* ── TABS ── */
 function switchTab(t){
@@ -1298,16 +1314,14 @@ function switchTab(t){
   closePanel();
 }
 
-/* ── FILTERS & SECTOR SELECT ── */
 function populateSectors(){
   ["f-pot-sect","f-vis-sect"].forEach(id=>{
     const el=document.getElementById(id);const cur=el.value;
-    el.innerHTML='<option value="">Tous les secteurs</option>'+SECTEURS.map(s=>`<option value="${s}">${s}</option>`).join("");
+    el.innerHTML='<option value="">Tous les secteurs</option>'+SECTEURS.map(s=>`<option value="${safe(s)}">${safe(s)}</option>`).join("");
     el.value=cur;
   });
 }
 
-/* ── HEADER STATS ── */
 function updateStats(){
   const pipe_val=leads.reduce((s,l)=>s+(l.valeur||0),0);
   const actifs=visites.filter(c=>c.statut==="client_actif").length;
@@ -1350,141 +1364,65 @@ function renderPipe(){
   }).join("");
 }
 function pipeCardHTML(l){
-  const pr=PRIOS[l.priorite];
+  const pr=PRIOS[l.priorite]||PRIOS.moyenne;
   return`<div class="pipe-card">
-    <div class="pc-top">
-      <div class="pc-av" style="${av(l.id)}">${ini(l.nom)}</div>
-      <span class="badge" style="background:${pr.f};color:${pr.c};font-size:10px;padding:2px 8px;border-radius:20px">${pr.l}</span>
-    </div>
-    <div class="pc-name">${l.nom}</div>
-    <div class="pc-co">${l.entreprise}</div>
-    <div class="pc-val">${l.valeur}k$</div>
-    <div class="pc-meta">${l.email} · ${l.date}</div>
-    ${l.notes?`<div style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic">${l.notes}</div>`:""}
+    <div class="pc-top"><div class="pc-av" style="${av(l.id)}">${ini(l.nom)}</div><span class="badge" style="background:${pr.f};color:${pr.c};font-size:10px;padding:2px 8px;border-radius:20px">${pr.l}</span></div>
+    <div class="pc-name">${safe(l.nom)}</div><div class="pc-co">${safe(l.entreprise)}</div><div class="pc-val">${l.valeur}k$</div>
+    <div class="pc-meta">${safe(l.email)} · ${safe(l.date)}</div>${l.notes?`<div style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic">${safe(l.notes)}</div>`:""}
     <div class="pc-actions">
-      ${l.stage>0?`<button onclick="moveL(${l.id},-1)">← ${STAGES[l.stage-1].name}</button>`:""}
-      ${l.stage<3?`<button onclick="moveL(${l.id},1)">→ ${STAGES[l.stage+1].name}</button>`:""}
-      <button onclick="openModal('pipeline',${l.id})">Modifier</button>
-      <button class="danger" onclick="deleteL(${l.id})">Suppr.</button>
+      ${l.stage>0?`<button onclick="moveL('${l.id}',-1)">← ${STAGES[l.stage-1].name}</button>`:""}
+      ${l.stage<3?`<button onclick="moveL('${l.id}',1)">→ ${STAGES[l.stage+1].name}</button>`:""}
+      <button onclick="openModal('pipeline','${l.id}')">Modifier</button><button class="danger" onclick="deleteL('${l.id}')">Suppr.</button>
     </div>
   </div>`;
 }
-function moveL(id,dir){const l=leads.find(x=>x.id===id);if(l){l.stage=Math.max(0,Math.min(3,l.stage+dir));renderPipe();}}
-function deleteL(id){if(!confirm("Supprimer ce lead?"))return;leads=leads.filter(x=>x.id!==id);renderPipe();updateStats();}
+async function moveL(id,dir){const l=leads.find(x=>x.id===id);if(!l)return;l.stage=Math.max(0,Math.min(3,l.stage+dir));renderPipe();const r=await crmSb.from('crm_leads').update({stage:l.stage}).eq('id',id);if(r.error){console.error(r.error);await loadCRMData();}}
+async function deleteL(id){if(!confirm("Supprimer ce lead?"))return;const r=await crmSb.from('crm_leads').delete().eq('id',id);if(r.error){alert(r.error.message);return;}leads=leads.filter(x=>x.id!==id);renderPipe();updateStats();}
 
 /* ══════════════ POTENTIELS ══════════════ */
-function filteredPot(){
-  const q=document.getElementById("s-pot").value.toLowerCase();
-  const s=document.getElementById("f-pot-sect").value;
-  const p=document.getElementById("f-pot-prio").value;
-  return potentiels.filter(c=>(!q||(c.nom+c.entreprise).toLowerCase().includes(q))&&(!s||c.secteur===s)&&(!p||c.priorite===p));
-}
+function filteredPot(){const q=document.getElementById("s-pot").value.toLowerCase();const s=document.getElementById("f-pot-sect").value;const p=document.getElementById("f-pot-prio").value;return potentiels.filter(c=>(!q||(c.nom+c.entreprise).toLowerCase().includes(q))&&(!s||c.secteur===s)&&(!p||c.priorite===p));}
 function renderPot(){
-  const data=filteredPot();
-  document.getElementById("cnt-pot").textContent=data.length;
-  const g=document.getElementById("grid-pot");
+  const data=filteredPot();document.getElementById("cnt-pot").textContent=data.length;const g=document.getElementById("grid-pot");
   if(!data.length){g.innerHTML='<div class="empty-state">Aucun client potentiel trouvé</div>';return;}
-  g.innerHTML=data.map(c=>{
-    const pr=PRIOS[c.priorite];
-    return`<div class="client-card">
-      <div class="card-top">
-        <div class="card-avatar" style="${av(c.id)}">${ini(c.nom)}</div>
-        <div class="card-info">
-          <div class="card-name">${c.nom}</div>
-          <div class="card-company">${c.entreprise}</div>
-          <div class="card-badges">
-            <span class="badge" style="background:${pr.f};color:${pr.c}">${pr.l}</span>
-            <span class="badge" style="background:var(--surface2);color:var(--text2)">${c.secteur}</span>
-            ${c.valeur?`<span class="badge" style="background:var(--blue-bg);color:var(--blue)">${c.valeur}k$</span>`:""}
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        ${c.telephone?`<div class="card-row">${phoneIcon()}${c.telephone}</div>`:""}
-        ${c.email?`<div class="card-row">${mailIcon()}${c.email}</div>`:""}
-        ${c.adresse?`<div class="card-row">${pinIcon()}${c.adresse}</div>`:""}
-        ${c.source?`<div class="card-row">${clockIcon()}Source: ${c.source}</div>`:""}
-      </div>
-      ${c.notes?`<div class="card-notes">${c.notes}</div>`:""}
-      <div class="card-footer">
-        <button onclick="openPanel(${c.id},'potentiel')">Voir détails</button>
-        <button onclick="openModal('potentiel',${c.id})">Modifier</button>
-        <button onclick="convertToVisited(${c.id})">Marquer visité</button>
-        <button onclick="addToPipeline(${c.id})">Ajouter au pipeline</button>
-        <button class="danger" onclick="deleteP(${c.id})">Suppr.</button>
-      </div>
-    </div>`;
-  }).join("");
+  g.innerHTML=data.map(c=>{const pr=PRIOS[c.priorite]||PRIOS.moyenne;return`<div class="client-card">
+    <div class="card-top"><div class="card-avatar" style="${av(c.id)}">${ini(c.nom)}</div><div class="card-info"><div class="card-name">${safe(c.nom)}</div><div class="card-company">${safe(c.entreprise)}</div><div class="card-badges"><span class="badge" style="background:${pr.f};color:${pr.c}">${pr.l}</span><span class="badge" style="background:var(--surface2);color:var(--text2)">${safe(c.secteur)}</span>${c.valeur?`<span class="badge" style="background:var(--blue-bg);color:var(--blue)">${c.valeur}k$</span>`:""}</div></div></div>
+    <div class="card-body">${c.telephone?`<div class="card-row">${phoneIcon()}${safe(c.telephone)}</div>`:""}${c.email?`<div class="card-row">${mailIcon()}${safe(c.email)}</div>`:""}${c.adresse?`<div class="card-row">${pinIcon()}${safe(c.adresse)}</div>`:""}${c.source?`<div class="card-row">${clockIcon()}Source: ${safe(c.source)}</div>`:""}</div>
+    ${c.notes?`<div class="card-notes">${safe(c.notes)}</div>`:""}
+    <div class="card-footer"><button onclick="openPanel('${c.id}','potentiel')">Voir détails</button><button onclick="openModal('potentiel','${c.id}')">Modifier</button><button onclick="convertToVisited('${c.id}')">Marquer visité</button><button onclick="addToPipeline('${c.id}')">Ajouter au pipeline</button><button class="danger" onclick="deleteP('${c.id}')">Suppr.</button></div>
+  </div>`;}).join("");
 }
-function deleteP(id){if(!confirm("Supprimer?"))return;potentiels=potentiels.filter(x=>x.id!==id);if(detailId===id)closePanel();renderPot();updateStats();}
-
-function convertToVisited(id){
-  const rec=potentiels.find(x=>x.id===id);if(!rec)return;
-  const note=prompt("Note de visite (optionnel):")||"";
-  visites.push({id:rec.id,nom:rec.nom,entreprise:rec.entreprise,telephone:rec.telephone,email:rec.email,adresse:rec.adresse,secteur:rec.secteur,statut:"a_recontacter",raisonBlocage:"",dateVisite:todayStr(),visites:note?[{date:todayStr(),note}]:[]});
-  potentiels=potentiels.filter(x=>x.id!==id);
-  switchTab("visites");renderAll();
+async function deleteP(id){if(!confirm("Supprimer?"))return;const r=await crmSb.from('crm_potentiels').delete().eq('id',id);if(r.error){alert(r.error.message);return;}potentiels=potentiels.filter(x=>x.id!==id);if(detailId===id)closePanel();renderPot();updateStats();}
+async function convertToVisited(id){
+  const rec=potentiels.find(x=>x.id===id);if(!rec)return;const note=prompt("Note de visite (optionnel):")||"";
+  const obj={nom:rec.nom,entreprise:rec.entreprise,telephone:rec.telephone,email:rec.email,adresse:rec.adresse,secteur:rec.secteur,statut:"a_recontacter",raison_blocage:"",date_visite:todayStr()};
+  const ins=await crmSb.from('crm_visites').insert(obj).select('*').single();if(ins.error){alert(ins.error.message);return;}
+  if(note)await crmSb.from('crm_visites_notes').insert({visite_id:ins.data.id,date_note:todayStr(),note});
+  await crmSb.from('crm_potentiels').delete().eq('id',id);
+  switchTab("visites");await loadCRMData();
 }
-
-function addToPipeline(id){
+async function addToPipeline(id){
   const rec=potentiels.find(x=>x.id===id);if(!rec)return;
-  leads.push({id:rec.id,nom:rec.nom,entreprise:rec.entreprise,email:rec.email,telephone:rec.telephone,valeur:rec.valeur||0,priorite:rec.priorite||"moyenne",stage:0,date:todayLabel(),notes:rec.notes||""});
-  potentiels=potentiels.filter(x=>x.id!==id);
-  switchTab("pipeline");renderAll();
+  const obj={nom:rec.nom,entreprise:rec.entreprise,email:rec.email,telephone:rec.telephone,valeur:rec.valeur||0,priorite:rec.priorite||"moyenne",stage:0,date_label:todayLabel(),notes:rec.notes||""};
+  const ins=await crmSb.from('crm_leads').insert(obj);if(ins.error){alert(ins.error.message);return;}
+  await crmSb.from('crm_potentiels').delete().eq('id',id);
+  switchTab("pipeline");await loadCRMData();
 }
 
 /* ══════════════ VISITES ══════════════ */
-function filteredVis(){
-  const q=document.getElementById("s-vis").value.toLowerCase();
-  const s=document.getElementById("f-vis-sect").value;
-  const st=document.getElementById("f-vis-stat").value;
-  return visites.filter(c=>(!q||(c.nom+c.entreprise).toLowerCase().includes(q))&&(!s||c.secteur===s)&&(!st||c.statut===st));
-}
+function filteredVis(){const q=document.getElementById("s-vis").value.toLowerCase();const s=document.getElementById("f-vis-sect").value;const st=document.getElementById("f-vis-stat").value;return visites.filter(c=>(!q||(c.nom+c.entreprise).toLowerCase().includes(q))&&(!s||c.secteur===s)&&(!st||c.statut===st));}
 function renderVis(){
-  const data=filteredVis();
-  document.getElementById("cnt-vis").textContent=data.length;
-  const g=document.getElementById("grid-vis");
+  const data=filteredVis();document.getElementById("cnt-vis").textContent=data.length;const g=document.getElementById("grid-vis");
   if(!data.length){g.innerHTML='<div class="empty-state">Aucun client visité trouvé</div>';return;}
-  g.innerHTML=data.map(c=>{
-    const st=STATS[c.statut]||STATS.a_recontacter;
-    const blocked=c.statut==="ne_pas_retourner";
-    const lv=c.visites&&c.visites.length?c.visites[0]:null;
-    return`<div class="client-card ${blocked?"card-blocked":""}">
-      <div class="card-top ${blocked?"card-top-blocked":""}">
-        <div class="card-avatar" style="${av(c.id)}">${ini(c.nom)}</div>
-        <div class="card-info">
-          <div class="card-name">${c.nom}</div>
-          <div class="card-company">${c.entreprise}</div>
-          <div class="card-badges">
-            <span class="badge" style="background:${st.f};color:${st.c}">${st.l}</span>
-            <span class="badge" style="background:var(--surface2);color:var(--text2)">${c.secteur}</span>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        ${c.telephone?`<div class="card-row">${phoneIcon()}${c.telephone}</div>`:""}
-        ${c.adresse?`<div class="card-row">${pinIcon()}${c.adresse}</div>`:""}
-        ${lv?`<div class="card-row">${calIcon()}Dernière visite: ${fmtD(lv.date)}</div>`:""}
-      </div>
-      ${blocked?`<div class="block-reason"><strong>⚠ Ne pas retourner — raison</strong>${c.raisonBlocage}</div>`:""}
-      ${c.visites&&c.visites.length?`<div class="visit-log"><div class="vl-title">Visites (${c.visites.length})</div>${c.visites.slice(0,2).map(v=>`<div class="visit-entry"><div class="ve-date">${fmtD(v.date)}</div><div class="ve-note">${v.note}</div></div>`).join("")}${c.visites.length>2?`<div style="font-size:11px;color:var(--text3);margin-top:3px">+${c.visites.length-2} de plus dans les détails</div>`:""}</div>`:""}
-      <div class="card-footer">
-        <button onclick="openPanel(${c.id},'visite')">Voir détails</button>
-        <button onclick="openModal('visite',${c.id})">Modifier</button>
-        ${!blocked?`<button onclick="quickVisit(${c.id})">+ Visite</button>`:""}
-        <button class="danger" onclick="deleteV(${c.id})">Suppr.</button>
-      </div>
-    </div>`;
-  }).join("");
+  g.innerHTML=data.map(c=>{const st=STATS[c.statut]||STATS.a_recontacter;const blocked=c.statut==="ne_pas_retourner";const lv=c.visites&&c.visites.length?c.visites[0]:null;return`<div class="client-card ${blocked?"card-blocked":""}">
+    <div class="card-top ${blocked?"card-top-blocked":""}"><div class="card-avatar" style="${av(c.id)}">${ini(c.nom)}</div><div class="card-info"><div class="card-name">${safe(c.nom)}</div><div class="card-company">${safe(c.entreprise)}</div><div class="card-badges"><span class="badge" style="background:${st.f};color:${st.c}">${st.l}</span><span class="badge" style="background:var(--surface2);color:var(--text2)">${safe(c.secteur)}</span></div></div></div>
+    <div class="card-body">${c.telephone?`<div class="card-row">${phoneIcon()}${safe(c.telephone)}</div>`:""}${c.adresse?`<div class="card-row">${pinIcon()}${safe(c.adresse)}</div>`:""}${lv?`<div class="card-row">${calIcon()}Dernière visite: ${fmtD(lv.date)}</div>`:""}</div>
+    ${blocked?`<div class="block-reason"><strong>⚠ Ne pas retourner — raison</strong>${safe(c.raisonBlocage)}</div>`:""}
+    ${c.visites&&c.visites.length?`<div class="visit-log"><div class="vl-title">Visites (${c.visites.length})</div>${c.visites.slice(0,2).map(v=>`<div class="visit-entry"><div class="ve-date">${fmtD(v.date)}</div><div class="ve-note">${safe(v.note)}</div></div>`).join("")}${c.visites.length>2?`<div style="font-size:11px;color:var(--text3);margin-top:3px">+${c.visites.length-2} de plus dans les détails</div>`:""}</div>`:""}
+    <div class="card-footer"><button onclick="openPanel('${c.id}','visite')">Voir détails</button><button onclick="openModal('visite','${c.id}')">Modifier</button>${!blocked?`<button onclick="quickVisit('${c.id}')">+ Visite</button>`:""}<button class="danger" onclick="deleteV('${c.id}')">Suppr.</button></div>
+  </div>`;}).join("");
 }
-function deleteV(id){if(!confirm("Supprimer?"))return;visites=visites.filter(x=>x.id!==id);if(detailId===id)closePanel();renderVis();updateStats();}
-function quickVisit(id){
-  const note=prompt("Note de visite:");if(!note)return;
-  const rec=visites.find(x=>x.id===id);if(!rec)return;
-  if(!rec.visites)rec.visites=[];
-  rec.visites.unshift({date:todayStr(),note});rec.dateVisite=todayStr();
-  renderVis();if(detailId===id&&detailType==="visite")openPanel(id,"visite");
-}
+async function deleteV(id){if(!confirm("Supprimer?"))return;const r=await crmSb.from('crm_visites').delete().eq('id',id);if(r.error){alert(r.error.message);return;}visites=visites.filter(x=>x.id!==id);if(detailId===id)closePanel();renderVis();updateStats();}
+async function quickVisit(id){const note=prompt("Note de visite:");if(!note)return;const r=await crmSb.from('crm_visites_notes').insert({visite_id:id,date_note:todayStr(),note});if(r.error){alert(r.error.message);return;}await crmSb.from('crm_visites').update({date_visite:todayStr()}).eq('id',id);await loadCRMData();if(detailId===id&&detailType==="visite")openPanel(id,"visite");}
 
 /* ── ICONS ── */
 function phoneIcon(){return`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.82 19.79 19.79 0 01.19 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>`;}
@@ -1495,196 +1433,75 @@ function calIcon(){return`<svg width="12" height="12" viewBox="0 0 24 24" fill="
 
 /* ══════════════ MODAL ══════════════ */
 function openModal(type,id=null){
-  modalType=type;editId=id;
-  const isEdit=id!==null;
-  let rec=null;
-  if(isEdit){
-    if(type==="pipeline")rec=leads.find(x=>x.id===id);
-    else if(type==="potentiel")rec=potentiels.find(x=>x.id===id);
-    else rec=visites.find(x=>x.id===id);
-  }
+  modalType=type;editId=id;const isEdit=id!==null;let rec=null;
+  if(isEdit){if(type==="pipeline")rec=leads.find(x=>x.id===id);else if(type==="potentiel")rec=potentiels.find(x=>x.id===id);else rec=visites.find(x=>x.id===id);}
   document.getElementById("mtitle").textContent=isEdit?"Modifier":(type==="pipeline"?"Nouveau lead pipeline":type==="potentiel"?"Nouveau client potentiel":"Client visité");
   const b=document.getElementById("mbody");
-
   if(type==="pipeline"){
-    b.innerHTML=`
-      <div class="form-row">
-        <div class="form-group"><label>Nom</label><input id="f-nom" value="${rec?rec.nom:""}"></div>
-        <div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${rec?rec.entreprise:""}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Email</label><input id="f-email" value="${rec?rec.email:""}"></div>
-        <div class="form-group"><label>Téléphone</label><input id="f-tel" value="${rec?rec.telephone:""}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Valeur (k$)</label><input id="f-valeur" type="number" value="${rec?rec.valeur:""}"></div>
-        <div class="form-group"><label>Priorité</label><select id="f-priorite">
-          <option value="haute" ${rec&&rec.priorite==="haute"?"selected":""}>Haute</option>
-          <option value="moyenne" ${!rec||rec.priorite==="moyenne"?"selected":""}>Moyenne</option>
-          <option value="basse" ${rec&&rec.priorite==="basse"?"selected":""}>Basse</option>
-        </select></div>
-      </div>
-      <div class="form-group"><label>Étape</label><select id="f-stage">
-        ${STAGES.map((s,i)=>`<option value="${i}" ${rec&&rec.stage===i?"selected":""}>${s.name}</option>`).join("")}
-      </select></div>
-      <div class="form-group"><label>Notes</label><textarea id="f-notes">${rec?rec.notes:""}</textarea></div>`;
-  } else if(type==="potentiel"){
-    b.innerHTML=`
-      <div class="form-row">
-        <div class="form-group"><label>Nom</label><input id="f-nom" value="${rec?rec.nom:""}"></div>
-        <div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${rec?rec.entreprise:""}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Téléphone</label><input id="f-tel" value="${rec?rec.telephone:""}"></div>
-        <div class="form-group"><label>Email</label><input id="f-email" value="${rec?rec.email:""}"></div>
-      </div>
-      <div class="form-group"><label>Adresse</label><input id="f-adresse" value="${rec?rec.adresse:""}"></div>
-      <div class="form-row">
-        <div class="form-group"><label>Secteur</label><select id="f-secteur">${SECTEURS.map(s=>`<option value="${s}" ${rec&&rec.secteur===s?"selected":""}>${s}</option>`).join("")}</select></div>
-        <div class="form-group"><label>Valeur (k$)</label><input id="f-valeur" type="number" value="${rec?rec.valeur:""}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Priorité</label><select id="f-priorite">
-          <option value="haute" ${rec&&rec.priorite==="haute"?"selected":""}>Haute</option>
-          <option value="moyenne" ${!rec||rec.priorite==="moyenne"?"selected":""}>Moyenne</option>
-          <option value="basse" ${rec&&rec.priorite==="basse"?"selected":""}>Basse</option>
-        </select></div>
-        <div class="form-group"><label>Source</label><input id="f-source" value="${rec?rec.source:""}"></div>
-      </div>
-      <div class="form-group"><label>Notes</label><textarea id="f-notes">${rec?rec.notes:""}</textarea></div>`;
-  } else {
-    b.innerHTML=`
-      <div class="form-row">
-        <div class="form-group"><label>Nom</label><input id="f-nom" value="${rec?rec.nom:""}"></div>
-        <div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${rec?rec.entreprise:""}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Téléphone</label><input id="f-tel" value="${rec?rec.telephone:""}"></div>
-        <div class="form-group"><label>Email</label><input id="f-email" value="${rec?rec.email:""}"></div>
-      </div>
-      <div class="form-group"><label>Adresse</label><input id="f-adresse" value="${rec?rec.adresse:""}"></div>
-      <div class="form-row">
-        <div class="form-group"><label>Secteur</label><select id="f-secteur">${SECTEURS.map(s=>`<option value="${s}" ${rec&&rec.secteur===s?"selected":""}>${s}</option>`).join("")}</select></div>
-        <div class="form-group"><label>Date visite</label><input id="f-date" type="date" value="${rec?rec.dateVisite:todayStr()}"></div>
-      </div>
-      <div class="form-group"><label>Statut</label><select id="f-statut" onchange="toggleBlocage(this.value)">
-        <option value="a_recontacter" ${rec&&rec.statut==="a_recontacter"?"selected":""}>À recontacter</option>
-        <option value="client_actif" ${rec&&rec.statut==="client_actif"?"selected":""}>Client actif</option>
-        <option value="perdu" ${rec&&rec.statut==="perdu"?"selected":""}>Perdu</option>
-        <option value="ne_pas_retourner" ${rec&&rec.statut==="ne_pas_retourner"?"selected":""}>Ne pas retourner</option>
-      </select></div>
-      <div id="fg-blocage" style="${rec&&rec.statut==="ne_pas_retourner"?"":"display:none"}">
-        <div class="form-group"><label>Raison — ne pas retourner</label><textarea id="f-blocage">${rec?rec.raisonBlocage:""}</textarea></div>
-      </div>
-      <div class="form-section-label">Note de visite</div>
-      <div class="form-group"><textarea id="f-visite-note" placeholder="Résumé de la visite…"></textarea></div>`;
+    b.innerHTML=`<div class="form-row"><div class="form-group"><label>Nom</label><input id="f-nom" value="${safe(rec?rec.nom:"")}"></div><div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${safe(rec?rec.entreprise:"")}"></div></div><div class="form-row"><div class="form-group"><label>Email</label><input id="f-email" value="${safe(rec?rec.email:"")}"></div><div class="form-group"><label>Téléphone</label><input id="f-tel" value="${safe(rec?rec.telephone:"")}"></div></div><div class="form-row"><div class="form-group"><label>Valeur (k$)</label><input id="f-valeur" type="number" value="${rec?rec.valeur:""}"></div><div class="form-group"><label>Priorité</label><select id="f-priorite"><option value="haute" ${rec&&rec.priorite==="haute"?"selected":""}>Haute</option><option value="moyenne" ${!rec||rec.priorite==="moyenne"?"selected":""}>Moyenne</option><option value="basse" ${rec&&rec.priorite==="basse"?"selected":""}>Basse</option></select></div></div><div class="form-group"><label>Étape</label><select id="f-stage">${STAGES.map((s,i)=>`<option value="${i}" ${rec&&rec.stage===i?"selected":""}>${s.name}</option>`).join("")}</select></div><div class="form-group"><label>Notes</label><textarea id="f-notes">${safe(rec?rec.notes:"")}</textarea></div>`;
+  }else if(type==="potentiel"){
+    b.innerHTML=`<div class="form-row"><div class="form-group"><label>Nom</label><input id="f-nom" value="${safe(rec?rec.nom:"")}"></div><div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${safe(rec?rec.entreprise:"")}"></div></div><div class="form-row"><div class="form-group"><label>Téléphone</label><input id="f-tel" value="${safe(rec?rec.telephone:"")}"></div><div class="form-group"><label>Email</label><input id="f-email" value="${safe(rec?rec.email:"")}"></div></div><div class="form-group"><label>Adresse</label><input id="f-adresse" value="${safe(rec?rec.adresse:"")}"></div><div class="form-row"><div class="form-group"><label>Secteur</label><select id="f-secteur">${SECTEURS.map(s=>`<option value="${safe(s)}" ${rec&&rec.secteur===s?"selected":""}>${safe(s)}</option>`).join("")}</select></div><div class="form-group"><label>Valeur (k$)</label><input id="f-valeur" type="number" value="${rec?rec.valeur:""}"></div></div><div class="form-row"><div class="form-group"><label>Priorité</label><select id="f-priorite"><option value="haute" ${rec&&rec.priorite==="haute"?"selected":""}>Haute</option><option value="moyenne" ${!rec||rec.priorite==="moyenne"?"selected":""}>Moyenne</option><option value="basse" ${rec&&rec.priorite==="basse"?"selected":""}>Basse</option></select></div><div class="form-group"><label>Source</label><input id="f-source" value="${safe(rec?rec.source:"")}"></div></div><div class="form-group"><label>Notes</label><textarea id="f-notes">${safe(rec?rec.notes:"")}</textarea></div>`;
+  }else{
+    b.innerHTML=`<div class="form-row"><div class="form-group"><label>Nom</label><input id="f-nom" value="${safe(rec?rec.nom:"")}"></div><div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${safe(rec?rec.entreprise:"")}"></div></div><div class="form-row"><div class="form-group"><label>Téléphone</label><input id="f-tel" value="${safe(rec?rec.telephone:"")}"></div><div class="form-group"><label>Email</label><input id="f-email" value="${safe(rec?rec.email:"")}"></div></div><div class="form-group"><label>Adresse</label><input id="f-adresse" value="${safe(rec?rec.adresse:"")}"></div><div class="form-row"><div class="form-group"><label>Secteur</label><select id="f-secteur">${SECTEURS.map(s=>`<option value="${safe(s)}" ${rec&&rec.secteur===s?"selected":""}>${safe(s)}</option>`).join("")}</select></div><div class="form-group"><label>Date visite</label><input id="f-date" type="date" value="${rec?rec.dateVisite:todayStr()}"></div></div><div class="form-group"><label>Statut</label><select id="f-statut" onchange="toggleBlocage(this.value)"><option value="a_recontacter" ${rec&&rec.statut==="a_recontacter"?"selected":""}>À recontacter</option><option value="client_actif" ${rec&&rec.statut==="client_actif"?"selected":""}>Client actif</option><option value="perdu" ${rec&&rec.statut==="perdu"?"selected":""}>Perdu</option><option value="ne_pas_retourner" ${rec&&rec.statut==="ne_pas_retourner"?"selected":""}>Ne pas retourner</option></select></div><div id="fg-blocage" style="${rec&&rec.statut==="ne_pas_retourner"?"":"display:none"}"><div class="form-group"><label>Raison — ne pas retourner</label><textarea id="f-blocage">${safe(rec?rec.raisonBlocage:"")}</textarea></div></div><div class="form-section-label">Note de visite</div><div class="form-group"><textarea id="f-visite-note" placeholder="Résumé de la visite…"></textarea></div>`;
   }
   document.getElementById("modal").classList.add("open");
 }
-
-function toggleBlocage(v){const el=document.getElementById("fg-blocage");if(el)el.style.display=v==="ne_pas_retourner"?"":"";}
-
+function toggleBlocage(v){const el=document.getElementById("fg-blocage");if(el)el.style.display=v==="ne_pas_retourner"?"":"none";}
 function closeModal(){document.getElementById("modal").classList.remove("open");}
 
-function saveRecord(){
+async function saveRecord(){
   const nom=document.getElementById("f-nom").value.trim();if(!nom)return;
-  if(modalType==="pipeline"){
-    const obj={id:editId||nextId++,nom,entreprise:document.getElementById("f-entreprise").value,email:document.getElementById("f-email").value,telephone:document.getElementById("f-tel").value,valeur:parseInt(document.getElementById("f-valeur").value)||0,priorite:document.getElementById("f-priorite").value,stage:parseInt(document.getElementById("f-stage").value),date:todayLabel(),notes:document.getElementById("f-notes").value};
-    if(editId){const i=leads.findIndex(x=>x.id===editId);if(i>=0)leads[i]={...leads[i],...obj};}else leads.push(obj);
-    closeModal();renderPipe();
-  } else if(modalType==="potentiel"){
-    const obj={id:editId||nextId++,nom,entreprise:document.getElementById("f-entreprise").value,telephone:document.getElementById("f-tel").value,email:document.getElementById("f-email").value,adresse:document.getElementById("f-adresse").value,secteur:document.getElementById("f-secteur").value,valeur:parseInt(document.getElementById("f-valeur").value)||0,priorite:document.getElementById("f-priorite").value,source:document.getElementById("f-source").value,notes:document.getElementById("f-notes").value,dateAjout:todayStr()};
-    if(editId){const i=potentiels.findIndex(x=>x.id===editId);if(i>=0)potentiels[i]={...potentiels[i],...obj};}else potentiels.push(obj);
-    closeModal();renderPot();
-  } else {
-    const statut=document.getElementById("f-statut").value;
-    const note=document.getElementById("f-visite-note").value;
-    const dateV=document.getElementById("f-date").value||todayStr();
-    const obj={id:editId||nextId++,nom,entreprise:document.getElementById("f-entreprise").value,telephone:document.getElementById("f-tel").value,email:document.getElementById("f-email").value,adresse:document.getElementById("f-adresse").value,secteur:document.getElementById("f-secteur").value,statut,raisonBlocage:statut==="ne_pas_retourner"?(document.getElementById("f-blocage")?document.getElementById("f-blocage").value:""):"",dateVisite:dateV};
-    if(editId){const i=visites.findIndex(x=>x.id===editId);if(i>=0){visites[i]={...visites[i],...obj};if(note)visites[i].visites.unshift({date:dateV,note});}}
-    else{obj.visites=note?[{date:dateV,note}]:[];visites.push(obj);}
-    closeModal();renderVis();
-  }
-  updateStats();
+  try{
+    if(modalType==="pipeline"){
+      const obj={nom,entreprise:document.getElementById("f-entreprise").value,email:document.getElementById("f-email").value,telephone:document.getElementById("f-tel").value,valeur:parseInt(document.getElementById("f-valeur").value)||0,priorite:document.getElementById("f-priorite").value,stage:parseInt(document.getElementById("f-stage").value),date_label:todayLabel(),notes:document.getElementById("f-notes").value};
+      const r=editId?await crmSb.from('crm_leads').update(obj).eq('id',editId):await crmSb.from('crm_leads').insert(obj);
+      if(r.error)throw r.error;closeModal();await loadCRMData();renderPipe();
+    }else if(modalType==="potentiel"){
+      const obj={nom,entreprise:document.getElementById("f-entreprise").value,telephone:document.getElementById("f-tel").value,email:document.getElementById("f-email").value,adresse:document.getElementById("f-adresse").value,secteur:document.getElementById("f-secteur").value,valeur:parseInt(document.getElementById("f-valeur").value)||0,priorite:document.getElementById("f-priorite").value,source:document.getElementById("f-source").value,notes:document.getElementById("f-notes").value,date_ajout:todayStr()};
+      const r=editId?await crmSb.from('crm_potentiels').update(obj).eq('id',editId):await crmSb.from('crm_potentiels').insert(obj);
+      if(r.error)throw r.error;closeModal();await loadCRMData();renderPot();
+    }else{
+      const statut=document.getElementById("f-statut").value;const note=document.getElementById("f-visite-note").value;const dateV=document.getElementById("f-date").value||todayStr();
+      const obj={nom,entreprise:document.getElementById("f-entreprise").value,telephone:document.getElementById("f-tel").value,email:document.getElementById("f-email").value,adresse:document.getElementById("f-adresse").value,secteur:document.getElementById("f-secteur").value,statut,raison_blocage:statut==="ne_pas_retourner"?(document.getElementById("f-blocage")?document.getElementById("f-blocage").value:""):"",date_visite:dateV};
+      let visiteId=editId;
+      if(editId){const r=await crmSb.from('crm_visites').update(obj).eq('id',editId);if(r.error)throw r.error;}
+      else{const r=await crmSb.from('crm_visites').insert(obj).select('id').single();if(r.error)throw r.error;visiteId=r.data.id;}
+      if(note)await crmSb.from('crm_visites_notes').insert({visite_id:visiteId,date_note:dateV,note});
+      closeModal();await loadCRMData();renderVis();
+    }
+    updateStats();
+  }catch(e){console.error(e);alert(e.message||String(e));}
 }
 
 /* ══════════════ DETAIL PANEL ══════════════ */
 function openPanel(id,type){
-  detailId=id;detailType=type;
-  let rec=null;
-  if(type==="potentiel")rec=potentiels.find(x=>x.id===id);
-  else if(type==="visite")rec=visites.find(x=>x.id===id);
-  if(!rec)return;
-  document.getElementById("dp-head").innerHTML=`
-    <div class="dp-av" style="${av(rec.id)}">${ini(rec.nom)}</div>
-    <div><div class="dp-nm">${rec.nom}</div><div class="dp-co">${rec.entreprise}</div></div>
-    <button class="dp-close" onclick="closePanel()">✕</button>`;
+  detailId=id;detailType=type;let rec=null;if(type==="potentiel")rec=potentiels.find(x=>x.id===id);else if(type==="visite")rec=visites.find(x=>x.id===id);if(!rec)return;
+  document.getElementById("dp-head").innerHTML=`<div class="dp-av" style="${av(rec.id)}">${ini(rec.nom)}</div><div><div class="dp-nm">${safe(rec.nom)}</div><div class="dp-co">${safe(rec.entreprise)}</div></div><button class="dp-close" onclick="closePanel()">✕</button>`;
   let html="";
   if(type==="potentiel"){
-    const pr=PRIOS[rec.priorite];
-    html+=`<div><div class="dp-sec">Informations</div>
-      ${rec.telephone?`<div class="dp-field"><span class="k">Téléphone</span><span class="v">${rec.telephone}</span></div>`:""}
-      ${rec.email?`<div class="dp-field"><span class="k">Email</span><span class="v" style="word-break:break-all">${rec.email}</span></div>`:""}
-      ${rec.adresse?`<div class="dp-field"><span class="k">Adresse</span><span class="v">${rec.adresse}</span></div>`:""}
-      <div class="dp-field"><span class="k">Secteur</span><span class="v">${rec.secteur}</span></div>
-      <div class="dp-field"><span class="k">Valeur estimée</span><span class="v">${rec.valeur}k$</span></div>
-      <div class="dp-field"><span class="k">Priorité</span><span class="v"><span style="background:${pr.f};color:${pr.c};padding:2px 8px;border-radius:20px;font-size:11px">${pr.l}</span></span></div>
-      <div class="dp-field"><span class="k">Source</span><span class="v">${rec.source||"—"}</span></div>
-      <div class="dp-field"><span class="k">Ajouté le</span><span class="v">${fmtD(rec.dateAjout)}</span></div>
-    </div>`;
-    if(rec.notes)html+=`<div><div class="dp-sec">Notes</div><div class="dp-note-box">${rec.notes}</div></div>`;
-    html+=`<div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-dark" onclick="convertToVisited(${rec.id});closePanel()">Marquer visité →</button>
-      <button class="btn" onclick="addToPipeline(${rec.id});closePanel()">Ajouter au pipeline →</button>
-    </div>`;
-  } else {
-    const st=STATS[rec.statut]||STATS.a_recontacter;
-    const blocked=rec.statut==="ne_pas_retourner";
-    html+=`<div><div class="dp-sec">Informations</div>
-      ${rec.telephone?`<div class="dp-field"><span class="k">Téléphone</span><span class="v">${rec.telephone}</span></div>`:""}
-      ${rec.email?`<div class="dp-field"><span class="k">Email</span><span class="v" style="word-break:break-all">${rec.email}</span></div>`:""}
-      ${rec.adresse?`<div class="dp-field"><span class="k">Adresse</span><span class="v">${rec.adresse}</span></div>`:""}
-      <div class="dp-field"><span class="k">Secteur</span><span class="v">${rec.secteur}</span></div>
-      <div class="dp-field"><span class="k">Statut</span><span class="v"><span style="background:${st.f};color:${st.c};padding:2px 8px;border-radius:20px;font-size:11px">${st.l}</span></span></div>
-      <div class="dp-field"><span class="k">Dernière visite</span><span class="v">${fmtD(rec.dateVisite)||"—"}</span></div>
-    </div>`;
-    if(blocked&&rec.raisonBlocage)html+=`<div><div class="dp-sec" style="color:var(--red)">⚠ Ne pas retourner</div><div class="dp-note-box" style="background:var(--red-bg);color:var(--red);border-left:3px solid #fca5a5">${rec.raisonBlocage}</div></div>`;
-    if(rec.visites&&rec.visites.length){
-      html+=`<div><div class="dp-sec">Historique des visites (${rec.visites.length})</div><div class="dp-visits">${rec.visites.map(v=>`<div class="dp-visit"><div class="dv-date">${fmtD(v.date)}</div><div class="dv-note">${v.note}</div></div>`).join("")}</div></div>`;
-    }
-    if(!blocked){
-      html+=`<div><div class="dp-sec">Ajouter une visite</div><div class="add-visit-form">
-        <input type="date" id="dp-vdate" value="${todayStr()}">
-        <textarea id="dp-vnote" placeholder="Notes de visite…"></textarea>
-        <button onclick="saveVisitPanel(${rec.id})">Enregistrer la visite</button>
-      </div></div>`;
-    }
+    const pr=PRIOS[rec.priorite]||PRIOS.moyenne;
+    html+=`<div><div class="dp-sec">Informations</div>${rec.telephone?`<div class="dp-field"><span class="k">Téléphone</span><span class="v">${safe(rec.telephone)}</span></div>`:""}${rec.email?`<div class="dp-field"><span class="k">Email</span><span class="v" style="word-break:break-all">${safe(rec.email)}</span></div>`:""}${rec.adresse?`<div class="dp-field"><span class="k">Adresse</span><span class="v">${safe(rec.adresse)}</span></div>`:""}<div class="dp-field"><span class="k">Secteur</span><span class="v">${safe(rec.secteur)}</span></div><div class="dp-field"><span class="k">Valeur estimée</span><span class="v">${rec.valeur}k$</span></div><div class="dp-field"><span class="k">Priorité</span><span class="v"><span style="background:${pr.f};color:${pr.c};padding:2px 8px;border-radius:20px;font-size:11px">${pr.l}</span></span></div><div class="dp-field"><span class="k">Source</span><span class="v">${safe(rec.source||"—")}</span></div><div class="dp-field"><span class="k">Ajouté le</span><span class="v">${fmtD(rec.dateAjout)}</span></div></div>`;
+    if(rec.notes)html+=`<div><div class="dp-sec">Notes</div><div class="dp-note-box">${safe(rec.notes)}</div></div>`;
+    html+=`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" onclick="convertToVisited('${rec.id}');closePanel()">Marquer visité →</button><button class="btn" onclick="addToPipeline('${rec.id}');closePanel()">Ajouter au pipeline →</button></div>`;
+  }else{
+    const st=STATS[rec.statut]||STATS.a_recontacter;const blocked=rec.statut==="ne_pas_retourner";
+    html+=`<div><div class="dp-sec">Informations</div>${rec.telephone?`<div class="dp-field"><span class="k">Téléphone</span><span class="v">${safe(rec.telephone)}</span></div>`:""}${rec.email?`<div class="dp-field"><span class="k">Email</span><span class="v" style="word-break:break-all">${safe(rec.email)}</span></div>`:""}${rec.adresse?`<div class="dp-field"><span class="k">Adresse</span><span class="v">${safe(rec.adresse)}</span></div>`:""}<div class="dp-field"><span class="k">Secteur</span><span class="v">${safe(rec.secteur)}</span></div><div class="dp-field"><span class="k">Statut</span><span class="v"><span style="background:${st.f};color:${st.c};padding:2px 8px;border-radius:20px;font-size:11px">${st.l}</span></span></div><div class="dp-field"><span class="k">Dernière visite</span><span class="v">${fmtD(rec.dateVisite)||"—"}</span></div></div>`;
+    if(blocked&&rec.raisonBlocage)html+=`<div><div class="dp-sec" style="color:var(--red)">⚠ Ne pas retourner</div><div class="dp-note-box" style="background:var(--red-bg);color:var(--red);border-left:3px solid #fca5a5">${safe(rec.raisonBlocage)}</div></div>`;
+    if(rec.visites&&rec.visites.length)html+=`<div><div class="dp-sec">Historique des visites (${rec.visites.length})</div><div class="dp-visits">${rec.visites.map(v=>`<div class="dp-visit"><div class="dv-date">${fmtD(v.date)}</div><div class="dv-note">${safe(v.note)}</div></div>`).join("")}</div></div>`;
+    if(!blocked)html+=`<div><div class="dp-sec">Ajouter une visite</div><div class="add-visit-form"><input type="date" id="dp-vdate" value="${todayStr()}"><textarea id="dp-vnote" placeholder="Notes de visite…"></textarea><button onclick="saveVisitPanel('${rec.id}')">Enregistrer la visite</button></div></div>`;
   }
-  document.getElementById("dp-body").innerHTML=html;
-  document.getElementById("dpanel").classList.add("open");
-  document.getElementById("poverlay").classList.add("open");
+  document.getElementById("dp-body").innerHTML=html;document.getElementById("dpanel").classList.add("open");document.getElementById("poverlay").classList.add("open");
 }
-
-function saveVisitPanel(id){
-  const note=document.getElementById("dp-vnote").value.trim();if(!note)return;
-  const date=document.getElementById("dp-vdate").value||todayStr();
-  const rec=visites.find(x=>x.id===id);if(!rec)return;
-  if(!rec.visites)rec.visites=[];
-  rec.visites.unshift({date,note});rec.dateVisite=date;
-  renderVis();openPanel(id,"visite");
-}
-function closePanel(){
-  document.getElementById("dpanel").classList.remove("open");
-  document.getElementById("poverlay").classList.remove("open");
-  detailId=null;
-}
-
+async function saveVisitPanel(id){const note=document.getElementById("dp-vnote").value.trim();if(!note)return;const date=document.getElementById("dp-vdate").value||todayStr();const r=await crmSb.from('crm_visites_notes').insert({visite_id:id,date_note:date,note});if(r.error){alert(r.error.message);return;}await crmSb.from('crm_visites').update({date_visite:date}).eq('id',id);await loadCRMData();openPanel(id,"visite");}
+function closePanel(){document.getElementById("dpanel").classList.remove("open");document.getElementById("poverlay").classList.remove("open");detailId=null;}
 document.getElementById("modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
 
 /* ── INIT ── */
 function renderAll(){renderPipe();renderPot();renderVis();updateStats();}
 populateSectors();
 renderAll();
+loadCRMData();
+
 </script>
 </body>
 </html>
@@ -1828,7 +1645,12 @@ document.querySelectorAll('.tab').forEach(function(t){
 });
 function loadCRM(){
   var f=Q('crmFrame'),tpl=Q('crmTemplate');
-  if(f&&tpl&&!f.getAttribute('srcdoc'))f.setAttribute('srcdoc',tpl.innerHTML);
+  if(!f||!tpl||f.getAttribute('srcdoc'))return;
+  sb.auth.getSession().then(function(r){
+    var token=(r.data&&r.data.session&&r.data.session.access_token)||'';
+    var html=tpl.innerHTML.replace(/__CRM_ACCESS_TOKEN__/g, token);
+    f.setAttribute('srcdoc',html);
+  });
 }
 function showView(name){
   if(name==='crm'&&role!=='admin'){
