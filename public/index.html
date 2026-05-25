@@ -2033,6 +2033,21 @@ function loadRecs(){
   });
 }
 
+
+function sortRecettesAlpha(list){
+  return (list||[]).slice().sort(function(a,b){
+    var ca=(a.couleur||'').trim();
+    var cb=(b.couleur||'').trim();
+    var na=(a.numero_couleur||'').trim();
+    var nb=(b.numero_couleur||'').trim();
+    var ma=(a.marque||'').trim();
+    var mb=(b.marque||'').trim();
+    return ca.localeCompare(cb,'fr',{numeric:true,sensitivity:'base'}) ||
+           na.localeCompare(nb,'fr',{numeric:true,sensitivity:'base'}) ||
+           ma.localeCompare(mb,'fr',{numeric:true,sensitivity:'base'});
+  });
+}
+
 // CLIENTS
 function renderClients(){
   var q=(Q('sc').value||'').toLowerCase();
@@ -2056,7 +2071,7 @@ function renderClients(){
     matched.forEach(function(r){var k=r.produit||'Sans produit';if(!prods[k])prods[k]=[];prods[k].push(r);});
     var sorted=Object.keys(prods).sort(function(a,b){return a.localeCompare(b,'fr');});
     sorted.forEach(function(prod,pi){
-      var rs=prods[prod];
+      var rs=sortRecettesAlpha(prods[prod]);
       var card=document.createElement('div');card.className='pcard';
       var head=document.createElement('div');head.className='phead';
       head.innerHTML='<div class="pname">'+prod+'</div><div class="pmeta"><span class="pcount">'+rs.length+' couleur'+(rs.length!==1?'s':'')+'</span><span class="pchev open" id="sch-'+pi+'">></span></div>';
