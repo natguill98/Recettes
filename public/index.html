@@ -266,6 +266,138 @@ table.ct tr:last-child td{border-bottom:none}
   .tab{padding:7px 10px}
   .crm-frame{min-height:720px}
 }
+
+
+/* Correctifs mobile — section Coûts et Prix */
+@media(max-width:760px){
+  #v-couts{
+    width:100%;
+  }
+
+  #v-couts .cgr{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+    justify-items:center;
+  }
+
+  #v-couts .cs{
+    width:100%;
+    max-width:440px;
+    margin-left:auto;
+    margin-right:auto;
+    padding:16px 14px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #v-couts .cst,
+  #v-couts .csd{
+    text-align:center;
+  }
+
+  #v-couts .ctable{
+    display:block;
+    width:100%;
+    min-width:520px;
+    overflow-x:auto;
+  }
+
+  #v-couts .ctable thead,
+  #v-couts .ctable tbody,
+  #v-couts .ctable tr{
+    width:100%;
+  }
+
+  #v-couts .ctable th,
+  #v-couts .ctable td{
+    padding:8px 8px;
+    white-space:nowrap;
+  }
+
+  #v-couts .fbox{
+    text-align:left;
+    max-width:100%;
+  }
+
+  #v-couts .bhd,
+  #v-couts .brow{
+    min-width:690px;
+  }
+
+  #v-couts .chd2,
+  #v-couts .crow3{
+    min-width:390px;
+  }
+
+  #v-couts .bhd span,
+  #v-couts .chd2 span{
+    font-size:9px;
+  }
+
+  #v-couts .brow input,
+  #v-couts .brow select,
+  #v-couts .crow3 input{
+    font-size:12px;
+  }
+
+  #v-couts .sbtn,
+  #v-couts .addbtn{
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+  }
+
+  #v-couts .sbtn{
+    width:100%;
+    max-width:310px;
+  }
+
+  #v-couts .svd{
+    display:none;
+    width:fit-content;
+    margin:8px auto 0;
+  }
+
+  #v-couts label{
+    justify-content:center;
+  }
+
+  #v-couts .cs > div[style*="display:flex"]{
+    justify-content:center;
+  }
+}
+
+@media(max-width:480px){
+  #v-couts .cs{
+    max-width:calc(100vw - 24px);
+    padding:14px 12px;
+  }
+
+  #v-couts .ctable{
+    min-width:500px;
+  }
+
+  #v-couts .bhd,
+  #v-couts .brow{
+    min-width:650px;
+  }
+
+  #v-couts .chd2,
+  #v-couts .crow3{
+    min-width:360px;
+  }
+
+  #v-couts .cst{
+    font-size:14px;
+  }
+
+  #v-couts .csd{
+    font-size:12px;
+  }
+}
+
 </style>
 </head>
 <body>
