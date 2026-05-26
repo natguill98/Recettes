@@ -52,11 +52,18 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .bc{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tx3);margin-bottom:16px;flex-wrap:wrap}
 .bc a{color:var(--blue);cursor:pointer}.bc a:hover{text-decoration:underline}
 .bc span{color:var(--tx2);font-weight:500}
-.tb{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.sw{flex:1;min-width:180px;position:relative}
-.sw input{width:100%;padding:8px 12px 8px 34px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx)}
-.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx3);pointer-events:none;font-size:13px;line-height:1}
-.sf{font-size:13px;padding:8px 12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);cursor:pointer}
+.tb{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.sw{flex:1;min-width:180px;position:relative;display:flex;align-items:center}
+.sw input{width:100%;padding:9px 32px 9px 36px;font-size:13px;border:1.5px solid var(--bd2);border-radius:22px;background:var(--sur);color:var(--tx);outline:none;transition:border-color 0.18s,box-shadow 0.18s;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.sw input:focus{border-color:var(--blue-m);box-shadow:0 0 0 3px rgba(26,143,209,0.13)}
+.sw input:not(:placeholder-shown){padding-right:32px}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex;align-items:center;color:var(--tx3);transition:color 0.18s}
+.sw input:focus~.si,.sw:focus-within .si{color:var(--blue)}
+.sx{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:none;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;color:var(--tx3);transition:background 0.15s,color 0.15s}
+.sx:hover{background:var(--gray-l);color:var(--tx)}
+.sx.vis{display:flex}
+.sf{font-size:13px;padding:9px 14px;border:1.5px solid var(--bd2);border-radius:22px;background:var(--sur);color:var(--tx);cursor:pointer;outline:none;transition:border-color 0.18s,box-shadow 0.18s}
+.sf:focus{border-color:var(--blue-m);box-shadow:0 0 0 3px rgba(26,143,209,0.13)}
 .cnt{font-size:12px;color:var(--tx3);margin-bottom:10px}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
 .ccard{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;cursor:pointer;transition:all 0.15s}
@@ -437,8 +444,21 @@ table.ct tr:last-child td{border-bottom:none}
 
     <div class="view on" id="v-clients">
       <div class="tb">
-        <div class="sw"><span class="si" aria-hidden="true">&#128269;</span><input type="text" id="sc" placeholder="Rechercher un client..."></div>
-        <div class="sw"><span class="si" aria-hidden="true">&#128269;</span><input type="text" id="scoul" placeholder="Rechercher une couleur..."></div>
+        <div class="sw">
+          <input type="text" id="sc" placeholder="Client...">
+          <span class="si" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/><line x1="8.7" y1="8.7" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <button class="sx" id="sc-x" aria-label="Effacer" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        </div>
+        <div class="sw">
+          <input type="text" id="scoul" placeholder="Couleur...">
+          <span class="si" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/><line x1="8.7" y1="8.7" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <button class="sx" id="scoul-x" aria-label="Effacer" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        </div>
+        <div class="sw">
+          <input type="text" id="sprod" placeholder="Produit...">
+          <span class="si" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/><line x1="8.7" y1="8.7" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <button class="sx" id="sprod-x" aria-label="Effacer" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        </div>
       </div>
       <div class="cnt" id="ccnt"></div>
       <div class="cgrid" id="cgrid"></div>
@@ -448,7 +468,11 @@ table.ct tr:last-child td{border-bottom:none}
       <button class="bbtn" id="bprod">← Retour aux clients</button>
       <div class="bc" id="bcp"></div>
       <div class="tb">
-        <div class="sw"><span class="si" aria-hidden="true">&#128269;</span><input type="text" id="sp" placeholder="Rechercher une couleur..."></div>
+        <div class="sw">
+          <input type="text" id="sp" placeholder="Couleur...">
+          <span class="si" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/><line x1="8.7" y1="8.7" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <button class="sx" id="sp-x" aria-label="Effacer" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        </div>
         <select class="sf" id="sfm">
           <option value="">Toutes les marques</option>
           <option>Pepin</option><option>International</option><option>Devoe</option><option>Disolac</option>
@@ -2052,13 +2076,15 @@ function sortRecettesAlpha(list){
 function renderClients(){
   var q=(Q('sc').value||'').toLowerCase();
   var qc=(Q('scoul')&&Q('scoul').value||'').toLowerCase();
+  var qp=(Q('sprod')&&Q('sprod').value||'').toLowerCase();
   var g=Q('cgrid');
-  // Mode recherche couleur: afficher recettes groupées par produit (vue paysage)
-  if(qc){
+  // Mode recherche couleur ou produit: afficher recettes groupées par produit (vue paysage)
+  if(qc||qp){
     var matched=recs.filter(function(r){
       var mc=!q||r.client.toLowerCase().indexOf(q)>=0;
-      var mcoul=r.couleur.toLowerCase().indexOf(qc)>=0||(r.numero_couleur||'').toLowerCase().indexOf(qc)>=0;
-      return mc&&mcoul;
+      var mcoul=!qc||(r.couleur.toLowerCase().indexOf(qc)>=0||(r.numero_couleur||'').toLowerCase().indexOf(qc)>=0);
+      var mprod=!qp||(r.produit||'').toLowerCase().indexOf(qp)>=0;
+      return mc&&mcoul&&mprod;
     });
     Q('ccnt').textContent=matched.length+' recette'+(matched.length!==1?'s':'')+' trouvees';
     g.style.display='none';
@@ -2112,9 +2138,19 @@ function renderClients(){
     g.appendChild(div);
   });
 }
-Q('sc').addEventListener('input',renderClients);
-if(Q('scoul'))Q('scoul').addEventListener('input',renderClients);
-if(Q('scoul'))Q('scoul').addEventListener('input',renderClients);
+// Clear buttons
+function bindClear(inputId,clearId,cb){
+  var inp=Q(inputId),btn=Q(clearId);
+  if(!inp||!btn)return;
+  function sync(){btn.classList.toggle('vis',inp.value.length>0);}
+  inp.addEventListener('input',function(){sync();if(cb)cb();});
+  btn.addEventListener('click',function(){inp.value='';sync();inp.focus();if(cb)cb();});
+  sync();
+}
+bindClear('sc','sc-x',renderClients);
+bindClear('scoul','scoul-x',renderClients);
+bindClear('sprod','sprod-x',renderClients);
+bindClear('sp','sp-x',renderProduits);
 Q('bprod').addEventListener('click',backToClientsKeepScroll);
 
 // PRODUITS
