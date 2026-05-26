@@ -2602,7 +2602,7 @@ function autofillBase(){
     else if(qty==='5 gallons'&&found.cout_5gal)cost=parseFloat(found.cout_5gal);
     else if(found.cout_1gal)cost=parseFloat(found.cout_1gal);
     else if(found.cout_gallon)cost=parseFloat(found.cout_gallon);
-    if(cost>0){Q('fcb').value=cost.toFixed(2);if(hint)hint.textContent='Auto: '+found.produit+' '+qty;updatePrev();}
+    if(cost>0){Q('fcb').value=cost.toFixed(2);if(hint)hint.textContent='Auto: '+found.produit+' '+qty;if(Q('fprixgal'))Q('fprixgal').value='';if(Q('fmarge'))Q('fmarge').value='';updatePrev();}
   }else{if(hint)hint.textContent='';}
 }
 Q('fprod').addEventListener('blur',function(){if(isLoading)return;setTimeout(function(){autofillBase();updateCformHeader();},300);});
@@ -2615,12 +2615,26 @@ Q('fprod').addEventListener('input',function(){
   },100);
 });
 Q('fbase').addEventListener('blur',function(){setTimeout(autofillBase,300);});
+Q('fbase').addEventListener('input',function(){
+  if(isLoading)return;
+  setTimeout(function(){
+    autofillBase();
+    if(Q('fprixgal'))Q('fprixgal').value='';
+    if(Q('fmarge'))Q('fmarge').value='';
+    updatePrev();
+  },300);
+});
 Q('fqty').addEventListener('change',function(){autofillBase();updatePrev();});
 Q('fm').addEventListener('change',function(){
   if(isLoading)return;
   updateCformHeader();updateQtyOptions();
   if(isSynthane()){Q('fcb').value='';var hint=Q('base-hint');if(hint)hint.textContent='';}
-  updatePrev();
+  setTimeout(function(){
+    autofillBase();
+    if(Q('fprixgal'))Q('fprixgal').value='';
+    if(Q('fmarge'))Q('fmarge').value='';
+    updatePrev();
+  },200);
 });
 Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
