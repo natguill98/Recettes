@@ -2109,7 +2109,7 @@ function renderClients(){
         var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
         var db2=canP()&&p?dbdg(p.date_prix):'';
         row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
-        row.addEventListener('click',function(){openDetail(r.id);});
+        row.addEventListener('click',function(){_detailFrom='search';openDetail(r.id);});
         body.appendChild(row);
       });
       head.addEventListener('click',function(){body.classList.toggle('open');var ch=document.getElementById('sch-'+pi);if(ch)ch.classList.toggle('open');});
@@ -2185,7 +2185,7 @@ function renderProduits(){
       var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
       var db2=canP()&&p?dbdg(p.date_prix):'';
       row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+(r.numero_couleur?'#'+r.numero_couleur+' - ':'')+( r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
-      row.addEventListener('click',function(){openDetail(r.id);});
+      row.addEventListener('click',function(){_detailFrom='produits';openDetail(r.id);});
       body.appendChild(row);
     });
     head.addEventListener('click',function(){body.classList.toggle('open');Q('ch-'+pi).classList.toggle('open');});
@@ -2194,9 +2194,21 @@ function renderProduits(){
 }
 Q('sp').addEventListener('input',renderProduits);
 Q('sfm').addEventListener('change',renderProduits);
-Q('bdet').addEventListener('click',function(){if(selClient){renderProduits();showView('produits');}else{showView('clients');}});
+Q('bdet').addEventListener('click',function(){
+  if(_detailFrom==='search'){
+    showView('clients');
+    renderClients();
+    restoreClientsScroll();
+  }else if(selClient){
+    renderProduits();
+    showView('produits');
+  }else{
+    showView('clients');
+  }
+});
 
 // DETAIL
+var _detailFrom='produits';
 function openDetail(id){
   selId=id;
   var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
