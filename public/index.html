@@ -2590,10 +2590,12 @@ setupAC(Q('fbase'),Q('ac-b'),function(){
 function autofillBase(){
   var produit=Q('fprod').value.trim(),base=Q('fbase').value.trim(),marque=Q('fm').value,qty=Q('fqty').value;
   var found=allBases.filter(function(b){
-    var matchProd=!produit||b.produit.toLowerCase()===produit.toLowerCase();
     var matchBase=!base||(b.numero_base&&b.numero_base.toLowerCase()===base.toLowerCase());
+    var matchProd=!produit||b.produit.toLowerCase()===produit.toLowerCase();
     var matchMarque=!marque||b.marque===marque;
-    return matchProd&&matchBase&&matchMarque;
+    // Si code base fourni, priorité code base (ignore produit)
+    if(base)return matchBase&&matchMarque;
+    return matchProd&&matchMarque;
   })[0];
   var hint=Q('base-hint');
   if(found){
@@ -2705,14 +2707,21 @@ function getColMode(){
   if(m==='Pepin')return'pepin';
   return'inter';
 }
+var _lastColMode=null;
 function updateCformHeader(){
   var mode=getColMode();
   var chd=Q('cform').previousElementSibling;if(!chd)return;
   if(mode==='gr'){chd.style.gridTemplateColumns='1fr 70px 28px';chd.innerHTML='<span>Colorant</span><span>Grammes</span><span></span>';}
   else if(mode==='pepin'){chd.style.gridTemplateColumns='1fr 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/48</span><span></span>';}
   else{chd.style.gridTemplateColumns='1fr 50px 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span>';}
-  Q('cform').querySelectorAll('.cr').forEach(function(r){r.remove();});
-  addCRow();
+  // Effacer les colorants seulement si le mode change (ex: Pepin→Synthane)
+  if(_lastColMode!==null&&_lastColMode!==mode){
+    Q('cform').querySelectorAll('.cr').forEach(function(r){r.remove();});
+    addCRow();
+  }else if(Q('cform').querySelectorAll('.cr').length===0){
+    addCRow();
+  }
+  _lastColMode=mode;
 }
 function validate128(inp,inp64){
   var v=parseInt(inp.value)||0;
@@ -3156,9 +3165,12 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
     var qty=r.quantite||'Gallon',cb=0,ccat_auto=0;
     if(!isSyn){
       var baseCandidates=allBases.filter(function(b){
-        var matchProd=!r.produit||b.produit.toLowerCase()===r.produit.toLowerCase();
         var matchBase=!r.numero_base||(b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
-        return matchProd&&matchBase&&(!marque||b.marque.toLowerCase()===marque.toLowerCase());
+        var matchProd=!r.produit||b.produit.toLowerCase()===r.produit.toLowerCase();
+        var matchMarque=!marque||b.marque.toLowerCase()===marque.toLowerCase();
+        // Priorité: si on a un code base, chercher par code base d'abord (ignore produit)
+        if(r.numero_base)return matchBase&&matchMarque;
+        return matchProd&&matchMarque;
       });
       var base=baseCandidates.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0]||baseCandidates[0];
       if(base){
