@@ -129,9 +129,9 @@ table.ct tr:last-child td{border-bottom:none}
 .pc.grn .pv{color:var(--green)}
 .hbox{background:var(--gray-l);border:0.5px dashed var(--bd2);border-radius:var(--r);padding:12px;margin-top:16px;text-align:center;font-size:12px;color:var(--tx3)}
 .fbox{background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin-top:8px}
-.ebar{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--bd)}
-.nbar{display:flex;gap:8px;margin-bottom:14px;align-items:center}
-.nbtn{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:6px 13px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--sur);color:var(--tx2);cursor:pointer;transition:all 0.15s;font-weight:500}
+.ebar{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--bd);flex-wrap:wrap;align-items:center}
+.nbar{display:flex;align-items:center;gap:8px;padding-top:10px;margin-top:10px;border-top:0.5px solid var(--bd);width:100%}
+.nbtn{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:6px 13px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--sur);color:var(--tx2);cursor:pointer;transition:all 0.15s;font-weight:500;white-space:nowrap}
 .nbtn:hover:not(:disabled){border-color:var(--blue-m);color:var(--blue);background:var(--blue-l)}
 .nbtn:disabled{opacity:0.3;cursor:default}
 .nbtn svg{flex-shrink:0}
@@ -2326,7 +2326,6 @@ function openDetail(id){
   }
 
   Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div>'+colTable+prixHTML;
-  if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(),Q('detpan').firstChild);}
 
   // Historique des prix
   var histDiv=document.createElement('div');
@@ -2370,8 +2369,10 @@ function openDetail(id){
   bp.style.cssText='background:var(--gray-l);color:var(--gray);border-color:var(--gray)';
   bp.addEventListener('click',function(){printFiche(id);});
   eb.appendChild(bp);
-  eb.appendChild(bx);Q('detpan').appendChild(eb);
-  if(_navList.length>1){Q('detpan').appendChild(makeNavBar());}
+  eb.appendChild(bx);
+  // Nav précédente/suivante dans le même bloc
+  if(_navList.length>1){eb.appendChild(makeNavBar());}
+  Q('detpan').appendChild(eb);
   Q('tdetail').style.display='';showView('detail');window.scrollTo(0,0);
 }
 
