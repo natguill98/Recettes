@@ -754,10 +754,23 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
         </div>
       </div>
+
+      <!-- CONFIG ÉTIQUETTES -->
+      <div class="settings-card" style="margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
+          <div class="ftit" style="margin-bottom:0">🏷️ Configuration des étiquettes (Brother QL-800)</div>
+          <button class="btn" onclick="resetEtqConfig()" style="font-size:12px;padding:5px 12px">Réinitialiser</button>
+        </div>
+        <div class="settings-note" style="margin-bottom:14px">Noir et blanc uniquement. Modifications sauvegardées localement sur cet appareil.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+          <div id="etq-config-box"></div>
+          <div>
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:8px">Aperçu (données fictives)</div>
+            <div id="etq-settings-preview" style="border:1.5px dashed var(--bd2);border-radius:var(--r);overflow:hidden;background:#fff;display:flex;justify-content:center"></div>
+          </div>
+        </div>
+      </div>
     </div>
-
-
-    <div class="view" id="v-crm">
       <div class="portal-hero">
         <div class="portal-title">CRM</div>
         <div class="portal-sub">Gestion clients, pipeline, clients potentiels et visites. Section réservée aux administrateurs.</div>
@@ -978,6 +991,55 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="ma">
       <button class="btn" id="mcancelcat">Annuler</button>
       <button class="bx" id="mconfcat">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal impression étiquettes -->
+<div class="mo" id="метка">
+  <div class="mb" style="max-width:480px">
+    <div class="mt">🏷️ Imprimer étiquettes — Brother QL-800</div>
+    <div id="метка-info" style="font-size:13px;color:var(--tx2);margin-bottom:14px;line-height:1.6"></div>
+
+    <div style="background:var(--bg);border-radius:var(--r);padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:10px">Quantités à imprimer</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label>Étiquettes Gallon</label><input type="number" id="etq-gal" value="2" min="0" max="20" style="text-align:center;font-size:18px;font-weight:600"></div>
+        <div class="fg"><label>Étiquettes Pinte</label><input type="number" id="etq-pinte" value="1" min="0" max="20" style="text-align:center;font-size:18px;font-weight:600"></div>
+      </div>
+    </div>
+
+    <!-- Aperçu étiquette -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:8px">Aperçu de l'étiquette</div>
+      <div id="etq-preview" style="border:1.5px dashed var(--bd2);border-radius:var(--r);overflow:hidden;background:#fff;display:flex;justify-content:center"></div>
+    </div>
+
+    <!-- Statut b-PAC -->
+    <div id="bpac-status" style="font-size:12px;padding:10px 12px;border-radius:var(--r);margin-bottom:12px;display:none"></div>
+
+    <!-- Instructions b-PAC -->
+    <details style="margin-bottom:12px">
+      <summary style="font-size:12px;color:var(--blue);cursor:pointer;font-weight:500;user-select:none">ℹ️ Configuration requise (Brother b-PAC)</summary>
+      <div style="margin-top:10px;font-size:12px;color:var(--tx2);line-height:1.7;background:var(--blue-l);border-radius:var(--r);padding:12px">
+        <strong>Installation unique requise sur le PC Windows :</strong><br>
+        1. Télécharger <strong>b-PAC Client Component</strong> sur <a href="https://support.brother.com/g/s/es/dev/en/bpac/download/index.html" target="_blank" style="color:var(--blue)">support.brother.com</a><br>
+        2. Installer le fichier <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">bpac4_Client_Installer.exe</code><br>
+        3. Redémarrer Chrome après l'installation<br>
+        4. Brancher la QL-800 via USB ou réseau<br>
+        5. Charger un ruban <strong>DK-2205</strong> (continu 62mm)<br><br>
+        <strong>Nom de l'imprimante Windows :</strong> <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">Brother QL-800</code><br>
+        (Panneau de configuration → Imprimantes pour vérifier le nom exact)
+      </div>
+    </details>
+
+    <div class="ma">
+      <button class="btn" id="etq-cancel">Annuler</button>
+      <button class="btn btnp" id="etq-print" style="gap:6px;display:inline-flex;align-items:center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 4V2.5A.5.5 0 014.5 2h5a.5.5 0 01.5.5V4" stroke="currentColor" stroke-width="1.4"/><rect x="4" y="7" width="6" height="3" rx=".5" fill="currentColor" opacity=".3"/><circle cx="10.5" cy="5.5" r=".8" fill="currentColor"/></svg>
+        Imprimer via b-PAC
+      </button>
+      <button class="btn" id="etq-img" style="background:var(--gray-l);color:var(--gray);border-color:var(--gray)">Sauvegarder image</button>
     </div>
   </div>
 </div>
@@ -1748,6 +1810,7 @@ function loadReglages(){
   }
   if(Q('admin_settings_box'))Q('admin_settings_box').style.display=isAdmin()?'':'none';
   if(isAdmin())loadUsersList();
+  renderEtqConfig();
 }
 function saveMyProfile(){
   if(!user)return;
@@ -2371,6 +2434,11 @@ function openDetail(id){
   bp.style.cssText='background:var(--gray-l);color:var(--gray);border-color:var(--gray)';
   bp.addEventListener('click',function(){printFiche(id);});
   eb.appendChild(bp);
+  // Bouton Étiquette
+  var betq=document.createElement('button');betq.className='be';betq.innerHTML='🏷️ Étiquette';
+  betq.style.cssText='background:#f0f7ff;color:#1A8FD1;border-color:#1A8FD1';
+  betq.addEventListener('click',function(){openLabelModal(id);});
+  eb.appendChild(betq);
   eb.appendChild(bx);
   // Nav précédente/suivante dans le même bloc
   if(_navList.length>1){eb.appendChild(makeNavBar());}
@@ -2470,9 +2538,339 @@ function printFiche(id){
   win.focus();
   setTimeout(function(){win.print();},400);
 }
+// ── ÉTIQUETTES BROTHER QL-800 ──────────────────────────────────────
+var _labelRecId=null;
+var LBL_W=696; // 62mm @ 300dpi
+
+// Config par défaut — sauvegardée en localStorage
+var ETQ_DEFAULTS={
+  hauteur:270,
+  elements:{
+    nom_commerce: {on:true, taille:28, label:'Nom commerce'},
+    adresse:      {on:true, taille:17, label:'Adresse'},
+    telephone:    {on:true, taille:17, label:'Téléphone'},
+    site:         {on:true, taille:17, label:'Site web'},
+    couleur:      {on:true, taille:48, label:'Nom de la couleur'},
+    num_couleur:  {on:true, taille:20, label:'Numéro couleur'},
+    client:       {on:true, taille:26, label:'Nom du client'},
+    format_badge: {on:true, taille:22, label:'Badge Gallon/Pinte'},
+    produit:      {on:true, taille:18, label:'Produit'},
+    base:         {on:true, taille:18, label:'Code base'},
+    separateur:   {on:true, taille:0,  label:'Ligne séparatrice'},
+    cadre:        {on:true, taille:0,  label:'Cadre extérieur'}
+  }
+};
+
+function etqLoadConfig(){
+  try{
+    var saved=localStorage.getItem('techno_etq_config');
+    if(saved){
+      var c=JSON.parse(saved);
+      // Merge — préserver les nouveaux éléments si config ancienne
+      Object.keys(ETQ_DEFAULTS.elements).forEach(function(k){
+        if(!c.elements[k])c.elements[k]=Object.assign({},ETQ_DEFAULTS.elements[k]);
+      });
+      return c;
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(ETQ_DEFAULTS));
+}
+function etqSaveConfig(cfg){
+  try{localStorage.setItem('techno_etq_config',JSON.stringify(cfg));}catch(e){}
+}
+function etqGetConfig(){return etqLoadConfig();}
+
+// ── CANVAS ────────────────────────────────────────────────────────
+function buildLabelCanvas(recId,format){
+  var r=recs.filter(function(x){return x.id===recId;})[0];
+  if(!r)return null;
+  var cfg=etqGetConfig();
+  var el=cfg.elements;
+  var H=cfg.hauteur||270;
+  var canvas=document.createElement('canvas');
+  canvas.width=LBL_W;canvas.height=H;
+  var ctx=canvas.getContext('2d');
+
+  // Fond blanc (N&B only)
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,LBL_W,H);
+
+  var x=14,pad=14;
+  var cy=0; // curseur Y courant
+
+  // Nom commerce
+  if(el.nom_commerce.on){
+    var fs0=el.nom_commerce.taille;
+    ctx.fillStyle='#000';ctx.font='bold '+fs0+'px Arial,sans-serif';
+    cy=Math.max(fs0+6,cy+fs0+6);
+    ctx.fillText('TECHNOCOLOR',x,cy);
+  }
+
+  // Coordonnées sur une ligne ou séparées
+  var coordY=0;
+  if(el.adresse.on||el.telephone.on||el.site.on){
+    var parts=[];
+    if(el.adresse.on)parts.push('2575 av. Watt local 6, Ste-Foy');
+    if(el.telephone.on)parts.push('418-872-7292');
+    if(el.site.on)parts.push('technocolor.ca');
+    var fs1=Math.max(el.adresse.taille,el.telephone.taille,el.site.taille);
+    ctx.fillStyle='#444';ctx.font=fs1+'px Arial,sans-serif';
+    cy+=fs1+4;coordY=cy;
+    ctx.fillText(parts.join('  \u2022  '),x,cy);
+  }
+
+  // Séparateur
+  if(el.separateur.on){
+    cy+=8;
+    ctx.strokeStyle='#999';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,cy);ctx.lineTo(LBL_W-pad,cy);ctx.stroke();
+    cy+=4;
+  }
+
+  // Nom de la couleur + numéro
+  if(el.couleur.on){
+    var couleurTxt=r.couleur;
+    if(el.num_couleur.on&&r.numero_couleur)couleurTxt+=(' \u2014 #'+r.numero_couleur);
+    var fs2=el.couleur.taille;
+    ctx.fillStyle='#000';ctx.font='bold '+fs2+'px Arial,sans-serif';
+    var maxW=LBL_W-x-pad-(el.format_badge.on?130:10);
+    while(ctx.measureText(couleurTxt).width>maxW&&fs2>18){fs2--;ctx.font='bold '+fs2+'px Arial,sans-serif';}
+    cy+=fs2+6;
+    ctx.fillText(couleurTxt,x,cy);
+  } else if(el.num_couleur.on&&r.numero_couleur){
+    var fs2b=el.num_couleur.taille;
+    ctx.fillStyle='#333';ctx.font=fs2b+'px Arial,sans-serif';
+    cy+=fs2b+4;ctx.fillText('#'+r.numero_couleur,x,cy);
+  }
+
+  // Client
+  if(el.client.on){
+    var fs3=el.client.taille;
+    ctx.fillStyle='#333';ctx.font=fs3+'px Arial,sans-serif';
+    cy+=fs3+4;
+    ctx.fillText(r.client,x,cy);
+  }
+
+  // Produit + base
+  var hasInfo=(el.produit.on&&r.produit)||(el.base.on&&r.numero_base);
+  if(hasInfo){
+    var infoParts=[];
+    if(el.produit.on&&r.produit)infoParts.push(r.produit);
+    if(el.base.on&&r.numero_base)infoParts.push('Base: '+r.numero_base);
+    var fs4=Math.max(el.produit.taille,el.base.taille);
+    ctx.fillStyle='#666';ctx.font=fs4+'px Arial,sans-serif';
+    cy+=fs4+4;
+    ctx.fillText(infoParts.join('  \u2014  '),x,cy);
+  }
+
+  // Badge Gallon/Pinte (N&B: noir sur blanc, ou blanc sur noir)
+  if(el.format_badge.on){
+    var fs5=el.format_badge.taille;
+    var fmtTxt=format==='Pinte'?'PINTE':'GALLON';
+    ctx.font='bold '+fs5+'px Arial,sans-serif';
+    var bw=ctx.measureText(fmtTxt).width+24,bh=fs5+14;
+    var bx2=LBL_W-pad-bw,by2=H-pad-bh;
+    // Fond noir, texte blanc
+    ctx.fillStyle='#000';
+    ctx.beginPath();ctx.roundRect(bx2,by2,bw,bh,6);ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.fillText(fmtTxt,bx2+(bw-ctx.measureText(fmtTxt).width)/2,by2+fs5+2);
+  }
+
+  // Cadre extérieur
+  if(el.cadre.on){
+    ctx.strokeStyle='#aaa';ctx.lineWidth=2;ctx.strokeRect(1,1,LBL_W-2,H-2);
+  }
+
+  return canvas;
+}
+
+// ── APERÇU ────────────────────────────────────────────────────────
+function renderLabelPreview(recId,targetId){
+  var prev=Q(targetId||'etq-preview');if(!prev)return;
+  prev.innerHTML='';
+  var c=buildLabelCanvas(recId||_labelRecId,'Gallon');
+  if(!c)return;
+  c.style.cssText='max-width:100%;height:auto;display:block';
+  prev.appendChild(c);
+}
+
+// ── MODAL IMPRESSION ──────────────────────────────────────────────
+function openLabelModal(recId){
+  _labelRecId=recId;
+  var r=recs.filter(function(x){return x.id===recId;})[0];
+  if(!r)return;
+  var info=Q('метка-info');
+  if(info)info.innerHTML='<strong>'+esc(r.couleur)+'</strong>'+(r.numero_couleur?' — #'+esc(r.numero_couleur):'')+'<br><span style="color:var(--tx3)">'+esc(r.client)+'</span>';
+  if(Q('etq-gal'))Q('etq-gal').value=r.quantite==='Pinte'?'0':'2';
+  if(Q('etq-pinte'))Q('etq-pinte').value='1';
+  renderLabelPreview(recId,'etq-preview');
+  Q('метка').classList.add('on');
+  checkBpac();
+}
+
+function checkBpac(){
+  var s=Q('bpac-status');if(!s)return;
+  var ok=false;
+  try{ok=typeof bpac!=='undefined'&&bpac.IsExtensionInstalled&&bpac.IsExtensionInstalled();}catch(e){}
+  s.style.display='block';
+  if(ok){
+    s.style.cssText='display:block;font-size:12px;padding:10px 12px;border-radius:var(--r);margin-bottom:12px;background:var(--green-l);color:var(--green);border:0.5px solid var(--green)';
+    s.textContent='\u2713 b-PAC détecté — impression directe disponible';
+  }else{
+    s.style.cssText='display:block;font-size:12px;padding:10px 12px;border-radius:var(--r);margin-bottom:12px;background:var(--amber-l);color:var(--amber);border:0.5px solid #EF9F27';
+    s.textContent='\u26a0 b-PAC non détecté — utilisez "Sauvegarder image" puis imprimez depuis P-Touch Editor';
+  }
+}
+
+function printLabelsViaBpac(recId){
+  var gal=parseInt(Q('etq-gal').value)||0;
+  var pinte=parseInt(Q('etq-pinte').value)||0;
+  if(gal+pinte===0){toast('Entrez au moins 1 étiquette.');return;}
+  var btn=Q('etq-print');btn.disabled=true;btn.textContent='Impression...';
+  var printerName='Brother QL-800';
+  var jobs=[];
+  if(gal>0)jobs.push({format:'Gallon',qty:gal});
+  if(pinte>0)jobs.push({format:'Pinte',qty:pinte});
+  var cfg=etqGetConfig();
+  var jobIdx=0;
+  function printNext(){
+    if(jobIdx>=jobs.length){
+      btn.disabled=false;btn.textContent='Imprimer via b-PAC';
+      toast('Impression envoyée!');Q('метка').classList.remove('on');return;
+    }
+    var job=jobs[jobIdx++];
+    var canvas=buildLabelCanvas(recId,job.format);
+    if(!canvas){printNext();return;}
+    var imgData=canvas.toDataURL('image/png').split(',')[1];
+    try{
+      var cpj=new bpac.CPrintJob();
+      cpj.Open(printerName,'');
+      for(var i=0;i<job.qty;i++){
+        var imgObj=cpj.AddImageObject(0,0,LBL_W,cfg.hauteur||270);
+        imgObj.SetImageData(0,imgData);
+        if(i<job.qty-1)cpj.NewPage();
+      }
+      cpj.StartPrint('',0);cpj.EndPrint();
+      setTimeout(printNext,500);
+    }catch(e){
+      btn.disabled=false;btn.textContent='Imprimer via b-PAC';
+      toast('Erreur b-PAC: '+(e.message||e));
+    }
+  }
+  printNext();
+}
+
+function saveLabelImage(recId){
+  var gal=parseInt(Q('etq-gal').value)||0;
+  var pinte=parseInt(Q('etq-pinte').value)||0;
+  if(gal+pinte===0){toast('Entrez au moins 1 étiquette.');return;}
+  var r=recs.filter(function(x){return x.id===recId;})[0];
+  var nom=r?r.couleur.replace(/[^a-zA-Z0-9\-_]/g,'_'):recId;
+  var unique=[];
+  if(gal>0)unique.push('Gallon');
+  if(pinte>0)unique.push('Pinte');
+  unique.forEach(function(fmt){
+    var c=buildLabelCanvas(recId,fmt);if(!c)return;
+    var a=document.createElement('a');
+    a.href=c.toDataURL('image/png');
+    a.download='etiquette-'+nom+'-'+fmt+'.png';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+  });
+  toast('Image(s) téléchargée(s) — ouvrir dans P-Touch Editor pour imprimer');
+}
+
+Q('etq-cancel').addEventListener('click',function(){Q('метка').classList.remove('on');_labelRecId=null;});
+Q('метка').addEventListener('click',function(e){if(e.target===this){this.classList.remove('on');_labelRecId=null;}});
+Q('etq-print').addEventListener('click',function(){if(_labelRecId)printLabelsViaBpac(_labelRecId);});
+Q('etq-img').addEventListener('click',function(){if(_labelRecId)saveLabelImage(_labelRecId);});
+['etq-gal','etq-pinte'].forEach(function(id){
+  var el2=Q(id);if(el2)el2.addEventListener('input',function(){if(_labelRecId)renderLabelPreview(_labelRecId,'etq-preview');});
+});
+
+// ── CONFIG ÉTIQUETTES (Réglages) ──────────────────────────────────
+function renderEtqConfig(){
+  var box=Q('etq-config-box');if(!box)return;
+  var cfg=etqGetConfig();
+  var el=cfg.elements;
+
+  // Ligne hauteur
+  var rows='<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--bd)">'
+    +'<label style="font-size:13px;font-weight:500;flex:1">Hauteur de l\'étiquette (px à 300dpi)</label>'
+    +'<input type="number" id="etq-cfg-hauteur" value="'+cfg.hauteur+'" min="150" max="600" step="10" style="width:80px;padding:6px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center">'
+    +'<span style="font-size:11px;color:var(--tx3)">'+(Math.round(cfg.hauteur/300*25.4*10)/10)+' mm</span>'
+    +'</div>';
+
+  // Lignes éléments
+  rows+='<div style="display:grid;grid-template-columns:1fr 70px 70px;gap:4px;margin-bottom:6px">'
+    +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Élément</span>'
+    +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Actif</span>'
+    +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Taille</span>'
+    +'</div>';
+
+  Object.keys(el).forEach(function(k){
+    var e=el[k];
+    var hasTaille=e.taille>0;
+    rows+='<div style="display:grid;grid-template-columns:1fr 70px 70px;gap:4px;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--bd)">'
+      +'<span style="font-size:13px">'+e.label+'</span>'
+      +'<div style="display:flex;justify-content:center">'
+        +'<input type="checkbox" id="etq-on-'+k+'"'+(e.on?' checked':'')+' style="width:16px;height:16px;cursor:pointer">'
+      +'</div>'
+      +'<div style="display:flex;justify-content:center">'
+        +(hasTaille
+          ?'<input type="number" id="etq-sz-'+k+'" value="'+e.taille+'" min="8" max="80" style="width:56px;padding:4px 6px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center">'
+          :'<span style="font-size:11px;color:var(--tx3)">—</span>')
+      +'</div>'
+      +'</div>';
+  });
+
+  box.innerHTML=rows;
+
+  // Preview live
+  renderEtqSettingsPreview();
+
+  // Events
+  Q('etq-cfg-hauteur').addEventListener('input',function(){
+    var mm=Math.round(parseInt(this.value)/300*25.4*10)/10;
+    this.nextElementSibling.textContent=mm+' mm';
+    saveEtqConfigFromUI();renderEtqSettingsPreview();
+  });
+  Object.keys(el).forEach(function(k){
+    var cb=Q('etq-on-'+k);var sz=Q('etq-sz-'+k);
+    if(cb)cb.addEventListener('change',function(){saveEtqConfigFromUI();renderEtqSettingsPreview();});
+    if(sz)sz.addEventListener('input',function(){saveEtqConfigFromUI();renderEtqSettingsPreview();});
+  });
+}
+
+function saveEtqConfigFromUI(){
+  var cfg=etqGetConfig();
+  var hEl=Q('etq-cfg-hauteur');if(hEl)cfg.hauteur=parseInt(hEl.value)||270;
+  Object.keys(cfg.elements).forEach(function(k){
+    var cb=Q('etq-on-'+k);var sz=Q('etq-sz-'+k);
+    if(cb)cfg.elements[k].on=cb.checked;
+    if(sz)cfg.elements[k].taille=parseInt(sz.value)||cfg.elements[k].taille;
+  });
+  etqSaveConfig(cfg);
+}
+
+function renderEtqSettingsPreview(){
+  // Utilise une recette factice pour l'aperçu dans Réglages
+  var mockId='__preview__';
+  var mock={id:mockId,couleur:'Rouge Cardinal',numero_couleur:'RC-441',client:'Dupont Peinture',produit:'Synthane',numero_base:'AAA100',couleur_hex:null};
+  var orig=recs;
+  recs=recs.concat([mock]);
+  renderLabelPreview(mockId,'etq-settings-preview');
+  recs=orig;
+}
+
+function resetEtqConfig(){
+  etqSaveConfig(JSON.parse(JSON.stringify(ETQ_DEFAULTS)));
+  renderEtqConfig();
+  toast('Configuration réinitialisée');
+}
+window.resetEtqConfig=resetEtqConfig;
+// ── FIN ÉTIQUETTES ──────────────────────────────────────────────────
+
 var pendCopy=null;
-function confirmCopy(id){pendCopy=id;Q('mcopy').classList.add('on');}
-Q('mcancelcopy').addEventListener('click',function(){Q('mcopy').classList.remove('on');pendCopy=null;});
 Q('mconfcopy').addEventListener('click',function(){
   if(!pendCopy)return;
   Q('mcopy').classList.remove('on');
