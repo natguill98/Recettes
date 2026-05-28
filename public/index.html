@@ -131,6 +131,7 @@ table.ct tr:last-child td{border-bottom:none}
 .fbox{background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin-top:8px}
 .ebar{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--bd);flex-wrap:wrap;align-items:center}
 .nbar{display:flex;align-items:center;gap:8px;padding-top:10px;margin-top:10px;border-top:0.5px solid var(--bd);width:100%}
+.nbar.nbar-top{margin-top:0;padding-top:0;border-top:none;padding-bottom:10px;margin-bottom:4px;border-bottom:0.5px solid var(--bd)}
 .nbtn{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:6px 13px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--sur);color:var(--tx2);cursor:pointer;transition:all 0.15s;font-weight:500;white-space:nowrap}
 .nbtn:hover:not(:disabled){border-color:var(--blue-m);color:var(--blue);background:var(--blue-l)}
 .nbtn:disabled{opacity:0.3;cursor:default}
@@ -2312,8 +2313,8 @@ function openDetail(id){
   // Nav bar prev/next
   var hasPrev=_navIdx>0,hasNext=_navIdx>=0&&_navIdx<_navList.length-1;
   var navPos=_navIdx>=0?(_navIdx+1)+' / '+_navList.length:'';
-  function makeNavBar(){
-    var nb=document.createElement('div');nb.className='nbar';
+  function makeNavBar(isTop){
+    var nb=document.createElement('div');nb.className='nbar'+(isTop?' nbar-top':'');
     var bp2=document.createElement('button');bp2.className='nbtn';bp2.disabled=!hasPrev;
     bp2.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="8,2 4,6 8,10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg> Précédente';
     bp2.addEventListener('click',function(){if(hasPrev){_navIdx--;openDetail(_navList[_navIdx]);}});
@@ -2326,6 +2327,7 @@ function openDetail(id){
   }
 
   Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div>'+colTable+prixHTML;
+  if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(true),Q('detpan').firstChild);}
 
   // Historique des prix
   var histDiv=document.createElement('div');
