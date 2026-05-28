@@ -2644,94 +2644,125 @@ function buildLabelCanvas(recId,format){
   if(!r)return null;
   var cfg=etqGetConfig();
   var el=cfg.elements;
-  var H=cfg.hauteur||270;
+  var PAD_TOP=14,PAD_SIDE=14,PAD_BOT=14,GAP=6;
+
+  // ── Passe 1 : calculer la hauteur réelle du contenu ──────────────
+  var tempCanvas=document.createElement('canvas');
+  tempCanvas.width=LBL_W;tempCanvas.height=1;
+  var ctx=tempCanvas.getContext('2d');
+  var cy=PAD_TOP;
+
+  if(el.nom_commerce.on){cy+=el.nom_commerce.taille+GAP;}
+  if(el.adresse.on||el.telephone.on||el.site.on){
+    var fs1=Math.max(el.adresse.taille,el.telephone.taille,el.site.taille);
+    cy+=fs1+GAP;
+  }
+  if(el.separateur.on){cy+=GAP*2+2;}
+  if(el.couleur.on){cy+=el.couleur.taille+GAP;}
+  else if(el.num_couleur.on&&r.numero_couleur){cy+=el.num_couleur.taille+GAP;}
+  if(el.client.on){cy+=el.client.taille+GAP;}
+  var hasInfo=(el.produit.on&&r.produit)||(el.base.on&&r.numero_base);
+  if(hasInfo){cy+=Math.max(el.produit.taille,el.base.taille)+GAP;}
+  if(el.format_badge.on){cy+=el.format_badge.taille+14+GAP;}
+  cy+=PAD_BOT;
+  var H=cy;
+
+  // ── Passe 2 : dessiner ───────────────────────────────────────────
   var canvas=document.createElement('canvas');
   canvas.width=LBL_W;canvas.height=H;
-  var ctx=canvas.getContext('2d');
+  ctx=canvas.getContext('2d');
 
-  // Fond blanc (N&B only)
+  // Fond blanc
   ctx.fillStyle='#fff';ctx.fillRect(0,0,LBL_W,H);
-
-  var x=14,pad=14;
-  var cy=0; // curseur Y courant
+  cy=PAD_TOP;
 
   // Nom commerce
   if(el.nom_commerce.on){
     var fs0=el.nom_commerce.taille;
+    cy+=fs0;
     ctx.fillStyle='#000';ctx.font='bold '+fs0+'px Arial,sans-serif';
-    cy=Math.max(fs0+6,cy+fs0+6);
-    ctx.fillText(ETQ_TEXTES.nom||'TECHNOCOLOR',x,cy);
+    ctx.fillText(ETQ_TEXTES.nom||'TECHNOCOLOR',PAD_SIDE,cy);
+    cy+=GAP;
   }
 
-  // Coordonnées sur une ligne ou séparées
-  var coordY=0;
+  // Coordonnées
   if(el.adresse.on||el.telephone.on||el.site.on){
     var parts=[];
     if(el.adresse.on&&ETQ_TEXTES.adresse)parts.push(ETQ_TEXTES.adresse);
     if(el.telephone.on&&ETQ_TEXTES.telephone)parts.push(ETQ_TEXTES.telephone);
     if(el.site.on&&ETQ_TEXTES.site)parts.push(ETQ_TEXTES.site);
-    var fs1=Math.max(el.adresse.taille,el.telephone.taille,el.site.taille);
-    ctx.fillStyle='#444';ctx.font=fs1+'px Arial,sans-serif';
-    cy+=fs1+4;coordY=cy;
-    ctx.fillText(parts.join('  \u2022  '),x,cy);
+    var fs1b=Math.max(el.adresse.taille,el.telephone.taille,el.site.taille);
+    cy+=fs1b;
+    ctx.fillStyle='#444';ctx.font=fs1b+'px Arial,sans-serif';
+    // Réduire si trop large
+    var coordTxt=parts.join('  \u2022  ');
+    while(ctx.measureText(coordTxt).width>LBL_W-PAD_SIDE*2&&fs1b>10){fs1b--;ctx.font=fs1b+'px Arial,sans-serif';}
+    ctx.fillText(coordTxt,PAD_SIDE,cy);
+    cy+=GAP;
   }
 
   // Séparateur
   if(el.separateur.on){
-    cy+=8;
+    cy+=GAP;
     ctx.strokeStyle='#999';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(x,cy);ctx.lineTo(LBL_W-pad,cy);ctx.stroke();
-    cy+=4;
+    ctx.beginPath();ctx.moveTo(PAD_SIDE,cy);ctx.lineTo(LBL_W-PAD_SIDE,cy);ctx.stroke();
+    cy+=GAP+2;
   }
 
-  // Nom de la couleur + numéro
+  // Nom couleur (+numéro intégré si les deux actifs)
   if(el.couleur.on){
     var couleurTxt=r.couleur;
     if(el.num_couleur.on&&r.numero_couleur)couleurTxt+=(' \u2014 #'+r.numero_couleur);
     var fs2=el.couleur.taille;
-    ctx.fillStyle='#000';ctx.font='bold '+fs2+'px Arial,sans-serif';
-    var maxW=LBL_W-x-pad-(el.format_badge.on?130:10);
-    while(ctx.measureText(couleurTxt).width>maxW&&fs2>18){fs2--;ctx.font='bold '+fs2+'px Arial,sans-serif';}
-    cy+=fs2+6;
-    ctx.fillText(couleurTxt,x,cy);
+    ctx.font='bold '+fs2+'px Arial,sans-serif';
+    while(ctx.measureText(couleurTxt).width>LBL_W-PAD_SIDE*2&&fs2>18){fs2--;ctx.font='bold '+fs2+'px Arial,sans-serif';}
+    cy+=fs2;
+    ctx.fillStyle='#000';
+    ctx.fillText(couleurTxt,PAD_SIDE,cy);
+    cy+=GAP;
   } else if(el.num_couleur.on&&r.numero_couleur){
     var fs2b=el.num_couleur.taille;
+    cy+=fs2b;
     ctx.fillStyle='#333';ctx.font=fs2b+'px Arial,sans-serif';
-    cy+=fs2b+4;ctx.fillText('#'+r.numero_couleur,x,cy);
+    ctx.fillText('#'+r.numero_couleur,PAD_SIDE,cy);
+    cy+=GAP;
   }
 
   // Client
   if(el.client.on){
     var fs3=el.client.taille;
+    cy+=fs3;
     ctx.fillStyle='#333';ctx.font=fs3+'px Arial,sans-serif';
-    cy+=fs3+4;
-    ctx.fillText(r.client,x,cy);
+    ctx.fillText(r.client,PAD_SIDE,cy);
+    cy+=GAP;
   }
 
   // Produit + base
-  var hasInfo=(el.produit.on&&r.produit)||(el.base.on&&r.numero_base);
   if(hasInfo){
     var infoParts=[];
     if(el.produit.on&&r.produit)infoParts.push(r.produit);
     if(el.base.on&&r.numero_base)infoParts.push('Base: '+r.numero_base);
     var fs4=Math.max(el.produit.taille,el.base.taille);
+    cy+=fs4;
     ctx.fillStyle='#666';ctx.font=fs4+'px Arial,sans-serif';
-    cy+=fs4+4;
-    ctx.fillText(infoParts.join('  \u2014  '),x,cy);
+    ctx.fillText(infoParts.join('  \u2014  '),PAD_SIDE,cy);
+    cy+=GAP;
   }
 
-  // Badge Gallon/Pinte (N&B: noir sur blanc, ou blanc sur noir)
+  // Badge Gallon/Pinte — suit le curseur Y (pas ancré en bas)
   if(el.format_badge.on){
     var fs5=el.format_badge.taille;
     var fmtTxt=format==='Pinte'?'PINTE':'GALLON';
     ctx.font='bold '+fs5+'px Arial,sans-serif';
-    var bw=ctx.measureText(fmtTxt).width+24,bh=fs5+14;
-    var bx2=LBL_W-pad-bw,by2=H-pad-bh;
-    // Fond noir, texte blanc
+    var bw=ctx.measureText(fmtTxt).width+28,bh=fs5+14;
+    cy+=GAP;
+    // Badge centré horizontalement
+    var bx2=(LBL_W-bw)/2,by2=cy;
     ctx.fillStyle='#000';
     ctx.beginPath();ctx.roundRect(bx2,by2,bw,bh,6);ctx.fill();
     ctx.fillStyle='#fff';
     ctx.fillText(fmtTxt,bx2+(bw-ctx.measureText(fmtTxt).width)/2,by2+fs5+2);
+    cy+=bh+GAP;
   }
 
   // Cadre extérieur
@@ -2769,77 +2800,53 @@ function printLabelsWindow(recId){
   var gal=parseInt(Q('etq-gal').value)||0;
   var pinte=parseInt(Q('etq-pinte').value)||0;
   if(gal+pinte===0){toast('Entrez au moins 1 étiquette.');return;}
-  var cfg=etqGetConfig();
-  var H=cfg.hauteur||270;
-  // Hauteur en mm (300dpi : 1px = 25.4/300 mm)
-  var hmm=Math.round(H/300*25.4*10)/10;
 
-  // Générer toutes les images
+  // Générer toutes les images — la hauteur est calculée automatiquement par buildLabelCanvas
   var pages=[];
   for(var g=0;g<gal;g++){
     var c=buildLabelCanvas(recId,'Gallon');
-    if(c)pages.push({img:c.toDataURL('image/png'),fmt:'Gallon'});
+    if(c){
+      // Convertir px canvas → mm pour l'impression (300dpi)
+      var hmm=Math.round(c.height/300*25.4*10)/10;
+      pages.push({img:c.toDataURL('image/png'),fmt:'Gallon',hmm:hmm});
+    }
   }
   for(var p2=0;p2<pinte;p2++){
     var c2=buildLabelCanvas(recId,'Pinte');
-    if(c2)pages.push({img:c2.toDataURL('image/png'),fmt:'Pinte'});
+    if(c2){
+      var hmm2=Math.round(c2.height/300*25.4*10)/10;
+      pages.push({img:c2.toDataURL('image/png'),fmt:'Pinte',hmm:hmm2});
+    }
   }
   if(!pages.length)return;
 
-  // Construire le HTML d'impression
+  // Chaque étiquette a sa propre règle @page nommée pour hauteur exacte
+  var pageStyles=pages.map(function(p,i){
+    return '@page p'+i+'{size:62mm '+p.hmm+'mm;margin:0;}';
+  }).join('');
+
   var imgs=pages.map(function(p,i){
-    return '<div class="etq"><img src="'+p.img+'" alt="Étiquette '+p.fmt+'"></div>';
+    return '<div class="etq" style="page:p'+i+';width:62mm;height:'+p.hmm+'mm">'
+      +'<img src="'+p.img+'" style="width:62mm;height:'+p.hmm+'mm;display:block;object-fit:fill">'
+      +'</div>';
   }).join('');
 
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes Technocolor</title><style>'
     +'*{margin:0;padding:0;box-sizing:border-box}'
-    // @page : 62mm de large, hauteur auto = le driver coupe à la fin de chaque page
-    +'@page{'
-    +'  size: 62mm '+hmm+'mm;'
-    +'  margin: 0mm;'
-    +'}'
-    // Forcer une page par étiquette = une coupe par étiquette
-    +'html,body{'
-    +'  width: 62mm;'
-    +'  margin: 0;'
-    +'  padding: 0;'
-    +'  background: #fff;'
-    +'  -webkit-print-color-adjust: exact;'
-    +'  print-color-adjust: exact;'
-    +'  color-adjust: exact;'
-    +'}'
+    // Page de base 62mm continu — chaque étiquette override avec sa hauteur exacte
+    +'@page{size:62mm auto;margin:0mm;}'
+    +pageStyles
+    +'html,body{width:62mm;margin:0;padding:0;background:#fff;'
+    +'-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}'
     +'.etq{'
-    +'  width: 62mm;'
-    +'  height: '+hmm+'mm;'
-    +'  overflow: hidden;'
-    +'  display: block;'
-    // page-break-after: always = le driver Brother interprète chaque saut de page comme une coupe
-    +'  page-break-after: always;'
-    +'  break-after: page;'
+    +'  display:block;'
+    +'  page-break-after:always;'
+    +'  break-after:page;'
+    +'  overflow:hidden;'
     +'}'
-    +'.etq:last-child{'
-    +'  page-break-after: avoid;'
-    +'  break-after: avoid;'
-    +'}'
-    +'.etq img{'
-    +'  width: 62mm;'
-    +'  height: '+hmm+'mm;'
-    +'  display: block;'
-    +'  object-fit: fill;'
-    +'}'
-    // Note: le driver QL-800 Windows coupe automatiquement à chaque saut de page
-    // Régler dans le driver : Paramètres d'impression → Coupe → "Couper à la fin de chaque page"
-    +'@media print{'
-    +'  .etq{ page-break-after: always; break-after: page; }'
-    +'  .etq:last-child{ page-break-after: avoid; break-after: avoid; }'
-    +'}'
+    +'.etq:last-child{page-break-after:avoid;break-after:avoid;}'
     +'</style></head><body>'+imgs
-    // Script pour forcer l'impression dès le chargement
-    +'<script>'
-    +'window.onload=function(){'
-    +'  setTimeout(function(){window.print();},250);'
-    +'};'
-    +'<\/script>'
+    +'<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>'
     +'</body></html>';
 
   var win=window.open('','_blank','width=300,height=400');
@@ -2896,14 +2903,11 @@ function renderEtqConfig(){
   // Remplir les champs textes
   etqFillTextFields();
 
-  // Ligne hauteur
-  var rows='<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--bd)">'
-    +'<label style="font-size:13px;font-weight:500;flex:1">Hauteur de l\'étiquette (px à 300dpi)</label>'
-    +'<input type="number" id="etq-cfg-hauteur" value="'+cfg.hauteur+'" min="150" max="600" step="10" style="width:80px;padding:6px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center">'
-    +'<span style="font-size:11px;color:var(--tx3)">'+(Math.round(cfg.hauteur/300*25.4*10)/10)+' mm</span>'
+  // Lignes éléments — hauteur calculée automatiquement selon contenu
+  var rows='<div style="font-size:12px;color:var(--tx3);margin-bottom:12px;padding:8px 10px;background:var(--blue-l);border-radius:var(--r)">'
+    +'La hauteur de l\'étiquette s\'ajuste automatiquement selon les éléments activés (ruban continu 62mm).'
     +'</div>';
 
-  // Lignes éléments
   rows+='<div style="display:grid;grid-template-columns:1fr 70px 70px;gap:4px;margin-bottom:6px">'
     +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Élément</span>'
     +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500;text-align:center">Actif</span>'
@@ -2932,11 +2936,6 @@ function renderEtqConfig(){
   renderEtqSettingsPreview();
 
   // Events
-  Q('etq-cfg-hauteur').addEventListener('input',function(){
-    var mm=Math.round(parseInt(this.value)/300*25.4*10)/10;
-    this.nextElementSibling.textContent=mm+' mm';
-    saveEtqConfigFromUI();renderEtqSettingsPreview();
-  });
   Object.keys(el).forEach(function(k){
     var cb=Q('etq-on-'+k);var sz=Q('etq-sz-'+k);
     if(cb)cb.addEventListener('change',function(){saveEtqConfigFromUI();renderEtqSettingsPreview();});
@@ -2946,7 +2945,6 @@ function renderEtqConfig(){
 
 function saveEtqConfigFromUI(){
   var cfg=etqGetConfig();
-  var hEl=Q('etq-cfg-hauteur');if(hEl)cfg.hauteur=parseInt(hEl.value)||270;
   Object.keys(cfg.elements).forEach(function(k){
     var cb=Q('etq-on-'+k);var sz=Q('etq-sz-'+k);
     if(cb)cfg.elements[k].on=cb.checked;
