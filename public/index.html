@@ -1034,11 +1034,11 @@ table.ct tr:last-child td{border-bottom:none}
     <!-- Instructions impression -->
     <div style="font-size:12px;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.7;color:var(--blue)">
       <strong>Comment ça marche :</strong><br>
-      1. Clique <strong>Imprimer</strong> — la fenêtre s'ouvre et lance automatiquement<br>
+      1. Clique <strong>Imprimer</strong> — la fenêtre s'ouvre automatiquement<br>
       2. Sélectionne <strong>Brother QL-800</strong> comme imprimante<br>
-      3. Vérifie <strong>Préférences → Coupe → Couper à la fin de chaque étiquette</strong><br>
-      4. Format papier : <strong>62mm × continu</strong> — Marges : <strong>Aucune</strong><br>
-      5. Clique <strong>Imprimer</strong> ✓
+      3. Dans <strong>Plus de paramètres → Format de papier</strong> : choisir <strong>62mm Continuous</strong><br>
+      4. Marges : <strong>Aucune</strong> — Échelle : <strong>100%</strong><br>
+      5. Clique <strong>Imprimer</strong> ✓ — le driver coupe automatiquement
     </div>
 
     <div class="ma">
@@ -2801,51 +2801,39 @@ function printLabelsWindow(recId){
   var pinte=parseInt(Q('etq-pinte').value)||0;
   if(gal+pinte===0){toast('Entrez au moins 1 étiquette.');return;}
 
-  // Générer toutes les images — la hauteur est calculée automatiquement par buildLabelCanvas
-  var pages=[];
-  for(var g=0;g<gal;g++){
-    var c=buildLabelCanvas(recId,'Gallon');
-    if(c){
-      // Convertir px canvas → mm pour l'impression (300dpi)
-      var hmm=Math.round(c.height/300*25.4*10)/10;
-      pages.push({img:c.toDataURL('image/png'),fmt:'Gallon',hmm:hmm});
-    }
-  }
-  for(var p2=0;p2<pinte;p2++){
-    var c2=buildLabelCanvas(recId,'Pinte');
-    if(c2){
-      var hmm2=Math.round(c2.height/300*25.4*10)/10;
-      pages.push({img:c2.toDataURL('image/png'),fmt:'Pinte',hmm:hmm2});
-    }
-  }
-  if(!pages.length)return;
+  // Générer tous les canvas
+  var canvases=[];
+  for(var g=0;g<gal;g++){var c=buildLabelCanvas(recId,'Gallon');if(c)canvases.push(c);}
+  for(var p2=0;p2<pinte;p2++){var c2=buildLabelCanvas(recId,'Pinte');if(c2)canvases.push(c2);}
+  if(!canvases.length)return;
 
-  // Chaque étiquette a sa propre règle @page nommée pour hauteur exacte
-  var pageStyles=pages.map(function(p,i){
-    return '@page p'+i+'{size:62mm '+p.hmm+'mm;margin:0;}';
-  }).join('');
+  // Combiner toutes les étiquettes en une seule image PNG verticale
+  // LBL_W = 696px = 62mm @ 300dpi — chaque étiquette fait sa propre hauteur
+  var totalH=canvases.reduce(function(s,c){return s+c.height;},0);
+  var combined=document.createElement('canvas');
+  combined.width=LBL_W;combined.height=totalH;
+  var ctx=combined.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,LBL_W,totalH);
+  var offsetY=0;
+  canvases.forEach(function(c){ctx.drawImage(c,0,offsetY);offsetY+=c.height;});
 
-  var imgs=pages.map(function(p,i){
-    return '<div class="etq" style="page:p'+i+';width:62mm;height:'+p.hmm+'mm">'
-      +'<img src="'+p.img+'" style="width:62mm;height:'+p.hmm+'mm;display:block;object-fit:fill">'
-      +'</div>';
-  }).join('');
+  var dataUrl=combined.toDataURL('image/png');
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes Technocolor</title><style>'
-    +'*{margin:0;padding:0;box-sizing:border-box}'
-    // Page de base 62mm continu — chaque étiquette override avec sa hauteur exacte
-    +'@page{size:62mm auto;margin:0mm;}'
-    +pageStyles
-    +'html,body{width:62mm;margin:0;padding:0;background:#fff;'
-    +'-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}'
-    +'.etq{'
-    +'  display:block;'
-    +'  page-break-after:always;'
-    +'  break-after:page;'
-    +'  overflow:hidden;'
-    +'}'
-    +'.etq:last-child{page-break-after:avoid;break-after:avoid;}'
-    +'</style></head><body>'+imgs
+  // Hauteur totale en mm (300dpi)
+  var totalMm=Math.round(totalH/300*25.4*10)/10;
+
+  // Ouvrir une fenêtre avec l'image seule, CSS minimaliste
+  // L'image est à 96dpi dans le navigateur mais on force la taille physique via CSS
+  // 62mm = 2.441 pouces → à 96dpi = 234.4px — on utilise mm directement
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Étiquettes Technocolor</title><style>'
+    +'*{margin:0;padding:0}'
+    +'@page{size:62mm '+totalMm+'mm;margin:0}'
+    +'html,body{margin:0;padding:0;background:#fff;'
+    +'-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}'
+    +'img{display:block;width:62mm;height:'+totalMm+'mm}'
+    +'</style></head><body>'
+    +'<img src="'+dataUrl+'">'
     +'<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>'
     +'</body></html>';
 
