@@ -130,6 +130,12 @@ table.ct tr:last-child td{border-bottom:none}
 .hbox{background:var(--gray-l);border:0.5px dashed var(--bd2);border-radius:var(--r);padding:12px;margin-top:16px;text-align:center;font-size:12px;color:var(--tx3)}
 .fbox{background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin-top:8px}
 .ebar{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--bd)}
+.nbar{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.nbtn{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:6px 13px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--sur);color:var(--tx2);cursor:pointer;transition:all 0.15s;font-weight:500}
+.nbtn:hover:not(:disabled){border-color:var(--blue-m);color:var(--blue);background:var(--blue-l)}
+.nbtn:disabled{opacity:0.3;cursor:default}
+.nbtn svg{flex-shrink:0}
+.ncnt{flex:1;text-align:center;font-size:11px;color:var(--tx3)}
 .be{background:var(--blue-l);color:var(--blue);border:0.5px solid var(--blue);font-size:13px;padding:8px 16px;border-radius:var(--r);cursor:pointer;font-weight:500}
 .be:hover{background:var(--blue);color:#fff}
 .bx{background:var(--red-l);color:var(--red);border:0.5px solid var(--red);font-size:13px;padding:8px 16px;border-radius:var(--r);cursor:pointer;font-weight:500}
@@ -1537,7 +1543,8 @@ var SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
 var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,role=null,recs=[],selClient=null,selId=null;
-var clientsScrollY=0;
+var clientsScrollY=0,prodsScrollY=0,searchScrollY=0;
+var _navList=[],_navIdx=-1;
 var curHex='#cccccc',camStream=null;
 var marges={Pepin:0.60,Disolac:0.60,International:0.55,Devoe:0.55};
 var allBases=[],allCP=[],allPC=[];
@@ -1701,6 +1708,20 @@ function restoreClientsScroll(){
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){window.scrollTo(0,y);});
   });
+}
+function saveSearchScroll(){
+  searchScrollY=window.scrollY||document.documentElement.scrollTop||0;
+}
+function restoreSearchScroll(){
+  var y=searchScrollY||0;
+  requestAnimationFrame(function(){requestAnimationFrame(function(){window.scrollTo(0,y);});});
+}
+function saveProdsScroll(){
+  prodsScrollY=window.scrollY||document.documentElement.scrollTop||0;
+}
+function restoreProdsScroll(){
+  var y=prodsScrollY||0;
+  requestAnimationFrame(function(){requestAnimationFrame(function(){window.scrollTo(0,y);});});
 }
 function backToClientsKeepScroll(){
   showView('clients');
@@ -2096,6 +2117,9 @@ function renderClients(){
     var prods={};
     matched.forEach(function(r){var k=r.produit||'Sans produit';if(!prods[k])prods[k]=[];prods[k].push(r);});
     var sorted=Object.keys(prods).sort(function(a,b){return a.localeCompare(b,'fr');});
+    // Build flat nav list (product order then alpha per product)
+    var searchNavList=[];
+    sorted.forEach(function(prod){searchNavList=searchNavList.concat(sortRecettesAlpha(prods[prod]).map(function(r){return r.id;}));});
     sorted.forEach(function(prod,pi){
       var rs=sortRecettesAlpha(prods[prod]);
       var card=document.createElement('div');card.className='pcard';
@@ -2109,7 +2133,7 @@ function renderClients(){
         var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
         var db2=canP()&&p?dbdg(p.date_prix):'';
         row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
-        row.addEventListener('click',function(){_detailFrom='search';openDetail(r.id);});
+        row.addEventListener('click',(function(rec,navList){return function(){saveSearchScroll();_detailFrom='search';_navList=navList;_navIdx=navList.indexOf(rec.id);openDetail(rec.id);};})(r,searchNavList));
         body.appendChild(row);
       });
       head.addEventListener('click',function(){body.classList.toggle('open');var ch=document.getElementById('sch-'+pi);if(ch)ch.classList.toggle('open');});
@@ -2154,7 +2178,7 @@ bindClear('sp','sp-x',renderProduits);
 Q('bprod').addEventListener('click',backToClientsKeepScroll);
 
 // PRODUITS
-function openClient(name){saveClientsScroll();selClient=name;Q('sp').value='';Q('sfm').value='';renderProduits();showView('produits');window.scrollTo(0,0);}
+function openClient(name){saveClientsScroll();selClient=name;Q('sp').value='';Q('sfm').value='';prodsScrollY=0;renderProduits();showView('produits');window.scrollTo(0,0);}
 function renderProduits(){
   var q=(Q('sp').value||'').toLowerCase(),marque=Q('sfm').value;
   var bc=Q('bcp');bc.innerHTML='';
@@ -2169,6 +2193,9 @@ function renderProduits(){
   var prods={};
   rr.forEach(function(r){var k=r.produit||'(Sans produit)';if(!prods[k])prods[k]=[];prods[k].push(r);});
   var sorted=Object.keys(prods).sort(function(a,b){return a.localeCompare(b,'fr');});
+  // Build flat nav list for produits view
+  var prodsNavList=[];
+  sorted.forEach(function(prod){prodsNavList=prodsNavList.concat(sortRecettesAlpha(prods[prod]).map(function(r){return r.id;}));});
   Q('pcnt').textContent=rr.length+' recette'+(rr.length!==1?'s':'')+' - '+sorted.length+' produit'+(sorted.length!==1?'s':'');
   var list=Q('plist');list.innerHTML='';
   if(!sorted.length){list.innerHTML='<div class="empty">Aucune recette</div>';return;}
@@ -2185,7 +2212,7 @@ function renderProduits(){
       var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
       var db2=canP()&&p?dbdg(p.date_prix):'';
       row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+(r.numero_couleur?'#'+r.numero_couleur+' - ':'')+( r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
-      row.addEventListener('click',function(){_detailFrom='produits';openDetail(r.id);});
+      row.addEventListener('click',(function(rec,navList){return function(){saveProdsScroll();_detailFrom='produits';_navList=navList;_navIdx=navList.indexOf(rec.id);openDetail(rec.id);};})(r,prodsNavList));
       body.appendChild(row);
     });
     head.addEventListener('click',function(){body.classList.toggle('open');Q('ch-'+pi).classList.toggle('open');});
@@ -2198,12 +2225,14 @@ Q('bdet').addEventListener('click',function(){
   if(_detailFrom==='search'){
     showView('clients');
     renderClients();
-    restoreClientsScroll();
+    restoreSearchScroll();
   }else if(selClient){
     renderProduits();
     showView('produits');
+    restoreProdsScroll();
   }else{
     showView('clients');
+    restoreClientsScroll();
   }
 });
 
@@ -2280,7 +2309,24 @@ function openDetail(id){
   }
   var colTable='<table class="ct"><thead>'+colHeader+'</thead><tbody>'+colRows+'</tbody></table>';
 
+  // Nav bar prev/next
+  var hasPrev=_navIdx>0,hasNext=_navIdx>=0&&_navIdx<_navList.length-1;
+  var navPos=_navIdx>=0?(_navIdx+1)+' / '+_navList.length:'';
+  function makeNavBar(){
+    var nb=document.createElement('div');nb.className='nbar';
+    var bp2=document.createElement('button');bp2.className='nbtn';bp2.disabled=!hasPrev;
+    bp2.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="8,2 4,6 8,10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg> Précédente';
+    bp2.addEventListener('click',function(){if(hasPrev){_navIdx--;openDetail(_navList[_navIdx]);}});
+    var nc=document.createElement('span');nc.className='ncnt';nc.textContent=navPos;
+    var bn2=document.createElement('button');bn2.className='nbtn';bn2.disabled=!hasNext;
+    bn2.innerHTML='Suivante <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="4,2 8,6 4,10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    bn2.addEventListener('click',function(){if(hasNext){_navIdx++;openDetail(_navList[_navIdx]);}});
+    nb.appendChild(bp2);nb.appendChild(nc);nb.appendChild(bn2);
+    return nb;
+  }
+
   Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div>'+colTable+prixHTML;
+  if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(),Q('detpan').firstChild);}
 
   // Historique des prix
   var histDiv=document.createElement('div');
@@ -2325,7 +2371,8 @@ function openDetail(id){
   bp.addEventListener('click',function(){printFiche(id);});
   eb.appendChild(bp);
   eb.appendChild(bx);Q('detpan').appendChild(eb);
-  Q('tdetail').style.display='';showView('detail');
+  if(_navList.length>1){Q('detpan').appendChild(makeNavBar());}
+  Q('tdetail').style.display='';showView('detail');window.scrollTo(0,0);
 }
 
 // IMPRESSION
