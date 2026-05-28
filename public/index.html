@@ -1015,29 +1015,20 @@ table.ct tr:last-child td{border-bottom:none}
       <div id="etq-preview" style="border:1.5px dashed var(--bd2);border-radius:var(--r);overflow:hidden;background:#fff;display:flex;justify-content:center"></div>
     </div>
 
-    <!-- Statut b-PAC -->
-    <div id="bpac-status" style="font-size:12px;padding:10px 12px;border-radius:var(--r);margin-bottom:12px;display:none"></div>
-
-    <!-- Instructions b-PAC -->
-    <details style="margin-bottom:12px">
-      <summary style="font-size:12px;color:var(--blue);cursor:pointer;font-weight:500;user-select:none">ℹ️ Configuration requise (Brother b-PAC)</summary>
-      <div style="margin-top:10px;font-size:12px;color:var(--tx2);line-height:1.7;background:var(--blue-l);border-radius:var(--r);padding:12px">
-        <strong>Installation unique requise sur le PC Windows :</strong><br>
-        1. Télécharger <strong>b-PAC Client Component</strong> sur <a href="https://support.brother.com/g/s/es/dev/en/bpac/download/index.html" target="_blank" style="color:var(--blue)">support.brother.com</a><br>
-        2. Installer le fichier <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">bpac4_Client_Installer.exe</code><br>
-        3. Redémarrer Chrome après l'installation<br>
-        4. Brancher la QL-800 via USB ou réseau<br>
-        5. Charger un ruban <strong>DK-2205</strong> (continu 62mm)<br><br>
-        <strong>Nom de l'imprimante Windows :</strong> <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">Brother QL-800</code><br>
-        (Panneau de configuration → Imprimantes pour vérifier le nom exact)
-      </div>
-    </details>
+    <!-- Instructions impression -->
+    <div style="font-size:12px;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.7;color:var(--blue)">
+      <strong>Comment ça marche :</strong><br>
+      1. Clique <strong>Imprimer</strong> — une fenêtre d'impression s'ouvre<br>
+      2. Sélectionne <strong>Brother QL-800</strong> comme imprimante<br>
+      3. Le format de papier est réglé automatiquement (62mm × hauteur auto)<br>
+      4. Clique <strong>Imprimer</strong> dans la fenêtre du navigateur
+    </div>
 
     <div class="ma">
       <button class="btn" id="etq-cancel">Annuler</button>
       <button class="btn btnp" id="etq-print" style="gap:6px;display:inline-flex;align-items:center">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 4V2.5A.5.5 0 014.5 2h5a.5.5 0 01.5.5V4" stroke="currentColor" stroke-width="1.4"/><rect x="4" y="7" width="6" height="3" rx=".5" fill="currentColor" opacity=".3"/><circle cx="10.5" cy="5.5" r=".8" fill="currentColor"/></svg>
-        Imprimer via b-PAC
+        Imprimer
       </button>
       <button class="btn" id="etq-img" style="background:var(--gray-l);color:var(--gray);border-color:var(--gray)">Sauvegarder image</button>
     </div>
@@ -2705,59 +2696,73 @@ function openLabelModal(recId){
   if(Q('etq-pinte'))Q('etq-pinte').value='1';
   renderLabelPreview(recId,'etq-preview');
   Q('метка').classList.add('on');
-  checkBpac();
 }
 
-function checkBpac(){
-  var s=Q('bpac-status');if(!s)return;
-  var ok=false;
-  try{ok=typeof bpac!=='undefined'&&bpac.IsExtensionInstalled&&bpac.IsExtensionInstalled();}catch(e){}
-  s.style.display='block';
-  if(ok){
-    s.style.cssText='display:block;font-size:12px;padding:10px 12px;border-radius:var(--r);margin-bottom:12px;background:var(--green-l);color:var(--green);border:0.5px solid var(--green)';
-    s.textContent='\u2713 b-PAC détecté — impression directe disponible';
-  }else{
-    s.style.cssText='display:block;font-size:12px;padding:10px 12px;border-radius:var(--r);margin-bottom:12px;background:var(--amber-l);color:var(--amber);border:0.5px solid #EF9F27';
-    s.textContent='\u26a0 b-PAC non détecté — utilisez "Sauvegarder image" puis imprimez depuis P-Touch Editor';
-  }
-}
-
-function printLabelsViaBpac(recId){
+function printLabelsWindow(recId){
   var gal=parseInt(Q('etq-gal').value)||0;
   var pinte=parseInt(Q('etq-pinte').value)||0;
   if(gal+pinte===0){toast('Entrez au moins 1 étiquette.');return;}
-  var btn=Q('etq-print');btn.disabled=true;btn.textContent='Impression...';
-  var printerName='Brother QL-800';
-  var jobs=[];
-  if(gal>0)jobs.push({format:'Gallon',qty:gal});
-  if(pinte>0)jobs.push({format:'Pinte',qty:pinte});
   var cfg=etqGetConfig();
-  var jobIdx=0;
-  function printNext(){
-    if(jobIdx>=jobs.length){
-      btn.disabled=false;btn.textContent='Imprimer via b-PAC';
-      toast('Impression envoyée!');Q('метка').classList.remove('on');return;
-    }
-    var job=jobs[jobIdx++];
-    var canvas=buildLabelCanvas(recId,job.format);
-    if(!canvas){printNext();return;}
-    var imgData=canvas.toDataURL('image/png').split(',')[1];
-    try{
-      var cpj=new bpac.CPrintJob();
-      cpj.Open(printerName,'');
-      for(var i=0;i<job.qty;i++){
-        var imgObj=cpj.AddImageObject(0,0,LBL_W,cfg.hauteur||270);
-        imgObj.SetImageData(0,imgData);
-        if(i<job.qty-1)cpj.NewPage();
-      }
-      cpj.StartPrint('',0);cpj.EndPrint();
-      setTimeout(printNext,500);
-    }catch(e){
-      btn.disabled=false;btn.textContent='Imprimer via b-PAC';
-      toast('Erreur b-PAC: '+(e.message||e));
-    }
+  var H=cfg.hauteur||270;
+  // Hauteur en mm (300dpi : 1px = 25.4/300 mm)
+  var hmm=Math.round(H/300*25.4*10)/10;
+
+  // Générer toutes les images
+  var pages=[];
+  for(var g=0;g<gal;g++){
+    var c=buildLabelCanvas(recId,'Gallon');
+    if(c)pages.push({img:c.toDataURL('image/png'),fmt:'Gallon'});
   }
-  printNext();
+  for(var p2=0;p2<pinte;p2++){
+    var c2=buildLabelCanvas(recId,'Pinte');
+    if(c2)pages.push({img:c2.toDataURL('image/png'),fmt:'Pinte'});
+  }
+  if(!pages.length)return;
+
+  // Construire le HTML d'impression
+  var imgs=pages.map(function(p){
+    return '<div class="etq"><img src="'+p.img+'" alt="Étiquette '+p.fmt+'"></div>';
+  }).join('');
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes</title><style>'
+    +'*{margin:0;padding:0;box-sizing:border-box}'
+    +'@page{'
+    +'  size: 62mm '+hmm+'mm;'
+    +'  margin: 0;'
+    +'}'
+    +'body{'
+    +'  width: 62mm;'
+    +'  background: #fff;'
+    +'  -webkit-print-color-adjust: exact;'
+    +'  print-color-adjust: exact;'
+    +'}'
+    +'.etq{'
+    +'  width: 62mm;'
+    +'  height: '+hmm+'mm;'
+    +'  page-break-after: always;'
+    +'  display: flex;'
+    +'  align-items: center;'
+    +'  justify-content: center;'
+    +'  overflow: hidden;'
+    +'}'
+    +'.etq:last-child{ page-break-after: avoid; }'
+    +'.etq img{'
+    +'  width: 62mm;'
+    +'  height: '+hmm+'mm;'
+    +'  object-fit: fill;'
+    +'  display: block;'
+    +'}'
+    +'</style></head><body>'+imgs+'</body></html>';
+
+  var win=window.open('','_blank','width=400,height=500');
+  if(!win){toast('Popup bloqué — autorisez les popups pour ce site.');return;}
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  // Attendre que les images soient chargées avant d'imprimer
+  win.onload=function(){setTimeout(function(){win.print();win.close();},300);};
+  setTimeout(function(){if(!win.closed){win.print();win.close();}},1200);
+  Q('метка').classList.remove('on');
 }
 
 function saveLabelImage(recId){
@@ -2781,7 +2786,7 @@ function saveLabelImage(recId){
 
 Q('etq-cancel').addEventListener('click',function(){Q('метка').classList.remove('on');_labelRecId=null;});
 Q('метка').addEventListener('click',function(e){if(e.target===this){this.classList.remove('on');_labelRecId=null;}});
-Q('etq-print').addEventListener('click',function(){if(_labelRecId)printLabelsViaBpac(_labelRecId);});
+Q('etq-print').addEventListener('click',function(){if(_labelRecId)printLabelsWindow(_labelRecId);});
 Q('etq-img').addEventListener('click',function(){if(_labelRecId)saveLabelImage(_labelRecId);});
 ['etq-gal','etq-pinte'].forEach(function(id){
   var el2=Q(id);if(el2)el2.addEventListener('input',function(){if(_labelRecId)renderLabelPreview(_labelRecId,'etq-preview');});
