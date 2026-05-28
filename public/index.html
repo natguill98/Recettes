@@ -761,7 +761,21 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="ftit" style="margin-bottom:0">🏷️ Configuration des étiquettes (Brother QL-800)</div>
           <button class="btn" onclick="resetEtqConfig()" style="font-size:12px;padding:5px 12px">Réinitialiser</button>
         </div>
-        <div class="settings-note" style="margin-bottom:14px">Noir et blanc uniquement. Modifications sauvegardées localement sur cet appareil.</div>
+        <div class="settings-note" style="margin-bottom:14px">Noir et blanc uniquement. Les textes et la config sont partagés entre tous les utilisateurs (Supabase).</div>
+
+        <!-- Textes modifiables -->
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:0.5px solid var(--bd)">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin-bottom:10px">Textes de l'en-tête</div>
+          <div style="display:grid;gap:8px">
+            <div class="fg"><label>Nom du commerce</label><input id="etq-txt-nom" placeholder="TECHNOCOLOR"></div>
+            <div class="fg"><label>Adresse</label><input id="etq-txt-adresse" placeholder="2575 av. Watt local 6, Ste-Foy"></div>
+            <div class="fg"><label>Téléphone</label><input id="etq-txt-tel" placeholder="418-872-7292"></div>
+            <div class="fg"><label>Site web</label><input id="etq-txt-site" placeholder="technocolor.ca"></div>
+          </div>
+          <button class="sbtn" id="etq-save-textes" style="margin-top:12px;font-size:13px;padding:8px 20px">Sauvegarder les textes</button>
+          <span class="svd" id="etq-textes-svd">Sauvegardé!</span>
+        </div>
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
           <div id="etq-config-box"></div>
           <div>
@@ -771,6 +785,8 @@ table.ct tr:last-child td{border-bottom:none}
         </div>
       </div>
     </div>
+
+    <div class="view" id="v-crm">
       <div class="portal-hero">
         <div class="portal-title">CRM</div>
         <div class="portal-sub">Gestion clients, pipeline, clients potentiels et visites. Section réservée aux administrateurs.</div>
@@ -1018,10 +1034,11 @@ table.ct tr:last-child td{border-bottom:none}
     <!-- Instructions impression -->
     <div style="font-size:12px;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.7;color:var(--blue)">
       <strong>Comment ça marche :</strong><br>
-      1. Clique <strong>Imprimer</strong> — une fenêtre d'impression s'ouvre<br>
+      1. Clique <strong>Imprimer</strong> — la fenêtre s'ouvre et lance automatiquement<br>
       2. Sélectionne <strong>Brother QL-800</strong> comme imprimante<br>
-      3. Le format de papier est réglé automatiquement (62mm × hauteur auto)<br>
-      4. Clique <strong>Imprimer</strong> dans la fenêtre du navigateur
+      3. Vérifie <strong>Préférences → Coupe → Couper à la fin de chaque étiquette</strong><br>
+      4. Format papier : <strong>62mm × continu</strong> — Marges : <strong>Aucune</strong><br>
+      5. Clique <strong>Imprimer</strong> ✓
     </div>
 
     <div class="ma">
@@ -1686,6 +1703,7 @@ function initApp(u){
     Q('app').style.display='block';
     loadMarges();
     loadCatalogues().then(function(){loadRecs();});
+    etqFetchFromDb();
     showView('clients');
   });
 }
@@ -2533,7 +2551,15 @@ function printFiche(id){
 var _labelRecId=null;
 var LBL_W=696; // 62mm @ 300dpi
 
-// Config par défaut — sauvegardée en localStorage
+// Textes par défaut (surchargés par Supabase)
+var ETQ_TEXTES={
+  nom:'TECHNOCOLOR',
+  adresse:'2575 av. Watt local 6, Ste-Foy',
+  telephone:'418-872-7292',
+  site:'technocolor.ca'
+};
+
+// Config layout par défaut — sauvegardée dans Supabase (table parametres)
 var ETQ_DEFAULTS={
   hauteur:270,
   elements:{
@@ -2551,25 +2577,66 @@ var ETQ_DEFAULTS={
     cadre:        {on:true, taille:0,  label:'Cadre extérieur'}
   }
 };
+var _etqCfgCache=null; // cache mémoire
 
 function etqLoadConfig(){
-  try{
-    var saved=localStorage.getItem('techno_etq_config');
-    if(saved){
-      var c=JSON.parse(saved);
-      // Merge — préserver les nouveaux éléments si config ancienne
-      Object.keys(ETQ_DEFAULTS.elements).forEach(function(k){
-        if(!c.elements[k])c.elements[k]=Object.assign({},ETQ_DEFAULTS.elements[k]);
-      });
-      return c;
-    }
-  }catch(e){}
+  if(_etqCfgCache)return JSON.parse(JSON.stringify(_etqCfgCache));
   return JSON.parse(JSON.stringify(ETQ_DEFAULTS));
 }
-function etqSaveConfig(cfg){
-  try{localStorage.setItem('techno_etq_config',JSON.stringify(cfg));}catch(e){}
-}
 function etqGetConfig(){return etqLoadConfig();}
+
+// Charger config + textes depuis Supabase au démarrage
+function etqFetchFromDb(){
+  sb.from('parametres').select('*').in('type',['etq_config','etq_textes']).then(function(r){
+    if(r.error||!r.data)return;
+    r.data.forEach(function(row){
+      if(row.type==='etq_config'&&row.marque==='layout'){
+        try{
+          var c=JSON.parse(row.valeur);
+          // Merge avec defaults pour compatibilité
+          Object.keys(ETQ_DEFAULTS.elements).forEach(function(k){
+            if(!c.elements[k])c.elements[k]=Object.assign({},ETQ_DEFAULTS.elements[k]);
+          });
+          _etqCfgCache=c;
+        }catch(e){}
+      }
+      if(row.type==='etq_textes'){
+        try{Object.assign(ETQ_TEXTES,JSON.parse(row.valeur));}catch(e){}
+      }
+    });
+    // Mettre à jour les champs si réglages ouverts
+    etqFillTextFields();
+  });
+}
+
+function etqSaveConfig(cfg){
+  _etqCfgCache=JSON.parse(JSON.stringify(cfg));
+  sb.from('parametres').upsert(
+    {type:'etq_config',marque:'layout',valeur:JSON.stringify(cfg)},
+    {onConflict:'type,marque'}
+  );
+}
+
+function etqSaveTextes(textes){
+  Object.assign(ETQ_TEXTES,textes);
+  sb.from('parametres').upsert(
+    {type:'etq_textes',marque:'global',valeur:JSON.stringify(ETQ_TEXTES)},
+    {onConflict:'type,marque'}
+  ).then(function(r){
+    if(r.error){toast('Erreur sauvegarde textes.');return;}
+    var svd=Q('etq-textes-svd');
+    if(svd){svd.style.display='inline-block';setTimeout(function(){svd.style.display='none';},3000);}
+    toast('Textes sauvegardés!');
+    renderEtqSettingsPreview();
+  });
+}
+
+function etqFillTextFields(){
+  if(Q('etq-txt-nom'))Q('etq-txt-nom').value=ETQ_TEXTES.nom||'';
+  if(Q('etq-txt-adresse'))Q('etq-txt-adresse').value=ETQ_TEXTES.adresse||'';
+  if(Q('etq-txt-tel'))Q('etq-txt-tel').value=ETQ_TEXTES.telephone||'';
+  if(Q('etq-txt-site'))Q('etq-txt-site').value=ETQ_TEXTES.site||'';
+}
 
 // ── CANVAS ────────────────────────────────────────────────────────
 function buildLabelCanvas(recId,format){
@@ -2593,16 +2660,16 @@ function buildLabelCanvas(recId,format){
     var fs0=el.nom_commerce.taille;
     ctx.fillStyle='#000';ctx.font='bold '+fs0+'px Arial,sans-serif';
     cy=Math.max(fs0+6,cy+fs0+6);
-    ctx.fillText('TECHNOCOLOR',x,cy);
+    ctx.fillText(ETQ_TEXTES.nom||'TECHNOCOLOR',x,cy);
   }
 
   // Coordonnées sur une ligne ou séparées
   var coordY=0;
   if(el.adresse.on||el.telephone.on||el.site.on){
     var parts=[];
-    if(el.adresse.on)parts.push('2575 av. Watt local 6, Ste-Foy');
-    if(el.telephone.on)parts.push('418-872-7292');
-    if(el.site.on)parts.push('technocolor.ca');
+    if(el.adresse.on&&ETQ_TEXTES.adresse)parts.push(ETQ_TEXTES.adresse);
+    if(el.telephone.on&&ETQ_TEXTES.telephone)parts.push(ETQ_TEXTES.telephone);
+    if(el.site.on&&ETQ_TEXTES.site)parts.push(ETQ_TEXTES.site);
     var fs1=Math.max(el.adresse.taille,el.telephone.taille,el.site.taille);
     ctx.fillStyle='#444';ctx.font=fs1+'px Arial,sans-serif';
     cy+=fs1+4;coordY=cy;
@@ -2720,48 +2787,65 @@ function printLabelsWindow(recId){
   if(!pages.length)return;
 
   // Construire le HTML d'impression
-  var imgs=pages.map(function(p){
+  var imgs=pages.map(function(p,i){
     return '<div class="etq"><img src="'+p.img+'" alt="Étiquette '+p.fmt+'"></div>';
   }).join('');
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes</title><style>'
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes Technocolor</title><style>'
     +'*{margin:0;padding:0;box-sizing:border-box}'
+    // @page : 62mm de large, hauteur auto = le driver coupe à la fin de chaque page
     +'@page{'
     +'  size: 62mm '+hmm+'mm;'
-    +'  margin: 0;'
+    +'  margin: 0mm;'
     +'}'
-    +'body{'
+    // Forcer une page par étiquette = une coupe par étiquette
+    +'html,body{'
     +'  width: 62mm;'
+    +'  margin: 0;'
+    +'  padding: 0;'
     +'  background: #fff;'
     +'  -webkit-print-color-adjust: exact;'
     +'  print-color-adjust: exact;'
+    +'  color-adjust: exact;'
     +'}'
     +'.etq{'
     +'  width: 62mm;'
     +'  height: '+hmm+'mm;'
-    +'  page-break-after: always;'
-    +'  display: flex;'
-    +'  align-items: center;'
-    +'  justify-content: center;'
     +'  overflow: hidden;'
+    +'  display: block;'
+    // page-break-after: always = le driver Brother interprète chaque saut de page comme une coupe
+    +'  page-break-after: always;'
+    +'  break-after: page;'
     +'}'
-    +'.etq:last-child{ page-break-after: avoid; }'
+    +'.etq:last-child{'
+    +'  page-break-after: avoid;'
+    +'  break-after: avoid;'
+    +'}'
     +'.etq img{'
     +'  width: 62mm;'
     +'  height: '+hmm+'mm;'
-    +'  object-fit: fill;'
     +'  display: block;'
+    +'  object-fit: fill;'
     +'}'
-    +'</style></head><body>'+imgs+'</body></html>';
+    // Note: le driver QL-800 Windows coupe automatiquement à chaque saut de page
+    // Régler dans le driver : Paramètres d'impression → Coupe → "Couper à la fin de chaque page"
+    +'@media print{'
+    +'  .etq{ page-break-after: always; break-after: page; }'
+    +'  .etq:last-child{ page-break-after: avoid; break-after: avoid; }'
+    +'}'
+    +'</style></head><body>'+imgs
+    // Script pour forcer l'impression dès le chargement
+    +'<script>'
+    +'window.onload=function(){'
+    +'  setTimeout(function(){window.print();},250);'
+    +'};'
+    +'<\/script>'
+    +'</body></html>';
 
-  var win=window.open('','_blank','width=400,height=500');
-  if(!win){toast('Popup bloqué — autorisez les popups pour ce site.');return;}
+  var win=window.open('','_blank','width=300,height=400');
+  if(!win){toast('Popup bloqué — autorisez les popups pour ce site dans Chrome.');return;}
   win.document.write(html);
   win.document.close();
-  win.focus();
-  // Attendre que les images soient chargées avant d'imprimer
-  win.onload=function(){setTimeout(function(){win.print();win.close();},300);};
-  setTimeout(function(){if(!win.closed){win.print();win.close();}},1200);
   Q('метка').classList.remove('on');
 }
 
@@ -2791,12 +2875,26 @@ Q('etq-img').addEventListener('click',function(){if(_labelRecId)saveLabelImage(_
 ['etq-gal','etq-pinte'].forEach(function(id){
   var el2=Q(id);if(el2)el2.addEventListener('input',function(){if(_labelRecId)renderLabelPreview(_labelRecId,'etq-preview');});
 });
+// Sauvegarder textes étiquette
+document.addEventListener('click',function(e){
+  if(e.target&&e.target.id==='etq-save-textes'){
+    etqSaveTextes({
+      nom:(Q('etq-txt-nom')&&Q('etq-txt-nom').value.trim())||ETQ_TEXTES.nom,
+      adresse:(Q('etq-txt-adresse')&&Q('etq-txt-adresse').value.trim())||ETQ_TEXTES.adresse,
+      telephone:(Q('etq-txt-tel')&&Q('etq-txt-tel').value.trim())||ETQ_TEXTES.telephone,
+      site:(Q('etq-txt-site')&&Q('etq-txt-site').value.trim())||ETQ_TEXTES.site
+    });
+  }
+});
 
 // ── CONFIG ÉTIQUETTES (Réglages) ──────────────────────────────────
 function renderEtqConfig(){
   var box=Q('etq-config-box');if(!box)return;
   var cfg=etqGetConfig();
   var el=cfg.elements;
+
+  // Remplir les champs textes
+  etqFillTextFields();
 
   // Ligne hauteur
   var rows='<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--bd)">'
@@ -2868,7 +2966,10 @@ function renderEtqSettingsPreview(){
 }
 
 function resetEtqConfig(){
-  etqSaveConfig(JSON.parse(JSON.stringify(ETQ_DEFAULTS)));
+  var defCfg=JSON.parse(JSON.stringify(ETQ_DEFAULTS));
+  etqSaveConfig(defCfg);
+  var defTxt={nom:'TECHNOCOLOR',adresse:'2575 av. Watt local 6, Ste-Foy',telephone:'418-872-7292',site:'technocolor.ca'};
+  etqSaveTextes(defTxt);
   renderEtqConfig();
   toast('Configuration réinitialisée');
 }
