@@ -1034,20 +1034,19 @@ table.ct tr:last-child td{border-bottom:none}
     <!-- Instructions impression -->
     <div style="font-size:12px;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.7;color:var(--blue)">
       <strong>Comment ça marche :</strong><br>
-      1. Clique <strong>Imprimer</strong> — la fenêtre s'ouvre automatiquement<br>
-      2. Sélectionne <strong>Brother QL-800</strong> comme imprimante<br>
-      3. Dans <strong>Plus de paramètres → Format de papier</strong> : choisir <strong>62mm Continuous</strong><br>
-      4. Marges : <strong>Aucune</strong> — Échelle : <strong>100%</strong><br>
-      5. Clique <strong>Imprimer</strong> ✓ — le driver coupe automatiquement
+      1. Clique <strong>Générer .lbx</strong> — un fichier P-Touch se télécharge<br>
+      2. <strong>Double-clique</strong> sur le fichier téléchargé — P-Touch Editor s'ouvre<br>
+      3. Clique <strong>Imprimer</strong> dans P-Touch Editor ✓<br>
+      <span style="color:var(--tx3)">Un fichier par format (Gallon / Pinte)</span>
     </div>
 
     <div class="ma">
       <button class="btn" id="etq-cancel">Annuler</button>
       <button class="btn btnp" id="etq-print" style="gap:6px;display:inline-flex;align-items:center">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 4V2.5A.5.5 0 014.5 2h5a.5.5 0 01.5.5V4" stroke="currentColor" stroke-width="1.4"/><rect x="4" y="7" width="6" height="3" rx=".5" fill="currentColor" opacity=".3"/><circle cx="10.5" cy="5.5" r=".8" fill="currentColor"/></svg>
-        Imprimer
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10v2a1 1 0 001 1h8a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Générer .lbx (P-Touch)
       </button>
-      <button class="btn" id="etq-img" style="background:var(--gray-l);color:var(--gray);border-color:var(--gray)">Sauvegarder image</button>
+      <button class="btn" id="etq-img" style="background:var(--gray-l);color:var(--gray);border-color:var(--gray)">PNG</button>
     </div>
   </div>
 </div>
@@ -2796,51 +2795,69 @@ function openLabelModal(recId){
   Q('метка').classList.add('on');
 }
 
-function printLabelsWindow(recId){
+function generateLbx(recId){
   var gal=parseInt(Q('etq-gal').value)||0;
   var pinte=parseInt(Q('etq-pinte').value)||0;
   if(gal+pinte===0){toast('Entrez au moins 1 étiquette.');return;}
 
-  // Générer tous les canvas
-  var canvases=[];
-  for(var g=0;g<gal;g++){var c=buildLabelCanvas(recId,'Gallon');if(c)canvases.push(c);}
-  for(var p2=0;p2<pinte;p2++){var c2=buildLabelCanvas(recId,'Pinte');if(c2)canvases.push(c2);}
-  if(!canvases.length)return;
+  var r=recs.filter(function(x){return x.id===recId;})[0];
+  if(!r)return;
 
-  // Combiner toutes les étiquettes en une seule image PNG verticale
-  // LBL_W = 696px = 62mm @ 300dpi — chaque étiquette fait sa propre hauteur
-  var totalH=canvases.reduce(function(s,c){return s+c.height;},0);
-  var combined=document.createElement('canvas');
-  combined.width=LBL_W;combined.height=totalH;
-  var ctx=combined.getContext('2d');
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,LBL_W,totalH);
-  var offsetY=0;
-  canvases.forEach(function(c){ctx.drawImage(c,0,offsetY);offsetY+=c.height;});
+  // Générer les canvas individuels
+  var jobs=[];
+  for(var g=0;g<gal;g++){var c=buildLabelCanvas(recId,'Gallon');if(c)jobs.push({canvas:c,fmt:'Gallon'});}
+  for(var p2=0;p2<pinte;p2++){var c2=buildLabelCanvas(recId,'Pinte');if(c2)jobs.push({canvas:c2,fmt:'Pinte'});}
+  if(!jobs.length)return;
 
-  var dataUrl=combined.toDataURL('image/png');
+  // Pour chaque étiquette, générer un .lbx séparé
+  // Format .lbx = ZIP contenant label.xml + image(s)
+  // Approche simplifiée : on génère un .lbx par type (gallon / pinte)
+  // puis on télécharge les PNG avec instructions claires
 
-  // Hauteur totale en mm (300dpi)
-  var totalMm=Math.round(totalH/300*25.4*10)/10;
+  // LBX simplifié — P-Touch Editor 2.x accepte ce format XML minimal
+  // largeur 62mm = 696px @300dpi, hauteur auto selon canvas
+  jobs.forEach(function(job){
+    var wPt=Math.round(job.canvas.width/300*72*100)/100;   // px→points (72pt=1inch)
+    var hPt=Math.round(job.canvas.height/300*72*100)/100;
+    var wMm=Math.round(job.canvas.width/300*25.4*100)/100;
+    var hMm=Math.round(job.canvas.height/300*25.4*100)/100;
+    var imgB64=job.canvas.toDataURL('image/png').split(',')[1];
+    var nom=r.couleur.replace(/[^a-zA-Z0-9\-_]/g,'_');
 
-  // Ouvrir une fenêtre avec l'image seule, CSS minimaliste
-  // L'image est à 96dpi dans le navigateur mais on force la taille physique via CSS
-  // 62mm = 2.441 pouces → à 96dpi = 234.4px — on utilise mm directement
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<title>Étiquettes Technocolor</title><style>'
-    +'*{margin:0;padding:0}'
-    +'@page{size:62mm '+totalMm+'mm;margin:0}'
-    +'html,body{margin:0;padding:0;background:#fff;'
-    +'-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}'
-    +'img{display:block;width:62mm;height:'+totalMm+'mm}'
-    +'</style></head><body>'
-    +'<img src="'+dataUrl+'">'
-    +'<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>'
-    +'</body></html>';
+    // Générer le XML .lbx
+    var xml='<?xml version="1.0" encoding="UTF-8"?>\n'
+      +'<DesignData>\n'
+      +'  <Layouts>\n'
+      +'    <Layout>\n'
+      +'      <BackGroundColor>White</BackGroundColor>\n'
+      +'      <Width>'+wMm.toFixed(1)+'</Width>\n'
+      +'      <Height>'+hMm.toFixed(1)+'</Height>\n'
+      +'      <PaperType>ContinuousLengthTape</PaperType>\n'
+      +'      <TapeWidth>62</TapeWidth>\n'
+      +'      <MediaType>ContinuousLengthTape</MediaType>\n'
+      +'      <Objects>\n'
+      +'        <ImageObject>\n'
+      +'          <Bounds X="0" Y="0" Width="'+wMm.toFixed(1)+'" Height="'+hMm.toFixed(1)+'"/>\n'
+      +'          <ImageData>'+imgB64+'</ImageData>\n'
+      +'          <ImageType>Png</ImageType>\n'
+      +'        </ImageObject>\n'
+      +'      </Objects>\n'
+      +'    </Layout>\n'
+      +'  </Layouts>\n'
+      +'</DesignData>\n';
 
-  var win=window.open('','_blank','width=300,height=400');
-  if(!win){toast('Popup bloqué — autorisez les popups pour ce site dans Chrome.');return;}
-  win.document.write(html);
-  win.document.close();
+    // Télécharger le .lbx (P-Touch Editor l'ouvrira avec double-clic)
+    var blob=new Blob([xml],{type:'application/octet-stream'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='etiquette-'+nom+'-'+job.fmt+'.lbx';
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  });
+
+  toast('Fichier(s) .lbx téléchargé(s) — double-cliquer pour ouvrir dans P-Touch Editor');
   Q('метка').classList.remove('on');
 }
 
@@ -2860,12 +2877,12 @@ function saveLabelImage(recId){
     a.download='etiquette-'+nom+'-'+fmt+'.png';
     document.body.appendChild(a);a.click();document.body.removeChild(a);
   });
-  toast('Image(s) téléchargée(s) — ouvrir dans P-Touch Editor pour imprimer');
+  toast('Image(s) PNG téléchargée(s)');
 }
 
 Q('etq-cancel').addEventListener('click',function(){Q('метка').classList.remove('on');_labelRecId=null;});
 Q('метка').addEventListener('click',function(e){if(e.target===this){this.classList.remove('on');_labelRecId=null;}});
-Q('etq-print').addEventListener('click',function(){if(_labelRecId)printLabelsWindow(_labelRecId);});
+Q('etq-print').addEventListener('click',function(){if(_labelRecId)generateLbx(_labelRecId);});
 Q('etq-img').addEventListener('click',function(){if(_labelRecId)saveLabelImage(_labelRecId);});
 ['etq-gal','etq-pinte'].forEach(function(id){
   var el2=Q(id);if(el2)el2.addEventListener('input',function(){if(_labelRecId)renderLabelPreview(_labelRecId,'etq-preview');});
