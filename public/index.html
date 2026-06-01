@@ -128,6 +128,9 @@ table.ct tr:last-child td{border-bottom:none}
 .pc.grn .pl{color:var(--green)}
 .pc.grn .pv{color:var(--green)}
 .hbox{background:var(--gray-l);border:0.5px dashed var(--bd2);border-radius:var(--r);padding:12px;margin-top:16px;text-align:center;font-size:12px;color:var(--tx3)}
+.note-box{background:var(--amber-l);border:0.5px solid #FAC775;border-left:4px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-top:4px}
+.note-box .note-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:4px}
+.note-box .note-text{font-size:14px;color:#633806;line-height:1.5;font-weight:500}
 .fbox{background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin-top:8px}
 .ebar{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--bd);flex-wrap:wrap;align-items:center}
 .nbar{display:flex;align-items:center;gap:8px;padding-top:10px;margin-top:10px;border-top:0.5px solid var(--bd);width:100%}
@@ -2397,7 +2400,7 @@ function openDetail(id){
     return nb;
   }
 
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="ik">Notes</div><div class="iv">'+r.notes+'</div></div>':'')+'</div><div class="stit">Colorants</div>'+colTable+prixHTML;
+  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div></div>':'')+'</div><div class="stit">Colorants</div>'+colTable+prixHTML;
   if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(true),Q('detpan').firstChild);}
 
   // Historique des prix
@@ -2489,7 +2492,7 @@ function printFiche(id){
 
   // Section infos
   function makeInfos(){
-    return'<div class="infos"><div><span class="lbl">Client</span><span class="val">'+r.client+'</span></div><div><span class="lbl">Couleur</span><span class="val">'+r.couleur+(r.numero_couleur?' #'+r.numero_couleur:'')+'</span></div><div><span class="lbl">Produit</span><span class="val">'+(r.produit||'-')+'</span></div><div><span class="lbl">Base</span><span class="val">'+(r.numero_base||'-')+'</span></div><div><span class="lbl">Format</span><span class="val">'+(r.quantite||'Gallon')+'</span></div><div><span class="lbl">Marque</span><span class="val">'+r.marque+'</span></div>'+(r.notes?'<div style="grid-column:1/-1"><span class="lbl">Notes</span><span class="val">'+r.notes+'</span></div>':'')+'</div>';
+    return'<div class="infos"><div><span class="lbl">Client</span><span class="val">'+r.client+'</span></div><div><span class="lbl">Couleur</span><span class="val">'+r.couleur+(r.numero_couleur?' #'+r.numero_couleur:'')+'</span></div><div><span class="lbl">Produit</span><span class="val">'+(r.produit||'-')+'</span></div><div><span class="lbl">Base</span><span class="val">'+(r.numero_base||'-')+'</span></div><div><span class="lbl">Format</span><span class="val">'+(r.quantite||'Gallon')+'</span></div><div><span class="lbl">Marque</span><span class="val">'+r.marque+'</span></div>'+(r.notes?'<div style="grid-column:1/-1"><div style="background:#FAEEDA;border-left:4px solid #BA7517;border-radius:6px;padding:8px 12px;margin-top:4px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#BA7517;margin-bottom:3px">Notes</div><div style="font-size:13px;color:#4A1B0C;font-weight:500">'+r.notes+'</div></div></div>':'')+'</div>';
   }
 
   // Section prix
