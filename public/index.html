@@ -758,29 +758,6 @@ table.ct tr:last-child td{border-bottom:none}
         </div>
       </div>
 
-      <!-- VISIBILITÉ DES SECTIONS -->
-      <div class="settings-card" id="visibility_settings_box" style="display:none;margin-top:14px">
-        <div class="ftit">Visibilité des sections par rôle</div>
-        <div class="settings-note">Cochez les sections accessibles pour chaque rôle. Les changements s'appliquent à la prochaine connexion.</div>
-        <div style="margin-top:14px;overflow-x:auto">
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
-            <thead>
-              <tr>
-                <th style="text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Section</th>
-                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Admin</th>
-                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Comptoir</th>
-                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Production</th>
-              </tr>
-            </thead>
-            <tbody id="vis-tbody"></tbody>
-          </table>
-        </div>
-        <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
-          <button class="btn btnp" id="vis-save-btn">Sauvegarder</button>
-          <span class="svd" id="vis-saved" style="display:none">Sauvegardé!</span>
-        </div>
-      </div>
-
       <!-- CONFIG ÉTIQUETTES -->
       <div class="settings-card" style="margin-top:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
@@ -810,6 +787,23 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
         </div>
       </div>
+
+      <!-- CONFIG CANETTES -->
+      <div class="settings-card" id="can-settings-box" style="display:none;margin-top:14px">
+        <div class="ftit">🥫 Tarification canettes aérosol</div>
+        <div class="settings-note">Ces valeurs s'appliquent au calcul du prix de vente canette. Visible admin seulement.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+          <div class="fg"><label>Coût canette vide ($)</label><input type="number" id="can-cout" step="0.01" placeholder="5.15"></div>
+          <div class="fg"><label>Prix de base &lt; 6 canettes ($)</label><input type="number" id="can-prix-low" step="0.01" placeholder="19.95"></div>
+          <div class="fg"><label>Prix de base ≥ 6 canettes ($)</label><input type="number" id="can-prix-high" step="0.01" placeholder="14.95"></div>
+          <div class="fg"><label>Perte matériel (%)</label><input type="number" id="can-perte" step="0.1" placeholder="5"></div>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+          <button class="btn btnp" id="can-save-btn">Sauvegarder</button>
+          <span class="svd" id="can-saved" style="display:none">Sauvegardé!</span>
+        </div>
+      </div>
+
     </div>
 
     <div class="view" id="v-crm">
@@ -1033,6 +1027,23 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="ma">
       <button class="btn" id="mcancelcat">Annuler</button>
       <button class="bx" id="mconfcat">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANETTES -->
+<div class="mo" id="mcan">
+  <div class="mb" style="max-width:680px">
+    <div class="mt">🥫 Mode Canettes Aérosol</div>
+    <div id="can-recette-info" style="font-size:13px;color:var(--tx2);margin-bottom:14px"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <label style="font-size:13px;font-weight:500">Nombre de canettes :</label>
+      <input type="number" id="can-qty" min="1" max="999" value="6" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;border:1.5px solid var(--blue-m);border-radius:var(--r);text-align:center">
+      <span style="font-size:12px;color:var(--tx3)" id="can-tier-label"></span>
+    </div>
+    <div id="can-result"></div>
+    <div class="ma">
+      <button class="btn" id="mcancel-can">Fermer</button>
     </div>
   </div>
 </div>
@@ -1629,7 +1640,7 @@ renderAll();
 loadCRMData();
 
 </script>
-</body>
+
 </html>
 </template>
 
@@ -1639,16 +1650,8 @@ var SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
 var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,role=null,recs=[],selClient=null,selId=null;
-// Visibilite des sections par role — defaults
-var tabsVisibility={
-  clients:  {admin:true,comptoir:true,production:true},
-  ajouter:  {admin:true,comptoir:true,production:false},
-  conversions:{admin:true,comptoir:true,production:true},
-  portail:  {admin:true,comptoir:true,production:true},
-  couts:    {admin:true,comptoir:true,production:false},
-  crm:      {admin:true,comptoir:false,production:false},
-  reglages: {admin:true,comptoir:false,production:false}
-};
+// Paramètres canettes (chargés depuis parametres table)
+var canParams={cout:5.15,prixLow:19.95,prixHigh:14.95,perte:5};
 var clientsScrollY=0,prodsScrollY=0,searchScrollY=0;
 var _navList=[],_navIdx=-1;
 var curHex='#cccccc',camStream=null;
@@ -1729,14 +1732,18 @@ function initApp(u){
     pill.className='rpill r-'+role;
     if(Q('set_nom'))Q('set_nom').value=nom||'';
     Q('psec').style.display=canP()?'':'none';
+    Q('tcouts').style.display=canP()?'':'none';
+    if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
+    if(Q('tcrm'))Q('tcrm').style.display=role==='admin'?'':'none';
     Q('fdate').value=new Date().toISOString().slice(0,10);
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
     Q('app').style.display='block';
     loadMarges();
+    loadCanParams();
     loadCatalogues().then(function(){loadRecs();});
     etqFetchFromDb();
-    loadTabsVisibility(function(){applyTabsVisibility();showView('clients');});
+    showView('clients');
   });
 }
 sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.user)initApp(r.data.session.user);});
@@ -1850,8 +1857,8 @@ function loadReglages(){
     });
   }
   if(Q('admin_settings_box'))Q('admin_settings_box').style.display=isAdmin()?'':'none';
-  if(Q('visibility_settings_box'))Q('visibility_settings_box').style.display=isAdmin()?'':'none';
-  if(isAdmin()){loadUsersList();renderVisibilityTable();}
+  if(Q('can-settings-box'))Q('can-settings-box').style.display=isAdmin()?'':'none';
+  if(isAdmin()){loadUsersList();loadCanParams();}
   renderEtqConfig();
 }
 function saveMyProfile(){
@@ -1920,7 +1927,7 @@ function createUserFromSettings(){
 document.addEventListener('click',function(e){
   if(e.target&&e.target.id==='set_save_profile')saveMyProfile();
   if(e.target&&e.target.id==='create_user_btn')createUserFromSettings();
-  if(e.target&&e.target.id==='vis-save-btn')saveTabsVisibility();
+  if(e.target&&e.target.id==='can-save-btn')saveCanParams();
 });
 
 
@@ -1947,91 +1954,224 @@ function normalizePortalRow(x){
 }
 function isAdmin(){return role==='admin';}
 
-// VISIBILITÉ TABS
-var VIS_TABS=[
-  {key:'clients',    label:'Recettes',      lock:'admin,comptoir,production'},
-  {key:'ajouter',   label:'+ Ajouter',     lock:'admin'},
-  {key:'conversions',label:'Conversions',   lock:''},
-  {key:'portail',   label:'Portail',        lock:''},
-  {key:'couts',     label:'Coûts et Prix',  lock:'admin,comptoir'},
-  {key:'crm',       label:'CRM',            lock:'admin'},
-  {key:'reglages',  label:'Réglages',       lock:'admin'}
-];
-// lock = rôles toujours activés (non-décochables)
-
-function loadTabsVisibility(cb){
-  sb.from('parametres').select('*').eq('type','visibilite_tab').then(function(r){
-    if(r.data&&r.data.length){
-      r.data.forEach(function(row){
-        // marque = "tab:role", valeur = "1" ou "0"
-        var parts=(row.marque||'').split(':');
-        if(parts.length===2){
-          var tab=parts[0],rl=parts[1];
-          if(tabsVisibility[tab])tabsVisibility[tab][rl]=(row.valeur==='1');
-        }
-      });
-    }
-    if(cb)cb();
-  });
-}
-
-function applyTabsVisibility(){
-  var r=role||'production';
-  VIS_TABS.forEach(function(t){
-    var tid='t'+t.key;
-    var tabEl=Q(tid);
-    if(!tabEl)return;
-    var visible=tabsVisibility[t.key]?tabsVisibility[t.key][r]:true;
-    // Recettes toujours visible
-    if(t.key==='clients'){tabEl.style.display='';return;}
-    // Couts: doit aussi respecter canP()
-    if(t.key==='couts'){tabEl.style.display=(visible&&canP())?'':'none';Q('psec').style.display=(visible&&canP())?'':'none';return;}
-    tabEl.style.display=visible?'':'none';
-  });
-}
-
-function renderVisibilityTable(){
-  var tbody=Q('vis-tbody');
-  if(!tbody)return;
-  var roles=['admin','comptoir','production'];
-  tbody.innerHTML=VIS_TABS.map(function(t){
-    var locked=t.lock.split(',').filter(Boolean);
-    var cells=roles.map(function(r){
-      var isLocked=locked.indexOf(r)>=0;
-      var checked=tabsVisibility[t.key]?tabsVisibility[t.key][r]:true;
-      if(isLocked){
-        return '<td style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd)"><input type="checkbox" checked disabled title="Toujours activé pour ce rôle" style="opacity:0.4;cursor:not-allowed"></td>';
-      }
-      return '<td style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd)"><input type="checkbox" data-tab="'+t.key+'" data-role="'+r+'"'+(checked?' checked':'')+'></td>';
-    }).join('');
-    return '<tr><td style="padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500">'+t.label+'</td>'+cells+'</tr>';
-  }).join('');
-}
-
-function saveTabsVisibility(){
-  if(!isAdmin())return;
-  // Lire les checkboxes
-  var checkboxes=Q('vis-tbody').querySelectorAll('input[type=checkbox]:not(:disabled)');
-  checkboxes.forEach(function(cb){
-    var tab=cb.dataset.tab,rl=cb.dataset.role;
-    if(tabsVisibility[tab])tabsVisibility[tab][rl]=cb.checked;
-  });
-  // Upsert dans parametres
-  var proms=[];
-  VIS_TABS.forEach(function(t){
-    ['admin','comptoir','production'].forEach(function(rl){
-      var locked=t.lock.split(',').filter(Boolean);
-      if(locked.indexOf(rl)>=0)return; // skip locked
-      var val=tabsVisibility[t.key]?tabsVisibility[t.key][rl]:true;
-      proms.push(sb.from('parametres').upsert({type:'visibilite_tab',marque:t.key+':'+rl,valeur:val?'1':'0'},{onConflict:'type,marque'}));
+// ── CANETTES ────────────────────────────────────────────────────
+function loadCanParams(){
+  sb.from('parametres').select('*').eq('type','canette').then(function(r){
+    if(r.data)r.data.forEach(function(row){
+      if(row.marque==='cout')canParams.cout=parseFloat(row.valeur)||5.15;
+      if(row.marque==='prix_low')canParams.prixLow=parseFloat(row.valeur)||19.95;
+      if(row.marque==='prix_high')canParams.prixHigh=parseFloat(row.valeur)||14.95;
+      if(row.marque==='perte')canParams.perte=parseFloat(row.valeur)||5;
     });
-  });
-  Promise.all(proms).then(function(){
-    applyTabsVisibility();
-    var s=Q('vis-saved');if(s){s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);}
-    toast('Visibilité sauvegardée!');
+    // Remplir UI réglages si visible
+    if(Q('can-cout'))Q('can-cout').value=canParams.cout;
+    if(Q('can-prix-low'))Q('can-prix-low').value=canParams.prixLow;
+    if(Q('can-prix-high'))Q('can-prix-high').value=canParams.prixHigh;
+    if(Q('can-perte'))Q('can-perte').value=canParams.perte;
   });
 }
+function saveCanParams(){
+  if(!isAdmin())return;
+  canParams.cout=parseFloat(Q('can-cout').value)||5.15;
+  canParams.prixLow=parseFloat(Q('can-prix-low').value)||19.95;
+  canParams.prixHigh=parseFloat(Q('can-prix-high').value)||14.95;
+  canParams.perte=parseFloat(Q('can-perte').value)||5;
+  var proms=[
+    sb.from('parametres').upsert({type:'canette',marque:'cout',valeur:String(canParams.cout)},{onConflict:'type,marque'}),
+    sb.from('parametres').upsert({type:'canette',marque:'prix_low',valeur:String(canParams.prixLow)},{onConflict:'type,marque'}),
+    sb.from('parametres').upsert({type:'canette',marque:'prix_high',valeur:String(canParams.prixHigh)},{onConflict:'type,marque'}),
+    sb.from('parametres').upsert({type:'canette',marque:'perte',valeur:String(canParams.perte)},{onConflict:'type,marque'})
+  ];
+  Promise.all(proms).then(function(){
+    var s=Q('can-saved');if(s){s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);}
+    toast('Paramètres canettes sauvegardés!');
+  });
+}
+
+function openCanModal(id){
+  var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
+  var marque=r.marque,produit=(r.produit||'').toLowerCase();
+  // Vérifier que c'est Inter, Devoe ou Pepin (pas Synthane, pas Disolac)
+  var validMarques=['International','Devoe','Pepin'];
+  if(validMarques.indexOf(marque)<0||(marque==='Pepin'&&produit.indexOf('synthane')>=0)){
+    toast('Mode canette disponible pour Inter, Devoe et Pépin seulement.');return;
+  }
+  // Trouver la base dans allBases
+  var baseNum=(r.numero_base||'').toLowerCase();
+  var baseProd=produit;
+  var baseFound=allBases.filter(function(b){
+    var mn=b.marque===marque;
+    var bn=!baseNum||(b.numero_base&&b.numero_base.toLowerCase()===baseNum);
+    var pn=!baseProd||b.produit.toLowerCase()===baseProd;
+    if(baseNum)return mn&&bn;
+    return mn&&pn;
+  })[0];
+  // Info recette
+  var infoEl=Q('can-recette-info');
+  if(infoEl)infoEl.textContent=r.couleur+' — '+r.client+' | Base: '+(r.numero_base||r.produit||'?')+' | Marque: '+marque;
+  // Reset et ouvrir
+  var qtyEl=Q('can-qty');if(qtyEl)qtyEl.value=6;
+  Q('mcan').classList.add('on');
+  Q('mcan').dataset.rid=id;
+  calcCanettes(r,baseFound);
+  if(qtyEl)qtyEl.oninput=function(){calcCanettes(r,baseFound);};
+}
+
+function calcCanettes(r,baseFound){
+  var qtyEl=Q('can-qty');
+  var nbCan=parseInt((qtyEl&&qtyEl.value)||1)||1;
+  var marque=r.marque;
+  var div=(marque==='International'||marque==='Devoe')?0.55:0.60;
+  var prixBase=nbCan<6?canParams.prixLow:canParams.prixHigh;
+  var perteFactor=1+(canParams.perte/100); // ex: 1.05
+
+  // Tier label
+  var tierEl=Q('can-tier-label');
+  if(tierEl)tierEl.textContent=nbCan<6?'(tarif < 6 canettes : '+canParams.prixLow.toFixed(2)+'$ base)':'(tarif ≥ 6 canettes : '+canParams.prixHigh.toFixed(2)+'$ base)';
+
+  // Masse gallon de la base
+  var masseGal=baseFound?parseFloat(baseFound.masse_gallon||0):0;
+
+  // Colorants de la recette
+  var cols=(r.colorants||[]).filter(function(c){return c.nom&&c.quantite&&c.quantite!=='0';});
+
+  // Calculer gr/gallon pour chaque colorant
+  // Pour Inter/Devoe : quantité stockée en oz+fractions → convertir en gr via cout_gr_direct (poids g/unité)
+  // Pour Pépin : même chose (poids g/oz via cout_gr_direct)
+  var colData=[];
+  var totalGrGal=0;
+
+  cols.forEach(function(c){
+    // Trouver le colorant dans allCP
+    var cp=allCP.filter(function(x){return x.nom&&x.nom.toLowerCase()===c.nom.toLowerCase();})[0];
+    var poidsUn=cp?parseFloat(cp.cout_gr_direct||0):0; // g par unité (oz)
+    var coutGalCP=cp?parseFloat(cp.cout_gallon||0):0;
+
+    // Parser la quantité stockée
+    var qStr=c.quantite||'0';
+    var grGal=0;
+    var ozTotal=0;
+
+    // Format: "2 oz 3/64 1/128" ou "5.3" (STX gr direct) ou "0"
+    if(qStr.indexOf('oz')>=0||qStr.indexOf('/')<0){
+      // Pépin/Inter format oz fractions
+      var ozM=qStr.match(/(\d+(?:\.\d+)?)\s*oz/);
+      var f48M=qStr.match(/(\d+)\/48/);
+      var f64M=qStr.match(/(\d+)\/64/);
+      var f128M=qStr.match(/(\d+)\/128/);
+      var ozPart=ozM?parseFloat(ozM[1]):0;
+      var f48Part=f48M?parseFloat(f48M[1])/48:0;
+      var f64Part=f64M?parseFloat(f64M[1])/64:0;
+      var f128Part=f128M?parseFloat(f128M[1])/128:0;
+      ozTotal=ozPart+f48Part+f64Part+f128Part;
+      grGal=ozTotal*poidsUn; // gr/gallon
+    } else {
+      // Valeur numérique directe (gr)
+      grGal=parseFloat(qStr)||0;
+    }
+
+    // Coût colorant par gr
+    var coutGr=cp?parseFloat(cp.cout_gr_direct||0):0;
+    // Pour Inter: cout_gr_direct = poids g/oz. Le coût/gr = cout_gallon / (poids_g_oz * 128 oz/gal... non)
+    // Utiliser: cout_gr = cout_gallon / grGal_par_gallon_plein (on recalcule)
+    // En fait cout_gr_direct dans allCP = poids en g par oz pour Inter/Pepin
+    // Le coût/gr colorant = (cout_gallon/128) / poids_g_oz  = cout_par_oz / poids_g_oz
+    var coutParGr=0;
+    if(poidsUn>0&&coutGalCP>0){
+      // cout_gallon = prix d'un gallon de colorant = 128 oz * (cout/oz)
+      // cout/oz = coutGalCP/128
+      // cout/gr = (coutGalCP/128) / poidsUn
+      coutParGr=(coutGalCP/128)/poidsUn;
+    }
+
+    if(grGal>0){
+      colData.push({nom:c.nom,grGal:grGal,coutParGr:coutParGr});
+      totalGrGal+=grGal;
+    }
+  });
+
+  // Ratio: gr colorant par canette = (grGal / masseGal) * 100
+  // gr base par canette = 100 - somme(gr colorants)
+  var result=Q('can-result');if(!result)return;
+
+  if(!masseGal||masseGal<=0){
+    // Pas de densité — avertissement mais on peut quand même calculer les colorants si on a totalGrGal
+    // On utilisera une estimation: base = 100 - totalGrColorants_par_canette
+  }
+
+  var rows='';
+  var totalGrColParCan=0;
+  var totalCoutCol=0;
+
+  colData.forEach(function(cd){
+    var ratio=masseGal>0?(cd.grGal/masseGal):0;
+    var grParCan=ratio*100;
+    var grTotal=grParCan*nbCan*perteFactor;
+    var cout1=grParCan*cd.coutParGr;
+    totalGrColParCan+=grParCan;
+    totalCoutCol+=cout1;
+    rows+='<tr><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)">'+cd.nom+'</td>'
+      +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+grParCan.toFixed(3)+' g</td>'
+      +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+(grTotal).toFixed(2)+' g</td>'
+      +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+cout1.toFixed(4)+' $</td></tr>';
+  });
+
+  var grBaseParCan=Math.max(0,100-totalGrColParCan);
+  var grBaseTotal=grBaseParCan*nbCan*perteFactor;
+
+  // Coût base par canette
+  var coutBaseParCan=0;
+  if(baseFound&&masseGal>0){
+    var coutGalBase=parseFloat(baseFound.cout_1gal||baseFound.cout_gallon||0);
+    coutBaseParCan=(grBaseParCan/masseGal)*coutGalBase;
+  }
+
+  var totalCoutPeinture=coutBaseParCan+totalCoutCol;
+  var totalCoutParCan=totalCoutPeinture+canParams.cout; // + canette vide
+  var prixVente=prixBase+(totalCoutCol/div);
+  var margeDollar=prixVente-totalCoutParCan;
+  var margePct=totalCoutParCan>0?Math.round((1-(totalCoutParCan/prixVente))*100):0;
+
+  var warn=(!masseGal||masseGal<=0)?'<div style="background:var(--amber-l);border:0.5px solid #FAC775;border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--amber);margin-bottom:10px">⚠️ Densité de la base introuvable — les quantités de base sont estimées. Vérifiez que la colonne <strong>masse_gallon</strong> est remplie dans la table bases.</div>':'';
+
+  result.innerHTML=warn+
+    '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px">'
+    +'<thead><tr style="background:var(--bg)">'
+    +'<th style="text-align:left;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Colorant</th>'
+    +'<th style="text-align:right;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">g / canette</th>'
+    +'<th style="text-align:right;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Total '+nbCan+' can. (+'+canParams.perte+'% perte)</th>'
+    +'<th style="text-align:right;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Coût / can.</th>'
+    +'</tr></thead><tbody>'
+    +rows
+    +'<tr style="background:var(--bg)">'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);font-style:italic;color:var(--tx2)">Base ('+( r.numero_base||r.produit||'?')+')</td>'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;color:var(--tx2)">'+grBaseParCan.toFixed(3)+' g</td>'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;color:var(--tx2)">'+grBaseTotal.toFixed(2)+' g</td>'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;color:var(--tx2)">'+coutBaseParCan.toFixed(4)+' $</td>'
+    +'</tr>'
+    +'<tr style="font-weight:600">'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)">Total peinture</td>'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">100.000 g</td>'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+(100*nbCan*perteFactor).toFixed(2)+' g</td>'
+    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+totalCoutPeinture.toFixed(4)+' $</td>'
+    +'</tr>'
+    +'</tbody></table>'
+    // Récapitulatif coûts/prix
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
+    +'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Coût peinture</div><div class="pv" style="color:var(--tx)">'+totalCoutPeinture.toFixed(2)+' $</div></div>'
+    +'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Canette vide</div><div class="pv" style="color:var(--tx)">'+canParams.cout.toFixed(2)+' $</div></div>'
+    +'<div class="pc" style="background:#FFF3E0;border:0.5px solid #E65100"><div class="pl" style="color:#E65100">Total coût / can.</div><div class="pv" style="color:#E65100">'+totalCoutParCan.toFixed(2)+' $</div></div>'
+    +'<div class="pc grn"><div class="pl">Prix vente / can.</div><div class="pv">'+prixVente.toFixed(2)+' $</div></div>'
+    +'<div class="pc" style="background:var(--green-l);border:0.5px solid #8BC34A"><div class="pl" style="color:var(--green)">Marge / can.</div><div class="pv" style="color:var(--green)">'+margeDollar.toFixed(2)+' $</div></div>'
+    +'<div class="pc" style="background:var(--green-l);border:0.5px solid #8BC34A"><div class="pl" style="color:var(--green)">Marge %</div><div class="pv" style="color:var(--green)">'+margePct+'%</div></div>'
+    +'<div class="pc" style="background:var(--blue-l);border:0.5px solid var(--blue-m);grid-column:1/-1"><div class="pl" style="color:var(--blue)">Prix total '+nbCan+' canettes</div><div class="pv" style="color:var(--blue);font-size:18px">'+(prixVente*nbCan).toFixed(2)+' $</div></div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--tx3);margin-top:8px">Formule: '+prixBase.toFixed(2)+'$ (tarif) + '+totalCoutCol.toFixed(4)+'$ (colorants) / '+div+' = '+prixVente.toFixed(2)+'$ / canette</div>';
+}
+
+// Fermer modal canettes
+Q('mcancel-can').addEventListener('click',function(){Q('mcan').classList.remove('on');});
+
 function isPortalAuteur(x){return user&&x&&x.created_by===user.id;}
 function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente');}
 function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente')||(!portailUseDb&&user&&x.auteur_email===user.email&&x.statut==='en_attente');}
@@ -2568,6 +2708,13 @@ function openDetail(id){
   betq.style.cssText='background:#f0f7ff;color:#1A8FD1;border-color:#1A8FD1';
   betq.addEventListener('click',function(){openLabelModal(id);});
   eb.appendChild(betq);
+  // Bouton Canettes (comptoir + admin seulement)
+  if(canP()){
+    var bcan=document.createElement('button');bcan.className='be';bcan.innerHTML='🥫 Canettes';
+    bcan.style.cssText='background:#FFF3E0;color:#E65100;border-color:#E65100';
+    bcan.addEventListener('click',function(){openCanModal(id);});
+    eb.appendChild(bcan);
+  }
   eb.appendChild(bx);
   // Nav précédente/suivante dans le même bloc
   if(_navList.length>1){eb.appendChild(makeNavBar());}
