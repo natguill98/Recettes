@@ -200,10 +200,10 @@ table.ct tr:last-child td{border-bottom:none}
 .ctable input{width:100%;padding:5px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx)}
 .sbtn{margin-top:16px;font-size:13px;padding:9px 20px;border-radius:var(--r);cursor:pointer;border:none;background:#1A8FD1;color:#fff;font-weight:500}
 .svd{font-size:12px;color:var(--green);background:var(--green-l);padding:6px 12px;border-radius:var(--r);display:none;margin-left:10px}
-.brow{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px;gap:5px;align-items:center;margin-bottom:6px}
+.brow{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 80px 28px;gap:5px;align-items:center;margin-bottom:6px}
 .brow input,.brow select{padding:5px 6px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
 .brow select{padding:5px 3px}
-.bhd{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 28px;gap:5px;margin-bottom:4px}
+.bhd{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 80px 28px;gap:5px;margin-bottom:4px}
 .bhd span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
 .crow3{display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
 .crow3 input{padding:6px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
@@ -787,23 +787,6 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
         </div>
       </div>
-
-      <!-- CONFIG CANETTES -->
-      <div class="settings-card" id="can-settings-box" style="display:none;margin-top:14px">
-        <div class="ftit">🥫 Tarification canettes aérosol</div>
-        <div class="settings-note">Ces valeurs s'appliquent au calcul du prix de vente canette. Visible admin seulement.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
-          <div class="fg"><label>Coût canette vide ($)</label><input type="number" id="can-cout" step="0.01" placeholder="5.15"></div>
-          <div class="fg"><label>Prix de base &lt; 6 canettes ($)</label><input type="number" id="can-prix-low" step="0.01" placeholder="19.95"></div>
-          <div class="fg"><label>Prix de base ≥ 6 canettes ($)</label><input type="number" id="can-prix-high" step="0.01" placeholder="14.95"></div>
-          <div class="fg"><label>Perte matériel (%)</label><input type="number" id="can-perte" step="0.1" placeholder="5"></div>
-        </div>
-        <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
-          <button class="btn btnp" id="can-save-btn">Sauvegarder</button>
-          <span class="svd" id="can-saved" style="display:none">Sauvegardé!</span>
-        </div>
-      </div>
-
     </div>
 
     <div class="view" id="v-crm">
@@ -862,20 +845,20 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="csd">Entrez le prix par taille. Le cost base se remplira automatiquement selon la quantite choisie dans la recette.</div>
 
           <div style="font-size:12px;font-weight:600;color:#3B6D11;margin:12px 0 6px">Pepin</div>
-          <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
+          <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span>g/gallon</span><span></span></div>
           <div id="brows-pepin"></div>
           <button class="addbtn" id="addbtn-pepin" style="color:#3B6D11;font-weight:600">+ Ajouter (Pepin)</button>
 
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
             <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px">International / Devoe</div>
-            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
+            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span>g/gallon</span><span></span></div>
             <div id="brows-inter"></div>
             <button class="addbtn" id="addbtn-inter" style="color:var(--blue);font-weight:600">+ Ajouter (Inter/Devoe)</button>
           </div>
 
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
             <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px">Disolac</div>
-            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span></span></div>
+            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span>g/gallon</span><span></span></div>
             <div id="brows-disolac"></div>
             <button class="addbtn" id="addbtn-disolac" style="color:var(--gray);font-weight:600">+ Ajouter (Disolac)</button>
           </div>
@@ -1027,23 +1010,6 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="ma">
       <button class="btn" id="mcancelcat">Annuler</button>
       <button class="bx" id="mconfcat">Supprimer</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CANETTES -->
-<div class="mo" id="mcan">
-  <div class="mb" style="max-width:680px">
-    <div class="mt">🥫 Mode Canettes Aérosol</div>
-    <div id="can-recette-info" style="font-size:13px;color:var(--tx2);margin-bottom:14px"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <label style="font-size:13px;font-weight:500">Nombre de canettes :</label>
-      <input type="number" id="can-qty" min="1" max="999" value="6" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;border:1.5px solid var(--blue-m);border-radius:var(--r);text-align:center">
-      <span style="font-size:12px;color:var(--tx3)" id="can-tier-label"></span>
-    </div>
-    <div id="can-result"></div>
-    <div class="ma">
-      <button class="btn" id="mcancel-can">Fermer</button>
     </div>
   </div>
 </div>
@@ -1640,7 +1606,7 @@ renderAll();
 loadCRMData();
 
 </script>
-
+</body>
 </html>
 </template>
 
@@ -1650,8 +1616,6 @@ var SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
 var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,role=null,recs=[],selClient=null,selId=null;
-// Paramètres canettes (chargés depuis parametres table)
-var canParams={cout:5.15,prixLow:19.95,prixHigh:14.95,perte:5};
 var clientsScrollY=0,prodsScrollY=0,searchScrollY=0;
 var _navList=[],_navIdx=-1;
 var curHex='#cccccc',camStream=null;
@@ -1740,7 +1704,6 @@ function initApp(u){
     Q('login').style.display='none';
     Q('app').style.display='block';
     loadMarges();
-    loadCanParams();
     loadCatalogues().then(function(){loadRecs();});
     etqFetchFromDb();
     showView('clients');
@@ -1857,8 +1820,7 @@ function loadReglages(){
     });
   }
   if(Q('admin_settings_box'))Q('admin_settings_box').style.display=isAdmin()?'':'none';
-  if(Q('can-settings-box'))Q('can-settings-box').style.display=isAdmin()?'':'none';
-  if(isAdmin()){loadUsersList();loadCanParams();}
+  if(isAdmin())loadUsersList();
   renderEtqConfig();
 }
 function saveMyProfile(){
@@ -1927,7 +1889,6 @@ function createUserFromSettings(){
 document.addEventListener('click',function(e){
   if(e.target&&e.target.id==='set_save_profile')saveMyProfile();
   if(e.target&&e.target.id==='create_user_btn')createUserFromSettings();
-  if(e.target&&e.target.id==='can-save-btn')saveCanParams();
 });
 
 
@@ -1953,225 +1914,6 @@ function normalizePortalRow(x){
   return x;
 }
 function isAdmin(){return role==='admin';}
-
-// ── CANETTES ────────────────────────────────────────────────────
-function loadCanParams(){
-  sb.from('parametres').select('*').eq('type','canette').then(function(r){
-    if(r.data)r.data.forEach(function(row){
-      if(row.marque==='cout')canParams.cout=parseFloat(row.valeur)||5.15;
-      if(row.marque==='prix_low')canParams.prixLow=parseFloat(row.valeur)||19.95;
-      if(row.marque==='prix_high')canParams.prixHigh=parseFloat(row.valeur)||14.95;
-      if(row.marque==='perte')canParams.perte=parseFloat(row.valeur)||5;
-    });
-    // Remplir UI réglages si visible
-    if(Q('can-cout'))Q('can-cout').value=canParams.cout;
-    if(Q('can-prix-low'))Q('can-prix-low').value=canParams.prixLow;
-    if(Q('can-prix-high'))Q('can-prix-high').value=canParams.prixHigh;
-    if(Q('can-perte'))Q('can-perte').value=canParams.perte;
-  });
-}
-function saveCanParams(){
-  if(!isAdmin())return;
-  canParams.cout=parseFloat(Q('can-cout').value)||5.15;
-  canParams.prixLow=parseFloat(Q('can-prix-low').value)||19.95;
-  canParams.prixHigh=parseFloat(Q('can-prix-high').value)||14.95;
-  canParams.perte=parseFloat(Q('can-perte').value)||5;
-  var proms=[
-    sb.from('parametres').upsert({type:'canette',marque:'cout',valeur:String(canParams.cout)},{onConflict:'type,marque'}),
-    sb.from('parametres').upsert({type:'canette',marque:'prix_low',valeur:String(canParams.prixLow)},{onConflict:'type,marque'}),
-    sb.from('parametres').upsert({type:'canette',marque:'prix_high',valeur:String(canParams.prixHigh)},{onConflict:'type,marque'}),
-    sb.from('parametres').upsert({type:'canette',marque:'perte',valeur:String(canParams.perte)},{onConflict:'type,marque'})
-  ];
-  Promise.all(proms).then(function(){
-    var s=Q('can-saved');if(s){s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);}
-    toast('Paramètres canettes sauvegardés!');
-  });
-}
-
-function openCanModal(id){
-  var r=recs.filter(function(x){return x.id===id;})[0];if(!r)return;
-  var marque=r.marque,produit=(r.produit||'').toLowerCase();
-  // Vérifier que c'est Inter, Devoe ou Pepin (pas Synthane, pas Disolac)
-  var validMarques=['International','Devoe','Pepin'];
-  if(validMarques.indexOf(marque)<0||(marque==='Pepin'&&produit.indexOf('synthane')>=0)){
-    toast('Mode canette disponible pour Inter, Devoe et Pépin seulement.');return;
-  }
-  // Trouver la base dans allBases
-  var baseNum=(r.numero_base||'').toLowerCase();
-  var baseProd=produit;
-  var baseFound=allBases.filter(function(b){
-    var mn=b.marque===marque;
-    var bn=!baseNum||(b.numero_base&&b.numero_base.toLowerCase()===baseNum);
-    var pn=!baseProd||b.produit.toLowerCase()===baseProd;
-    if(baseNum)return mn&&bn;
-    return mn&&pn;
-  })[0];
-  // Info recette
-  var infoEl=Q('can-recette-info');
-  if(infoEl)infoEl.textContent=r.couleur+' — '+r.client+' | Base: '+(r.numero_base||r.produit||'?')+' | Marque: '+marque;
-  // Reset et ouvrir
-  var qtyEl=Q('can-qty');if(qtyEl)qtyEl.value=6;
-  Q('mcan').classList.add('on');
-  Q('mcan').dataset.rid=id;
-  calcCanettes(r,baseFound);
-  if(qtyEl)qtyEl.oninput=function(){calcCanettes(r,baseFound);};
-}
-
-function calcCanettes(r,baseFound){
-  var qtyEl=Q('can-qty');
-  var nbCan=parseInt((qtyEl&&qtyEl.value)||1)||1;
-  var marque=r.marque;
-  var div=(marque==='International'||marque==='Devoe')?0.55:0.60;
-  var prixBase=nbCan<6?canParams.prixLow:canParams.prixHigh;
-  var perteFactor=1+(canParams.perte/100); // ex: 1.05
-
-  // Tier label
-  var tierEl=Q('can-tier-label');
-  if(tierEl)tierEl.textContent=nbCan<6?'(tarif < 6 canettes : '+canParams.prixLow.toFixed(2)+'$ base)':'(tarif ≥ 6 canettes : '+canParams.prixHigh.toFixed(2)+'$ base)';
-
-  // Masse gallon de la base
-  var masseGal=baseFound?parseFloat(baseFound.masse_gallon||0):0;
-
-  // Colorants de la recette
-  var cols=(r.colorants||[]).filter(function(c){return c.nom&&c.quantite&&c.quantite!=='0';});
-
-  // Calculer gr/gallon pour chaque colorant
-  // Pour Inter/Devoe : quantité stockée en oz+fractions → convertir en gr via cout_gr_direct (poids g/unité)
-  // Pour Pépin : même chose (poids g/oz via cout_gr_direct)
-  var colData=[];
-  var totalGrGal=0;
-
-  cols.forEach(function(c){
-    // Trouver le colorant dans allCP
-    var cp=allCP.filter(function(x){return x.nom&&x.nom.toLowerCase()===c.nom.toLowerCase();})[0];
-    var poidsUn=cp?parseFloat(cp.cout_gr_direct||0):0; // g par unité (oz)
-    var coutGalCP=cp?parseFloat(cp.cout_gallon||0):0;
-
-    // Parser la quantité stockée
-    var qStr=c.quantite||'0';
-    var grGal=0;
-    var ozTotal=0;
-
-    // Format: "2 oz 3/64 1/128" ou "5.3" (STX gr direct) ou "0"
-    if(qStr.indexOf('oz')>=0||qStr.indexOf('/')<0){
-      // Pépin/Inter format oz fractions
-      var ozM=qStr.match(/(\d+(?:\.\d+)?)\s*oz/);
-      var f48M=qStr.match(/(\d+)\/48/);
-      var f64M=qStr.match(/(\d+)\/64/);
-      var f128M=qStr.match(/(\d+)\/128/);
-      var ozPart=ozM?parseFloat(ozM[1]):0;
-      var f48Part=f48M?parseFloat(f48M[1])/48:0;
-      var f64Part=f64M?parseFloat(f64M[1])/64:0;
-      var f128Part=f128M?parseFloat(f128M[1])/128:0;
-      ozTotal=ozPart+f48Part+f64Part+f128Part;
-      grGal=ozTotal*poidsUn; // gr/gallon
-    } else {
-      // Valeur numérique directe (gr)
-      grGal=parseFloat(qStr)||0;
-    }
-
-    // Coût colorant par gr
-    var coutGr=cp?parseFloat(cp.cout_gr_direct||0):0;
-    // Pour Inter: cout_gr_direct = poids g/oz. Le coût/gr = cout_gallon / (poids_g_oz * 128 oz/gal... non)
-    // Utiliser: cout_gr = cout_gallon / grGal_par_gallon_plein (on recalcule)
-    // En fait cout_gr_direct dans allCP = poids en g par oz pour Inter/Pepin
-    // Le coût/gr colorant = (cout_gallon/128) / poids_g_oz  = cout_par_oz / poids_g_oz
-    var coutParGr=0;
-    if(poidsUn>0&&coutGalCP>0){
-      // cout_gallon = prix d'un gallon de colorant = 128 oz * (cout/oz)
-      // cout/oz = coutGalCP/128
-      // cout/gr = (coutGalCP/128) / poidsUn
-      coutParGr=(coutGalCP/128)/poidsUn;
-    }
-
-    if(grGal>0){
-      colData.push({nom:c.nom,grGal:grGal,coutParGr:coutParGr});
-      totalGrGal+=grGal;
-    }
-  });
-
-  // Ratio: gr colorant par canette = (grGal / masseGal) * 100
-  // gr base par canette = 100 - somme(gr colorants)
-  var result=Q('can-result');if(!result)return;
-
-  if(!masseGal||masseGal<=0){
-    // Pas de densité — avertissement mais on peut quand même calculer les colorants si on a totalGrGal
-    // On utilisera une estimation: base = 100 - totalGrColorants_par_canette
-  }
-
-  var rows='';
-  var totalGrColParCan=0;
-  var totalCoutCol=0;
-
-  colData.forEach(function(cd){
-    var ratio=masseGal>0?(cd.grGal/masseGal):0;
-    var grParCan=ratio*100;
-    var grTotal=grParCan*nbCan*perteFactor;
-    var cout1=grParCan*cd.coutParGr;
-    totalGrColParCan+=grParCan;
-    totalCoutCol+=cout1;
-    rows+='<tr><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)">'+cd.nom+'</td>'
-      +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+grParCan.toFixed(3)+' g</td>'
-      +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+(grTotal).toFixed(2)+' g</td>'
-      +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+cout1.toFixed(4)+' $</td></tr>';
-  });
-
-  var grBaseParCan=Math.max(0,100-totalGrColParCan);
-  var grBaseTotal=grBaseParCan*nbCan*perteFactor;
-
-  // Coût base par canette
-  var coutBaseParCan=0;
-  if(baseFound&&masseGal>0){
-    var coutGalBase=parseFloat(baseFound.cout_1gal||baseFound.cout_gallon||0);
-    coutBaseParCan=(grBaseParCan/masseGal)*coutGalBase;
-  }
-
-  var totalCoutPeinture=coutBaseParCan+totalCoutCol;
-  var totalCoutParCan=totalCoutPeinture+canParams.cout; // + canette vide
-  var prixVente=prixBase+(totalCoutCol/div);
-  var margeDollar=prixVente-totalCoutParCan;
-  var margePct=totalCoutParCan>0?Math.round((1-(totalCoutParCan/prixVente))*100):0;
-
-  var warn=(!masseGal||masseGal<=0)?'<div style="background:var(--amber-l);border:0.5px solid #FAC775;border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--amber);margin-bottom:10px">⚠️ Densité de la base introuvable — les quantités de base sont estimées. Vérifiez que la colonne <strong>masse_gallon</strong> est remplie dans la table bases.</div>':'';
-
-  result.innerHTML=warn+
-    '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px">'
-    +'<thead><tr style="background:var(--bg)">'
-    +'<th style="text-align:left;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Colorant</th>'
-    +'<th style="text-align:right;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">g / canette</th>'
-    +'<th style="text-align:right;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Total '+nbCan+' can. (+'+canParams.perte+'% perte)</th>'
-    +'<th style="text-align:right;padding:7px 10px;border-bottom:0.5px solid var(--bd);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500">Coût / can.</th>'
-    +'</tr></thead><tbody>'
-    +rows
-    +'<tr style="background:var(--bg)">'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);font-style:italic;color:var(--tx2)">Base ('+( r.numero_base||r.produit||'?')+')</td>'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;color:var(--tx2)">'+grBaseParCan.toFixed(3)+' g</td>'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;color:var(--tx2)">'+grBaseTotal.toFixed(2)+' g</td>'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;color:var(--tx2)">'+coutBaseParCan.toFixed(4)+' $</td>'
-    +'</tr>'
-    +'<tr style="font-weight:600">'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)">Total peinture</td>'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">100.000 g</td>'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+(100*nbCan*perteFactor).toFixed(2)+' g</td>'
-    +'<td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right">'+totalCoutPeinture.toFixed(4)+' $</td>'
-    +'</tr>'
-    +'</tbody></table>'
-    // Récapitulatif coûts/prix
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
-    +'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Coût peinture</div><div class="pv" style="color:var(--tx)">'+totalCoutPeinture.toFixed(2)+' $</div></div>'
-    +'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Canette vide</div><div class="pv" style="color:var(--tx)">'+canParams.cout.toFixed(2)+' $</div></div>'
-    +'<div class="pc" style="background:#FFF3E0;border:0.5px solid #E65100"><div class="pl" style="color:#E65100">Total coût / can.</div><div class="pv" style="color:#E65100">'+totalCoutParCan.toFixed(2)+' $</div></div>'
-    +'<div class="pc grn"><div class="pl">Prix vente / can.</div><div class="pv">'+prixVente.toFixed(2)+' $</div></div>'
-    +'<div class="pc" style="background:var(--green-l);border:0.5px solid #8BC34A"><div class="pl" style="color:var(--green)">Marge / can.</div><div class="pv" style="color:var(--green)">'+margeDollar.toFixed(2)+' $</div></div>'
-    +'<div class="pc" style="background:var(--green-l);border:0.5px solid #8BC34A"><div class="pl" style="color:var(--green)">Marge %</div><div class="pv" style="color:var(--green)">'+margePct+'%</div></div>'
-    +'<div class="pc" style="background:var(--blue-l);border:0.5px solid var(--blue-m);grid-column:1/-1"><div class="pl" style="color:var(--blue)">Prix total '+nbCan+' canettes</div><div class="pv" style="color:var(--blue);font-size:18px">'+(prixVente*nbCan).toFixed(2)+' $</div></div>'
-    +'</div>'
-    +'<div style="font-size:11px;color:var(--tx3);margin-top:8px">Formule: '+prixBase.toFixed(2)+'$ (tarif) + '+totalCoutCol.toFixed(4)+'$ (colorants) / '+div+' = '+prixVente.toFixed(2)+'$ / canette</div>';
-}
-
-// Fermer modal canettes
-Q('mcancel-can').addEventListener('click',function(){Q('mcan').classList.remove('on');});
-
 function isPortalAuteur(x){return user&&x&&x.created_by===user.id;}
 function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente');}
 function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente')||(!portailUseDb&&user&&x.auteur_email===user.email&&x.statut==='en_attente');}
@@ -2708,13 +2450,6 @@ function openDetail(id){
   betq.style.cssText='background:#f0f7ff;color:#1A8FD1;border-color:#1A8FD1';
   betq.addEventListener('click',function(){openLabelModal(id);});
   eb.appendChild(betq);
-  // Bouton Canettes (comptoir + admin seulement)
-  if(canP()){
-    var bcan=document.createElement('button');bcan.className='be';bcan.innerHTML='🥫 Canettes';
-    bcan.style.cssText='background:#FFF3E0;color:#E65100;border-color:#E65100';
-    bcan.addEventListener('click',function(){openCanModal(id);});
-    eb.appendChild(bcan);
-  }
   eb.appendChild(bx);
   // Nav précédente/suivante dans le même bloc
   if(_navList.length>1){eb.appendChild(makeNavBar());}
@@ -3790,11 +3525,11 @@ function renderBases(){
   ['pepin','inter','disolac'].forEach(function(k){var c=Q('brows-'+k);if(c)c.innerHTML='';});
   allBases.forEach(function(b){
     var k=b.marque==='Pepin'?'pepin':b.marque==='Disolac'?'disolac':'inter';
-    addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal,k);
+    addBRow(b.id,b.produit,b.numero_base,b.marque,b.cout_1gal,b.cout_3gal,b.cout_5gal,k,b.masse_gallon);
   });
 }
-function addBRow(id,prod,num,marque,c1,c3,c5,section){
-  id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';section=section||'pepin';
+function addBRow(id,prod,num,marque,c1,c3,c5,section,masse){
+  id=id||'';prod=prod||'';num=num||'';marque=marque||'';c1=c1||'';c3=c3||'';c5=c5||'';section=section||'pepin';masse=masse||'';
   var row=document.createElement('div');row.className='brow';row.dataset.id=id;
   var p=document.createElement('input');p.type='text';p.className='bp';p.placeholder='Ex: NORTHANE';p.value=prod;
   var n=document.createElement('input');n.type='text';n.className='bn';n.placeholder='Ex: NT4201C';n.value=num;
@@ -3803,12 +3538,13 @@ function addBRow(id,prod,num,marque,c1,c3,c5,section){
   var i1=document.createElement('input');i1.type='number';i1.className='bc1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
   var i3=document.createElement('input');i3.type='number';i3.className='bc3';i3.placeholder='3 gal';i3.step='0.01';i3.value=c3;
   var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
+  var im=document.createElement('input');im.type='number';im.className='bmg';im.placeholder='g/gal';im.step='1';im.title='Masse du gallon en grammes (pour calcul canettes)';im.value=masse;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){
     pendBase={id:row.dataset.id,row:row};
     Q('mbase').classList.add('on');
   });
-  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);row.appendChild(btn);
+  row.appendChild(p);row.appendChild(n);row.appendChild(sel);row.appendChild(i1);row.appendChild(i3);row.appendChild(i5);row.appendChild(im);row.appendChild(btn);
   var container=Q('brows-'+section);if(container)container.appendChild(row);
 }
 Q('addbtn-pepin').addEventListener('click',function(){addBRow('','','','Pepin','','','','pepin');});
@@ -3823,8 +3559,9 @@ Q('savebases').addEventListener('click',function(){
   allRows.forEach(function(row){
     var id=row.dataset.id,prod=row.querySelector('.bp').value.trim(),num=row.querySelector('.bn').value.trim()||null,marque=row.querySelector('.bm').value;
     var c1=parseFloat(row.querySelector('.bc1').value)||null,c3=parseFloat(row.querySelector('.bc3').value)||null,c5=parseFloat(row.querySelector('.bc5').value)||null;
+    var mg=parseFloat(row.querySelector('.bmg').value)||null;
     if(!prod||!marque)return;
-    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:c1||c3||c5||0,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5};
+    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:c1||c3||c5||0,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5,masse_gallon:mg};
     if(id)proms.push(sb.from('bases').update(data).eq('id',id));
     else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
   });
