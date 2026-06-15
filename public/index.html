@@ -758,6 +758,29 @@ table.ct tr:last-child td{border-bottom:none}
         </div>
       </div>
 
+      <!-- VISIBILITÉ DES SECTIONS -->
+      <div class="settings-card" id="visibility_settings_box" style="display:none;margin-top:14px">
+        <div class="ftit">Visibilité des sections par rôle</div>
+        <div class="settings-note">Cochez les sections accessibles pour chaque rôle. Les changements s'appliquent à la prochaine connexion.</div>
+        <div style="margin-top:14px;overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Section</th>
+                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Admin</th>
+                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Comptoir</th>
+                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500;color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Production</th>
+              </tr>
+            </thead>
+            <tbody id="vis-tbody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+          <button class="btn btnp" id="vis-save-btn">Sauvegarder</button>
+          <span class="svd" id="vis-saved" style="display:none">Sauvegardé!</span>
+        </div>
+      </div>
+
       <!-- CONFIG ÉTIQUETTES -->
       <div class="settings-card" style="margin-top:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
@@ -1616,6 +1639,16 @@ var SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
 var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,role=null,recs=[],selClient=null,selId=null;
+// Visibilite des sections par role — defaults
+var tabsVisibility={
+  clients:  {admin:true,comptoir:true,production:true},
+  ajouter:  {admin:true,comptoir:true,production:false},
+  conversions:{admin:true,comptoir:true,production:true},
+  portail:  {admin:true,comptoir:true,production:true},
+  couts:    {admin:true,comptoir:true,production:false},
+  crm:      {admin:true,comptoir:false,production:false},
+  reglages: {admin:true,comptoir:false,production:false}
+};
 var clientsScrollY=0,prodsScrollY=0,searchScrollY=0;
 var _navList=[],_navIdx=-1;
 var curHex='#cccccc',camStream=null;
@@ -1696,9 +1729,6 @@ function initApp(u){
     pill.className='rpill r-'+role;
     if(Q('set_nom'))Q('set_nom').value=nom||'';
     Q('psec').style.display=canP()?'':'none';
-    Q('tcouts').style.display=canP()?'':'none';
-    if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
-    if(Q('tcrm'))Q('tcrm').style.display=role==='admin'?'':'none';
     Q('fdate').value=new Date().toISOString().slice(0,10);
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
@@ -1706,7 +1736,7 @@ function initApp(u){
     loadMarges();
     loadCatalogues().then(function(){loadRecs();});
     etqFetchFromDb();
-    showView('clients');
+    loadTabsVisibility(function(){applyTabsVisibility();showView('clients');});
   });
 }
 sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.user)initApp(r.data.session.user);});
@@ -1745,7 +1775,6 @@ document.querySelectorAll('.tab').forEach(function(t){
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
     if(t.dataset.tab==='crm'){loadCRM();}
-    if(t.dataset.tab==='ajouter'){resetForm();Q('ftit').textContent='Nouvelle recette client';Q('savebtn').textContent='Sauvegarder';delete Q('savebtn').dataset.editid;}
     showView(t.dataset.tab);
   });
 });
@@ -1821,7 +1850,8 @@ function loadReglages(){
     });
   }
   if(Q('admin_settings_box'))Q('admin_settings_box').style.display=isAdmin()?'':'none';
-  if(isAdmin())loadUsersList();
+  if(Q('visibility_settings_box'))Q('visibility_settings_box').style.display=isAdmin()?'':'none';
+  if(isAdmin()){loadUsersList();renderVisibilityTable();}
   renderEtqConfig();
 }
 function saveMyProfile(){
@@ -1890,6 +1920,7 @@ function createUserFromSettings(){
 document.addEventListener('click',function(e){
   if(e.target&&e.target.id==='set_save_profile')saveMyProfile();
   if(e.target&&e.target.id==='create_user_btn')createUserFromSettings();
+  if(e.target&&e.target.id==='vis-save-btn')saveTabsVisibility();
 });
 
 
@@ -1915,6 +1946,92 @@ function normalizePortalRow(x){
   return x;
 }
 function isAdmin(){return role==='admin';}
+
+// VISIBILITÉ TABS
+var VIS_TABS=[
+  {key:'clients',    label:'Recettes',      lock:'admin,comptoir,production'},
+  {key:'ajouter',   label:'+ Ajouter',     lock:'admin'},
+  {key:'conversions',label:'Conversions',   lock:''},
+  {key:'portail',   label:'Portail',        lock:''},
+  {key:'couts',     label:'Coûts et Prix',  lock:'admin,comptoir'},
+  {key:'crm',       label:'CRM',            lock:'admin'},
+  {key:'reglages',  label:'Réglages',       lock:'admin'}
+];
+// lock = rôles toujours activés (non-décochables)
+
+function loadTabsVisibility(cb){
+  sb.from('parametres').select('*').eq('type','visibilite_tab').then(function(r){
+    if(r.data&&r.data.length){
+      r.data.forEach(function(row){
+        // marque = "tab:role", valeur = "1" ou "0"
+        var parts=(row.marque||'').split(':');
+        if(parts.length===2){
+          var tab=parts[0],rl=parts[1];
+          if(tabsVisibility[tab])tabsVisibility[tab][rl]=(row.valeur==='1');
+        }
+      });
+    }
+    if(cb)cb();
+  });
+}
+
+function applyTabsVisibility(){
+  var r=role||'production';
+  VIS_TABS.forEach(function(t){
+    var tid='t'+t.key;
+    var tabEl=Q(tid);
+    if(!tabEl)return;
+    var visible=tabsVisibility[t.key]?tabsVisibility[t.key][r]:true;
+    // Recettes toujours visible
+    if(t.key==='clients'){tabEl.style.display='';return;}
+    // Couts: doit aussi respecter canP()
+    if(t.key==='couts'){tabEl.style.display=(visible&&canP())?'':'none';Q('psec').style.display=(visible&&canP())?'':'none';return;}
+    tabEl.style.display=visible?'':'none';
+  });
+}
+
+function renderVisibilityTable(){
+  var tbody=Q('vis-tbody');
+  if(!tbody)return;
+  var roles=['admin','comptoir','production'];
+  tbody.innerHTML=VIS_TABS.map(function(t){
+    var locked=t.lock.split(',').filter(Boolean);
+    var cells=roles.map(function(r){
+      var isLocked=locked.indexOf(r)>=0;
+      var checked=tabsVisibility[t.key]?tabsVisibility[t.key][r]:true;
+      if(isLocked){
+        return '<td style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd)"><input type="checkbox" checked disabled title="Toujours activé pour ce rôle" style="opacity:0.4;cursor:not-allowed"></td>';
+      }
+      return '<td style="text-align:center;padding:8px 10px;border-bottom:0.5px solid var(--bd)"><input type="checkbox" data-tab="'+t.key+'" data-role="'+r+'"'+(checked?' checked':'')+'></td>';
+    }).join('');
+    return '<tr><td style="padding:8px 10px;border-bottom:0.5px solid var(--bd);font-weight:500">'+t.label+'</td>'+cells+'</tr>';
+  }).join('');
+}
+
+function saveTabsVisibility(){
+  if(!isAdmin())return;
+  // Lire les checkboxes
+  var checkboxes=Q('vis-tbody').querySelectorAll('input[type=checkbox]:not(:disabled)');
+  checkboxes.forEach(function(cb){
+    var tab=cb.dataset.tab,rl=cb.dataset.role;
+    if(tabsVisibility[tab])tabsVisibility[tab][rl]=cb.checked;
+  });
+  // Upsert dans parametres
+  var proms=[];
+  VIS_TABS.forEach(function(t){
+    ['admin','comptoir','production'].forEach(function(rl){
+      var locked=t.lock.split(',').filter(Boolean);
+      if(locked.indexOf(rl)>=0)return; // skip locked
+      var val=tabsVisibility[t.key]?tabsVisibility[t.key][rl]:true;
+      proms.push(sb.from('parametres').upsert({type:'visibilite_tab',marque:t.key+':'+rl,valeur:val?'1':'0'},{onConflict:'type,marque'}));
+    });
+  });
+  Promise.all(proms).then(function(){
+    applyTabsVisibility();
+    var s=Q('vis-saved');if(s){s.style.display='inline-block';setTimeout(function(){s.style.display='none';},3000);}
+    toast('Visibilité sauvegardée!');
+  });
+}
 function isPortalAuteur(x){return user&&x&&x.created_by===user.id;}
 function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente');}
 function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente')||(!portailUseDb&&user&&x.auteur_email===user.email&&x.statut==='en_attente');}
@@ -3005,8 +3122,7 @@ Q('mconfcopy').addEventListener('click',function(){
   // Prix
   var p=r.prix&&r.prix[0]||null;
   if(p&&canP()){
-    var isSynC=r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0;
-    Q('fcb').value=isSynC?'':parseFloat(p.cost_base||0)||'';
+    Q('fcb').value=parseFloat(p.cost_base||0)||'';
     Q('fcc').value=parseFloat(p.cost_colorant||0)||'';
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     if(Q('fmarge'))Q('fmarge').value=p.marge_speciale||'';
@@ -3080,8 +3196,7 @@ function openEdit(id){
   if(r.couleur_hex){updateHex(r.couleur_hex);}else{updateHex('#cccccc');}
   var p=r.prix&&r.prix[0]||null;
   if(p&&canP()){
-    var isSyn=r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0;
-    Q('fcb').value=isSyn?'':parseFloat(p.cost_base||0)||'';
+    Q('fcb').value=parseFloat(p.cost_base||0)||'';
     Q('fcc').value=parseFloat(p.cost_colorant||0)||'';
     if(Q('fdateprix'))Q('fdateprix').value=p.date_prix||new Date().toISOString().slice(0,10);
     if(Q('fmarge'))Q('fmarge').value=p.marge_speciale||'';
@@ -3163,7 +3278,6 @@ setupAC(Q('fbase'),Q('ac-b'),function(){
 
 // AUTO-FILL BASE COST
 function autofillBase(){
-  if(isSynthane()){var hint=Q('base-hint');if(hint)hint.textContent='';if(Q('fcb'))Q('fcb').value='';return;}
   var produit=Q('fprod').value.trim(),base=Q('fbase').value.trim(),marque=Q('fm').value,qty=Q('fqty').value;
   var found=allBases.filter(function(b){
     var matchBase=!base||(b.numero_base&&b.numero_base.toLowerCase()===base.toLowerCase());
