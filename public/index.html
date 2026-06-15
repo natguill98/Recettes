@@ -1745,6 +1745,7 @@ document.querySelectorAll('.tab').forEach(function(t){
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
     if(t.dataset.tab==='crm'){loadCRM();}
+    if(t.dataset.tab==='ajouter'){resetForm();Q('ftit').textContent='Nouvelle recette client';Q('savebtn').textContent='Sauvegarder';delete Q('savebtn').dataset.editid;}
     showView(t.dataset.tab);
   });
 });
@@ -3004,7 +3005,8 @@ Q('mconfcopy').addEventListener('click',function(){
   // Prix
   var p=r.prix&&r.prix[0]||null;
   if(p&&canP()){
-    Q('fcb').value=parseFloat(p.cost_base||0)||'';
+    var isSynC=r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0;
+    Q('fcb').value=isSynC?'':parseFloat(p.cost_base||0)||'';
     Q('fcc').value=parseFloat(p.cost_colorant||0)||'';
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     if(Q('fmarge'))Q('fmarge').value=p.marge_speciale||'';
@@ -3078,7 +3080,8 @@ function openEdit(id){
   if(r.couleur_hex){updateHex(r.couleur_hex);}else{updateHex('#cccccc');}
   var p=r.prix&&r.prix[0]||null;
   if(p&&canP()){
-    Q('fcb').value=parseFloat(p.cost_base||0)||'';
+    var isSyn=r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0;
+    Q('fcb').value=isSyn?'':parseFloat(p.cost_base||0)||'';
     Q('fcc').value=parseFloat(p.cost_colorant||0)||'';
     if(Q('fdateprix'))Q('fdateprix').value=p.date_prix||new Date().toISOString().slice(0,10);
     if(Q('fmarge'))Q('fmarge').value=p.marge_speciale||'';
