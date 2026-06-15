@@ -3160,6 +3160,7 @@ setupAC(Q('fbase'),Q('ac-b'),function(){
 
 // AUTO-FILL BASE COST
 function autofillBase(){
+  if(isSynthane()){var hint=Q('base-hint');if(hint)hint.textContent='';if(Q('fcb'))Q('fcb').value='';return;}
   var produit=Q('fprod').value.trim(),base=Q('fbase').value.trim(),marque=Q('fm').value,qty=Q('fqty').value;
   var found=allBases.filter(function(b){
     var matchBase=!base||(b.numero_base&&b.numero_base.toLowerCase()===base.toLowerCase());
