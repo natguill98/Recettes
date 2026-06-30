@@ -3563,13 +3563,18 @@ Q('savebases').addEventListener('click',function(){
     if(!prod||!marque)return;
     var data={produit:prod,numero_base:num,marque:marque,cout_gallon:c1||c3||c5||0,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5,masse_gallon:mg};
     if(id)proms.push(sb.from('bases').update(data).eq('id',id));
-    else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;}));
+    else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;return r;}));
   });
   Promise.all(proms).then(function(results){
-    var hasError=results.some(function(r){return r&&r.error;});
-    loadBases();loadCatalogues();
-    var s=Q('bsvd');s.style.display='inline-block';s.textContent=hasError?'Erreur partielle':'Sauvegarde!';
-    setTimeout(function(){s.style.display='none';},3000);toast('Bases sauvegardees!');
+    var errors=results.filter(function(r){return r&&r.error;}).map(function(r){return r.error.message;});
+    var hasError=errors.length>0;
+    loadBases();
+    var s=Q('bsvd');s.style.display='inline-block';
+    s.textContent=hasError?'Erreur partielle!':'Sauvegarde!';
+    s.style.color=hasError?'var(--red)':'var(--green)';
+    setTimeout(function(){s.style.display='none';s.style.color='';},4000);
+    if(hasError)toast('Erreur base: '+errors[0]);
+    else toast('Bases sauvegardees!');
   });
 });
 
@@ -3615,13 +3620,14 @@ Q('savecols').addEventListener('click',function(){
     else proms.push(sb.from('colorants_prix').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;return r;}));
   });
   Promise.all(proms).then(function(results){
-    var hasError=results.some(function(r){return r&&r.error;});
+    var errors=results.filter(function(r){return r&&r.error;}).map(function(r){return r.error.message;});
+    var hasError=errors.length>0;
     loadCP();
     var s=Q('csvd');s.style.display='inline-block';
     s.textContent=hasError?'Erreur partielle!':'Sauvegarde!';
     s.style.color=hasError?'var(--red)':'var(--green)';
     setTimeout(function(){s.style.display='none';s.style.color='';},4000);
-    if(hasError)toast('Erreur: certains colorants non sauvegardes - verifiez les donnees');
+    if(hasError)toast('Erreur colorant: '+errors[0]);
     else toast('Colorants sauvegardes!');
   });
 });
@@ -3898,13 +3904,14 @@ document.getElementById('savecats').addEventListener('click',function(){
     else proms.push(sb.from('produits_catalyseurs').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;return r;}));
   });
   Promise.all(proms).then(function(results){
-    var hasError=results.some(function(r){return r&&r.error;});
+    var errors=results.filter(function(r){return r&&r.error;}).map(function(r){return r.error.message;});
+    var hasError=errors.length>0;
     loadCats();
     var s=Q('catsvd');s.style.display='inline-block';
     s.textContent=hasError?'Erreur partielle!':'Sauvegarde!';
     s.style.color=hasError?'var(--red)':'var(--green)';
     setTimeout(function(){s.style.display='none';s.style.color='';},4000);
-    if(hasError)toast('Erreur: certains catalyseurs non sauvegardes');
+    if(hasError)toast('Erreur catalyseur: '+errors[0]);
     else toast('Catalyseurs Inter/Devoe sauvegardes!');
   });
 });
@@ -3920,13 +3927,14 @@ document.getElementById('savecatspepin').addEventListener('click',function(){
     if(baseId)proms.push(sb.from('bases').update({catalyseur_nom:catNom,catalyseur_cout_1l:c1L,catalyseur_cout_1gal:c1,catalyseur_cout_5gal:c5}).eq('id',baseId));
   });
   Promise.all(proms).then(function(results){
-    var hasError=results.some(function(r){return r&&r.error;});
+    var errors=results.filter(function(r){return r&&r.error;}).map(function(r){return r.error.message;});
+    var hasError=errors.length>0;
     loadCats();
     var s=Q('catpepinsvd');s.style.display='inline-block';
     s.textContent=hasError?'Erreur partielle!':'Sauvegarde!';
     s.style.color=hasError?'var(--red)':'var(--green)';
     setTimeout(function(){s.style.display='none';s.style.color='';},4000);
-    if(hasError)toast('Erreur: certains catalyseurs Pepin non sauvegardes');
+    if(hasError)toast('Erreur catalyseur Pepin: '+errors[0]);
     else toast('Catalyseurs Pepin sauvegardes!');
   });
 });
