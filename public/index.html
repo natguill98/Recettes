@@ -3032,6 +3032,7 @@ Q('mconfcopy').addEventListener('click',function(){
     else addCRow(c.nom,pf.oz,pf.f64,pf.f128);
   });
   if(!cols.length)addCRow();
+  _lastColMode=mode; // Empêche updateCformHeader d'effacer les colorants chargés
   setTimeout(function(){isLoading=false;},500);
   // Titre et mode nouvelle recette
   Q('ftit').textContent='Copie de '+r.couleur+' — choisir un client';
@@ -3105,7 +3106,12 @@ function openEdit(id){
     else addCRow(c.nom,pf.oz,pf.f64,pf.f128);
   });
   if(!cols.length)addCRow();
-  setTimeout(function(){isLoading=false;},500);
+  _lastColMode=mode; // Empêche updateCformHeader d'effacer les colorants chargés
+  setTimeout(function(){
+    isLoading=false;
+    // Si aucun prix enregistré et que l'utilisateur peut les voir, auto-calculer les coûts
+    if(canP()&&!p){autofillBase();setTimeout(calcColTotal,150);}
+  },500);
   Q('ftit').textContent='Modifier la recette';
   Q('savebtn').textContent='Sauvegarder les modifications';
   Q('savebtn').dataset.editid=id;
