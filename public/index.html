@@ -2983,6 +2983,8 @@ window.resetEtqConfig=resetEtqConfig;
 // ── FIN ÉTIQUETTES ──────────────────────────────────────────────────
 
 var pendCopy=null;
+function confirmCopy(id){pendCopy=id;Q('mcopy').classList.add('on');}
+Q('mcancelcopy').addEventListener('click',function(){Q('mcopy').classList.remove('on');pendCopy=null;});
 Q('mconfcopy').addEventListener('click',function(){
   if(!pendCopy)return;
   Q('mcopy').classList.remove('on');
