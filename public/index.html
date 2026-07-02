@@ -1621,6 +1621,8 @@ var _navList=[],_navIdx=-1;
 var curHex='#cccccc',camStream=null;
 var marges={Pepin:0.60,Disolac:0.60,International:0.55,Devoe:0.55};
 var allBases=[],allCP=[],allPC=[];
+// Normalisation nom produit: minuscule + supprime espaces/tirets/points
+function normProd(s){return (s||'').toLowerCase().replace(/[\s\-\.]+/g,'');}
 
 function Q(id){return document.getElementById(id);}
 function toast(m,d){var t=Q('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on');},d||2200);}
@@ -3460,7 +3462,7 @@ Q('savebtn').addEventListener('click',function(){
         }else{
           // Chercher dans produits_catalyseurs par produit+marque
           var pcFound=allPC.filter(function(pc){
-            return pc.marque===marque&&pc.produit.toLowerCase()===(Q('fprod').value.trim().toLowerCase());
+            return pc.marque===marque&&normProd(pc.produit)===normProd(Q('fprod').value);
           })[0];
           if(pcFound){
             var ccat_new2=0;
@@ -3695,7 +3697,7 @@ function saveEdit(id){
             }
           }else{
             var pcFoundE=allPC.filter(function(pc){
-              return pc.marque===marque&&pc.produit.toLowerCase()===(Q('fprod').value.trim().toLowerCase());
+              return pc.marque===marque&&normProd(pc.produit)===normProd(Q('fprod').value);
             })[0];
             if(pcFoundE){
               var ccatE2=0;
@@ -3806,7 +3808,7 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
     }else{
       // Inter/Devoe: cherche dans produits_catalyseurs par produit+marque
       var pcEntry=allPC.filter(function(pc){
-        return pc.marque===marque&&pc.produit.toLowerCase()===(r.produit||'').toLowerCase();
+        return pc.marque===marque&&normProd(pc.produit)===normProd(r.produit);
       })[0];
       if(pcEntry){
         if(qty==='5 gallons'&&pcEntry.catalyseur_cout_5gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_5gal);
