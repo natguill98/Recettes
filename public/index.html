@@ -447,6 +447,7 @@ table.ct tr:last-child td{border-bottom:none}
     <button class="tab" data-tab="portail">Portail</button>
     <button class="tab" data-tab="crm" id="tcrm" style="display:none">CRM</button>
     <button class="tab tab-right-first" data-tab="couts" id="tcouts">Couts et Prix</button>
+    <button class="tab" data-tab="mistints" id="tmistints" style="display:none">Mistints</button>
     <button class="tab" data-tab="reglages" id="treglages" style="display:none">Réglages</button>
     <button class="tab" data-tab="detail" id="tdetail" style="display:none">Fiche</button>
   </div>
@@ -722,6 +723,64 @@ table.ct tr:last-child td{border-bottom:none}
       </div>
     </div>
 
+
+    <div class="view" id="v-mistints">
+      <div class="portal-grid">
+        <div class="portal-card">
+          <div class="ftit">Nouveau mistint</div>
+          <div class="portal-form">
+            <div class="fg2">
+              <div class="fg"><label>Marque</label>
+                <select id="mi_marque">
+                  <option value="International">International</option>
+                  <option value="Devoe">Devoe</option>
+                  <option value="Pepin">Pépin</option>
+                  <option value="Disolac">Disolac</option>
+                  <option value="Synthane">Synthane</option>
+                </select>
+              </div>
+              <div class="fg"><label>Produit</label><input id="mi_produit" placeholder="Ex: Synthane, Intergard 345..."></div>
+            </div>
+            <div class="fg"><label>Description / couleur *</label><input id="mi_description" placeholder="Ex: 801C Bleu foncé RAL-5001"></div>
+            <div class="fg2">
+              <div class="fg"><label>Format</label>
+                <select id="mi_format">
+                  <option value="Pinte">Pinte</option>
+                  <option value="Gallon" selected>Gallon</option>
+                  <option value="3 gallons">3 gallons</option>
+                  <option value="5 gallons">5 gallons</option>
+                </select>
+              </div>
+              <div class="fg"><label>Quantité (gallons)</label><input type="number" id="mi_quantite" value="1" min="0.1" step="0.1"></div>
+            </div>
+            <div class="fg"><label>Statut</label>
+              <select id="mi_statut">
+                <option value="disponible">Disponible</option>
+                <option value="reserve">Réservé</option>
+                <option value="sauve">Sauvé</option>
+                <option value="jete">Jeté</option>
+              </select>
+            </div>
+            <div class="fg"><label>Notes</label><textarea id="mi_notes" placeholder="Contenant, emplacement, client d'origine..."></textarea></div>
+            <button class="btn btnp" id="mi_save">Ajouter à l'inventaire</button>
+          </div>
+        </div>
+
+        <div class="portal-card">
+          <div class="ftit">Inventaire mistints</div>
+          <div class="tb">
+            <select class="sf" id="mi_filtre">
+              <option value="">Tous les statuts</option>
+              <option value="disponible">Disponible</option>
+              <option value="reserve">Réservé</option>
+              <option value="sauve">Sauvé</option>
+              <option value="jete">Jeté</option>
+            </select>
+          </div>
+          <div id="mi_list"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="view" id="v-reglages">
       <div class="portal-hero">
@@ -1050,6 +1109,23 @@ table.ct tr:last-child td{border-bottom:none}
         Générer .lbx (P-Touch)
       </button>
       <button class="btn" id="etq-img" style="background:var(--gray-l);color:var(--gray);border-color:var(--gray)">PNG</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Sauvetage mistint -->
+<div class="mo" id="msauv">
+  <div class="mb" style="max-width:600px">
+    <div class="mt">🧪 Sauvetage mistint</div>
+    <div id="sauv-info" style="font-size:13px;color:var(--tx2);margin-bottom:14px;line-height:1.6"></div>
+    <div class="fg" style="max-width:220px;margin-bottom:14px">
+      <label>Gallons mistintés (physique)</label>
+      <input type="number" id="sauv-qte" value="1" min="0.1" step="0.1" style="text-align:center;font-size:16px;font-weight:600">
+    </div>
+    <div id="sauv-results" style="max-height:420px;overflow-y:auto"></div>
+    <div class="ma">
+      <button class="btn" id="sauv-cancel">Fermer</button>
+      <button class="btn btnp" id="sauv-search">Chercher</button>
     </div>
   </div>
 </div>
@@ -1701,6 +1777,7 @@ function initApp(u){
     Q('tcouts').style.display=canP()?'':'none';
     if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
     if(Q('tcrm'))Q('tcrm').style.display=role==='admin'?'':'none';
+    if(Q('tmistints'))Q('tmistints').style.display=canP()?'':'none';
     Q('fdate').value=new Date().toISOString().slice(0,10);
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
@@ -1746,6 +1823,7 @@ document.querySelectorAll('.tab').forEach(function(t){
     if(t.dataset.tab==='conversions'){initConversions();}
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
+    if(t.dataset.tab==='mistints'){loadMistints();}
     if(t.dataset.tab==='crm'){loadCRM();}
     showView(t.dataset.tab);
   });
@@ -1764,12 +1842,12 @@ function showView(name){
     toast('CRM réservé aux administrateurs');
     name='clients';
   }
-  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','crm'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
+  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','crm','mistints'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
   if(!Q('v-'+name))name='clients';
   if(name==='crm')loadCRM();
   Q('v-'+name).classList.add('on');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',crm:'crm'};
+  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',crm:'crm',mistints:'mistints'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
@@ -2452,6 +2530,11 @@ function openDetail(id){
   betq.style.cssText='background:#f0f7ff;color:#1A8FD1;border-color:#1A8FD1';
   betq.addEventListener('click',function(){openLabelModal(id);});
   eb.appendChild(betq);
+  // Bouton Sauvetage mistint
+  var bsauv=document.createElement('button');bsauv.className='be';bsauv.innerHTML='🧪 Sauvetage';
+  bsauv.style.cssText='background:#fff4e5;color:#B36B00;border-color:#B36B00';
+  bsauv.addEventListener('click',function(){openSauvetageModal(id);});
+  eb.appendChild(bsauv);
   eb.appendChild(bx);
   // Nav précédente/suivante dans le même bloc
   if(_navList.length>1){eb.appendChild(makeNavBar());}
@@ -4152,7 +4235,227 @@ window.delHistorique=function(hid){
   Q('mhist').classList.add('on');
 };
 
+// ============================================================
+// SAUVETAGE MISTINT
+// Réutilise parseQtyFields() et getEditMode() déjà définis plus haut.
+// Les colorants d'une recette représentent une formule PAR GALLON,
+// peu importe la valeur de r.quantite (Gallon/3gal/5gal/Pinte) —
+// confirmé par calcPrix() qui ne divise jamais par le format.
+// ============================================================
+var _sauvRecId=null;
+
+// Facteur d'échelle du format vers 1 gallon-équivalent.
+// Confirmé en DB: une recette "5 gallons" contient bien 5x les quantités
+// de colorant de la même couleur en "Gallon" — les recettes sont scalées
+// par format, il FAUT normaliser avant de comparer entre formats différents.
+function qtyFactor(quantite,marque,produit){
+  var q=(quantite||'').toLowerCase();
+  var isSyn=marque==='Pepin'&&(produit||'').toLowerCase().indexOf('synthane')>=0;
+  if(q.indexOf('pinte')>=0)return 0.25;
+  if(q.indexOf('3 gallon')>=0)return 3;
+  if(q.indexOf('5 gallon')>=0)return isSyn?4:5; // règle Synthane: 5gl = 4x, pas 5x
+  return 1; // 'Gallon'
+}
+
+// Construit un profil {nom_colorant: quantite_Y_par_gallon} normalisé par format
+function buildYProfile(cols,mode,factor){
+  var f=factor||1;
+  var profile={};
+  (cols||[]).forEach(function(c){
+    var key=(c.nom||'').trim().toLowerCase();if(!key)return;
+    var y=0;
+    if(mode==='gr'){
+      y=parseFloat(c.quantite)||0;
+    }else{
+      var pf=parseQtyFields(c.quantite);
+      if(mode==='pepin')y=(pf.oz||0)+((pf.f48||0)/64);
+      else y=(pf.oz||0)+((pf.f64||0)/64)+((pf.f128||0)/128);
+    }
+    profile[key]=(profile[key]||0)+(y/f);
+  });
+  return profile;
+}
+
+// Compare le profil du mistint à un candidat. Règle: on peut seulement AJOUTER
+// du colorant, jamais en retirer. Si le candidat a moins que le mistint sur
+// un colorant → pas sauvable.
+function evaluerSauvetage(profilMistint,profilCandidat){
+  var delta={},tol=0.03;
+  for(var nom in profilMistint){
+    var qM=profilMistint[nom],qC=profilCandidat[nom]||0;
+    if(qC<qM-tol)return{sauvable:false};
+    var diff=qC-qM;
+    if(diff>tol)delta[nom]=diff;
+  }
+  for(var nom2 in profilCandidat){
+    if(!(nom2 in profilMistint)&&profilCandidat[nom2]>tol)delta[nom2]=profilCandidat[nom2];
+  }
+  return{sauvable:true,delta:delta,nb:Object.keys(delta).length};
+}
+
+// Convertit une quantité Y (décimal) vers le même format texte que tes
+// tableaux de recette: "X oz Y/64 Z/128" (Inter/Devoe), "X oz Y/48" (Pépin),
+// ou "X g" (Synthane/STX) — même convention que parseQtyFields()/saveMode.
+function yToQtyStr(y,mode){
+  if(y<=0)return'0';
+  if(mode==='gr')return y.toFixed(1)+' g';
+  var oz=Math.floor(y+1e-6);
+  var rem=y-oz;
+  if(mode==='pepin'){
+    var f48=Math.round(rem*64);
+    if(f48>=64){oz+=1;f48=0;}
+    var parts=[];
+    if(oz>0)parts.push(oz+' oz');
+    if(f48>0)parts.push(f48+'/48');
+    return parts.length?parts.join(' '):'0';
+  }
+  var total128=Math.round(rem*128);
+  if(total128>=128){oz+=1;total128=0;}
+  var f64=Math.floor(total128/2),f128=total128-f64*2;
+  var parts=[];
+  if(oz>0)parts.push(oz+' oz');
+  if(f64>0)parts.push(f64+'/64');
+  if(f128>0)parts.push(f128+'/128');
+  return parts.length?parts.join(' '):'0';
+}
+
+function openSauvetageModal(recId){
+  _sauvRecId=recId;
+  var r=recs.filter(function(x){return x.id===recId;})[0];if(!r)return;
+  Q('sauv-info').innerHTML='<strong>'+esc(r.couleur)+'</strong> ('+esc(r.numero_couleur||'')+') — '+esc(r.marque)+' '+esc(r.produit||'')+' — base '+esc(r.numero_base||'?');
+  Q('sauv-qte').value=1;
+  Q('sauv-results').innerHTML='<p style="color:var(--tx3);font-size:13px">Clique "Chercher" pour voir les recettes qui pourraient sauver ce mistint.</p>';
+  Q('msauv').classList.add('on');
+}
+Q('sauv-cancel').addEventListener('click',function(){Q('msauv').classList.remove('on');_sauvRecId=null;});
+
+Q('sauv-search').addEventListener('click',function(){
+  if(!_sauvRecId)return;
+  var r=recs.filter(function(x){return x.id===_sauvRecId;})[0];if(!r)return;
+  if(!r.numero_base){Q('sauv-results').innerHTML='<p style="color:var(--red)">Cette recette n\'a pas de code de base — impossible de chercher des candidats.</p>';return;}
+  var qteGallons=parseFloat(Q('sauv-qte').value)||1;
+  var mode=getEditMode(r.marque,r.produit);
+  var factorMistint=qtyFactor(r.quantite,r.marque,r.produit);
+  var profilMistint=buildYProfile(r.colorants,mode,factorMistint);
+  Q('sauv-results').innerHTML='<p style="color:var(--tx3);font-size:13px">Recherche en cours...</p>';
+
+  sb.from('recettes').select('id,client,couleur,numero_couleur,quantite,colorants(nom,quantite,unite)')
+    .eq('marque',r.marque).eq('produit',r.produit).eq('numero_base',r.numero_base).neq('id',r.id)
+    .then(function(resp){
+      if(resp.error){Q('sauv-results').innerHTML='<p style="color:var(--red)">Erreur: '+esc(resp.error.message)+'</p>';return;}
+      var candidats=(resp.data||[]).filter(function(c){return c.colorants&&c.colorants.length;});
+      var sauvables=[];
+      var seen={}; // signature de formule -> index dans sauvables, pour dédoublonner
+      candidats.forEach(function(c){
+        var factorC=qtyFactor(c.quantite,r.marque,r.produit);
+        var profilC=buildYProfile(c.colorants,mode,factorC);
+        var ev=evaluerSauvetage(profilMistint,profilC);
+        if(!ev.sauvable)return;
+        var sig=Object.keys(profilC).sort().map(function(k){return k+':'+profilC[k].toFixed(2);}).join('|');
+        if(seen[sig]!==undefined){
+          var existing=sauvables[seen[sig]];
+          if(existing.clients.indexOf(c.client)<0)existing.clients.push(c.client);
+          return;
+        }
+        seen[sig]=sauvables.length;
+        sauvables.push({rec:c,delta:ev.delta,nb:ev.nb,clients:[c.client]});
+      });
+      sauvables.sort(function(a,b){return a.nb-b.nb;});
+      if(!sauvables.length){
+        Q('sauv-results').innerHTML='<p style="color:var(--red);font-weight:500">Aucun sauvetage trouvé parmi '+candidats.length+' recette(s) de la même base ('+esc(r.numero_base)+'). Ce gallon a probablement un colorant en trop qu\'on ne peut pas retirer.</p>';
+        return;
+      }
+      var html=sauvables.map(function(s){
+        var rows=Object.keys(s.delta).map(function(nom){
+          var totalAAjouter=s.delta[nom]*qteGallons;
+          return'<tr><td style="text-transform:capitalize">'+esc(nom)+'</td><td class="tq">'+esc(yToQtyStr(s.delta[nom],mode))+'</td><td class="tq"><strong>'+esc(yToQtyStr(totalAAjouter,mode))+'</strong></td></tr>';
+        }).join('');
+        return '<div style="border:0.5px solid var(--bd);border-radius:var(--r);padding:12px;margin-bottom:10px">'+
+          '<div style="font-weight:600;margin-bottom:2px">'+esc(s.rec.couleur)+' <span style="color:var(--tx3);font-weight:400">('+esc(s.rec.numero_couleur||'')+')</span></div>'+
+          '<div style="font-size:12px;color:var(--tx3);margin-bottom:8px">'+(s.clients.length>1?s.clients.length+' clients (ex: '+esc(s.clients[0])+')':esc(s.clients[0]))+' — recette '+esc(s.rec.quantite||'Gallon')+' — '+s.nb+' colorant(s) à ajouter</div>'+
+          '<table style="width:100%;font-size:13px"><tr><th style="text-align:left">Colorant</th><th class="tq">Par gallon</th><th class="tq">Total ('+qteGallons+' gal)</th></tr>'+rows+'</table>'+
+          '</div>';
+      }).join('');
+      Q('sauv-results').innerHTML=html;
+    });
+});
+
 addCRow();updateHex('#cccccc');
+
+// ============================================================
+// INVENTAIRE MISTINTS — liste à part, aucun lien vers recettes
+// pour l'instant (par choix, pas un oubli).
+// ============================================================
+var STATUT_LBL={disponible:'Disponible',reserve:'Réservé',sauve:'Sauvé',jete:'Jeté'};
+var STATUT_COLOR={disponible:'#2e7d32',reserve:'#B36B00',sauve:'#1565c0',jete:'#999'};
+
+function loadMistints(){
+  var filtre=Q('mi_filtre')?Q('mi_filtre').value:'';
+  var q=sb.from('mistints').select('*').order('created_at',{ascending:false});
+  if(filtre)q=q.eq('statut',filtre);
+  q.then(function(resp){
+    if(resp.error){Q('mi_list').innerHTML='<p style="color:var(--red)">Erreur: '+esc(resp.error.message)+'</p>';return;}
+    renderMistints(resp.data||[]);
+  });
+}
+
+function renderMistints(items){
+  if(!items.length){Q('mi_list').innerHTML='<p style="color:var(--tx3);font-size:13px;padding:10px 0">Aucun mistint dans l\'inventaire.</p>';return;}
+  Q('mi_list').innerHTML=items.map(function(m){
+    var col=STATUT_COLOR[m.statut]||'#999';
+    return '<div style="border:0.5px solid var(--bd);border-radius:var(--r);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
+      '<div style="flex:1">'+
+        '<div style="font-weight:600">'+esc(m.description)+'</div>'+
+        '<div style="font-size:12px;color:var(--tx3);margin-top:2px">'+esc(m.marque||'')+' '+esc(m.produit||'')+' — '+esc(m.format||'')+' — '+esc(String(m.quantite))+' gal'+(m.date_mistint?' — '+esc(m.date_mistint):'')+'</div>'+
+        (m.notes?'<div style="font-size:12px;color:var(--tx3);margin-top:4px;font-style:italic">'+esc(m.notes)+'</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">'+
+        '<select class="sf" data-id="'+m.id+'" style="border-color:'+col+';color:'+col+';font-weight:600" onchange="updateMistintStatut(\''+m.id+'\',this.value)">'+
+          Object.keys(STATUT_LBL).map(function(k){return'<option value="'+k+'"'+(k===m.statut?' selected':'')+'>'+STATUT_LBL[k]+'</option>';}).join('')+
+        '</select>'+
+        '<button class="be" style="font-size:12px;padding:4px 10px" onclick="deleteMistint(\''+m.id+'\')">Supprimer</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+window.updateMistintStatut=function(id,statut){
+  sb.from('mistints').update({statut:statut,updated_at:new Date().toISOString()}).eq('id',id).then(function(resp){
+    if(resp.error){toast('Erreur: '+resp.error.message);return;}
+    toast('Statut mis à jour');
+  });
+};
+
+window.deleteMistint=function(id){
+  if(!confirm('Supprimer ce mistint de l\'inventaire?'))return;
+  sb.from('mistints').delete().eq('id',id).then(function(resp){
+    if(resp.error){toast('Erreur: '+resp.error.message);return;}
+    toast('Supprimé');
+    loadMistints();
+  });
+};
+
+if(Q('mi_save'))Q('mi_save').addEventListener('click',function(){
+  var description=Q('mi_description').value.trim();
+  if(!description){toast('La description/couleur est obligatoire');return;}
+  var payload={
+    marque:Q('mi_marque').value,
+    produit:Q('mi_produit').value.trim()||null,
+    description:description,
+    format:Q('mi_format').value,
+    quantite:parseFloat(Q('mi_quantite').value)||1,
+    statut:Q('mi_statut').value,
+    notes:Q('mi_notes').value.trim()||null
+  };
+  sb.from('mistints').insert(payload).then(function(resp){
+    if(resp.error){toast('Erreur: '+resp.error.message);return;}
+    toast('Mistint ajouté à l\'inventaire');
+    Q('mi_description').value='';Q('mi_produit').value='';Q('mi_notes').value='';Q('mi_quantite').value=1;
+    loadMistints();
+  });
+});
+if(Q('mi_filtre'))Q('mi_filtre').addEventListener('change',loadMistints);
+
 })();
 </script>
 </body>
