@@ -732,16 +732,17 @@ table.ct tr:last-child td{border-bottom:none}
             <div class="fg2">
               <div class="fg"><label>Marque</label>
                 <select id="mi_marque">
-                  <option value="International">International</option>
-                  <option value="Devoe">Devoe</option>
-                  <option value="Pepin">Pépin</option>
-                  <option value="Disolac">Disolac</option>
-                  <option value="Synthane">Synthane</option>
+                  <option value="">Choisir...</option>
+                  <option>Pepin</option>
+                  <option>International</option>
+                  <option>Devoe</option>
+                  <option>Disolac</option>
                 </select>
               </div>
-              <div class="fg"><label>Produit</label><input id="mi_produit" placeholder="Ex: Synthane, Intergard 345..."></div>
+              <div class="fg"><label>Produit</label><input id="mi_produit" autocomplete="off" placeholder="Ex: Synthane, Intergard 345..."><div class="acl" id="mi-ac-p"></div></div>
             </div>
             <div class="fg"><label>Description / couleur *</label><input id="mi_description" placeholder="Ex: 801C Bleu foncé RAL-5001"></div>
+            <div class="fg"><label>Client (optionnel)</label><input id="mi_client" autocomplete="off" placeholder="Ex: Nom du client d'origine"><div class="acl" id="mi-ac-c"></div></div>
             <div class="fg2">
               <div class="fg"><label>Format</label>
                 <select id="mi_format">
@@ -751,15 +752,7 @@ table.ct tr:last-child td{border-bottom:none}
                   <option value="5 gallons">5 gallons</option>
                 </select>
               </div>
-              <div class="fg"><label>Quantité (gallons)</label><input type="number" id="mi_quantite" value="1" min="0.1" step="0.1"></div>
-            </div>
-            <div class="fg"><label>Statut</label>
-              <select id="mi_statut">
-                <option value="disponible">Disponible</option>
-                <option value="reserve">Réservé</option>
-                <option value="sauve">Sauvé</option>
-                <option value="jete">Jeté</option>
-              </select>
+              <div class="fg"><label>Nombre de contenants</label><input type="number" id="mi_quantite" value="1" min="1" step="1"></div>
             </div>
             <div class="fg"><label>Notes</label><textarea id="mi_notes" placeholder="Contenant, emplacement, client d'origine..."></textarea></div>
             <button class="btn btnp" id="mi_save">Ajouter à l'inventaire</button>
@@ -767,14 +760,10 @@ table.ct tr:last-child td{border-bottom:none}
         </div>
 
         <div class="portal-card">
-          <div class="ftit">Inventaire mistints</div>
-          <div class="tb">
-            <select class="sf" id="mi_filtre">
-              <option value="">Tous les statuts</option>
-              <option value="disponible">Disponible</option>
-              <option value="reserve">Réservé</option>
-              <option value="sauve">Sauvé</option>
-              <option value="jete">Jeté</option>
+          <div class="ftit" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Inventaire mistints</span>
+            <select class="sf" id="mi_sort_produit" style="max-width:200px">
+              <option value="">Tous les produits</option>
             </select>
           </div>
           <div id="mi_list"></div>
@@ -1777,7 +1766,7 @@ function initApp(u){
     Q('tcouts').style.display=canP()?'':'none';
     if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
     if(Q('tcrm'))Q('tcrm').style.display=role==='admin'?'':'none';
-    if(Q('tmistints'))Q('tmistints').style.display=canP()?'':'none';
+    if(Q('tmistints'))Q('tmistints').style.display='';
     Q('fdate').value=new Date().toISOString().slice(0,10);
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
@@ -4386,45 +4375,44 @@ addCRow();updateHex('#cccccc');
 // INVENTAIRE MISTINTS — liste à part, aucun lien vers recettes
 // pour l'instant (par choix, pas un oubli).
 // ============================================================
-var STATUT_LBL={disponible:'Disponible',reserve:'Réservé',sauve:'Sauvé',jete:'Jeté'};
-var STATUT_COLOR={disponible:'#2e7d32',reserve:'#B36B00',sauve:'#1565c0',jete:'#999'};
+var miItems=[];
 
 function loadMistints(){
-  var filtre=Q('mi_filtre')?Q('mi_filtre').value:'';
-  var q=sb.from('mistints').select('*').order('created_at',{ascending:false});
-  if(filtre)q=q.eq('statut',filtre);
-  q.then(function(resp){
+  sb.from('mistints').select('*').order('created_at',{ascending:false}).then(function(resp){
     if(resp.error){Q('mi_list').innerHTML='<p style="color:var(--red)">Erreur: '+esc(resp.error.message)+'</p>';return;}
-    renderMistints(resp.data||[]);
+    miItems=resp.data||[];
+    updateMiProduitOptions();
+    renderMistints();
   });
 }
 
-function renderMistints(items){
+function updateMiProduitOptions(){
+  var sel=Q('mi_sort_produit');if(!sel)return;
+  var current=sel.value;
+  var produits=[...new Set(miItems.map(function(m){return m.produit;}).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">Tous les produits</option>'+produits.map(function(p){return'<option value="'+esc(p)+'"'+(p===current?' selected':'')+'>'+esc(p)+'</option>';}).join('');
+}
+
+function renderMistints(){
+  var produitFiltre=Q('mi_sort_produit')?Q('mi_sort_produit').value:'';
+  var items=miItems.filter(function(m){return!produitFiltre||m.produit===produitFiltre;});
+  items=items.slice().sort(function(a,b){
+    var pa=(a.produit||'').toLowerCase(),pb=(b.produit||'').toLowerCase();
+    if(pa!==pb)return pa<pb?-1:1;
+    return new Date(b.created_at)-new Date(a.created_at);
+  });
   if(!items.length){Q('mi_list').innerHTML='<p style="color:var(--tx3);font-size:13px;padding:10px 0">Aucun mistint dans l\'inventaire.</p>';return;}
   Q('mi_list').innerHTML=items.map(function(m){
-    var col=STATUT_COLOR[m.statut]||'#999';
     return '<div style="border:0.5px solid var(--bd);border-radius:var(--r);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
       '<div style="flex:1">'+
-        '<div style="font-weight:600">'+esc(m.description)+'</div>'+
-        '<div style="font-size:12px;color:var(--tx3);margin-top:2px">'+esc(m.marque||'')+' '+esc(m.produit||'')+' — '+esc(m.format||'')+' — '+esc(String(m.quantite))+' gal'+(m.date_mistint?' — '+esc(m.date_mistint):'')+'</div>'+
+        '<div style="font-weight:600">'+esc(m.description)+(m.client?' <span style="color:var(--tx3);font-weight:400">— '+esc(m.client)+'</span>':'')+'</div>'+
+        '<div style="font-size:12px;color:var(--tx3);margin-top:2px">'+esc(m.marque||'')+' '+esc(m.produit||'')+' — '+esc(String(m.quantite||1))+'x '+esc(m.format||'')+(m.date_mistint?' — '+esc(m.date_mistint):'')+'</div>'+
         (m.notes?'<div style="font-size:12px;color:var(--tx3);margin-top:4px;font-style:italic">'+esc(m.notes)+'</div>':'')+
       '</div>'+
-      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">'+
-        '<select class="sf" data-id="'+m.id+'" style="border-color:'+col+';color:'+col+';font-weight:600" onchange="updateMistintStatut(\''+m.id+'\',this.value)">'+
-          Object.keys(STATUT_LBL).map(function(k){return'<option value="'+k+'"'+(k===m.statut?' selected':'')+'>'+STATUT_LBL[k]+'</option>';}).join('')+
-        '</select>'+
-        '<button class="be" style="font-size:12px;padding:4px 10px" onclick="deleteMistint(\''+m.id+'\')">Supprimer</button>'+
-      '</div>'+
+      '<button class="be" style="font-size:12px;padding:4px 10px" onclick="deleteMistint(\''+m.id+'\')">Supprimer</button>'+
     '</div>';
   }).join('');
 }
-
-window.updateMistintStatut=function(id,statut){
-  sb.from('mistints').update({statut:statut,updated_at:new Date().toISOString()}).eq('id',id).then(function(resp){
-    if(resp.error){toast('Erreur: '+resp.error.message);return;}
-    toast('Statut mis à jour');
-  });
-};
 
 window.deleteMistint=function(id){
   if(!confirm('Supprimer ce mistint de l\'inventaire?'))return;
@@ -4442,19 +4430,28 @@ if(Q('mi_save'))Q('mi_save').addEventListener('click',function(){
     marque:Q('mi_marque').value,
     produit:Q('mi_produit').value.trim()||null,
     description:description,
+    client:Q('mi_client').value.trim()||null,
     format:Q('mi_format').value,
-    quantite:parseFloat(Q('mi_quantite').value)||1,
-    statut:Q('mi_statut').value,
+    quantite:parseInt(Q('mi_quantite').value,10)||1,
     notes:Q('mi_notes').value.trim()||null
   };
   sb.from('mistints').insert(payload).then(function(resp){
     if(resp.error){toast('Erreur: '+resp.error.message);return;}
     toast('Mistint ajouté à l\'inventaire');
-    Q('mi_description').value='';Q('mi_produit').value='';Q('mi_notes').value='';Q('mi_quantite').value=1;
+    Q('mi_description').value='';Q('mi_produit').value='';Q('mi_client').value='';Q('mi_notes').value='';Q('mi_quantite').value=1;
     loadMistints();
   });
 });
-if(Q('mi_filtre'))Q('mi_filtre').addEventListener('change',loadMistints);
+if(Q('mi_sort_produit'))Q('mi_sort_produit').addEventListener('change',renderMistints);
+if(Q('mi_produit')&&Q('mi-ac-p'))setupAC(Q('mi_produit'),Q('mi-ac-p'),function(){
+  var m=Q('mi_marque').value;
+  var frB=allBases.filter(function(b){return!m||b.marque===m;}).map(function(b){return b.produit;});
+  var frR=recs.filter(function(r){return!m||r.marque===m;}).map(function(r){return r.produit;}).filter(Boolean);
+  return[...new Set([...frB,...frR])].sort();
+});
+if(Q('mi_client')&&Q('mi-ac-c'))setupAC(Q('mi_client'),Q('mi-ac-c'),function(){
+  return[...new Set(recs.map(function(r){return r.client;}).filter(Boolean))].sort();
+});
 
 })();
 </script>
