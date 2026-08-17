@@ -257,20 +257,34 @@ table.ct tr:last-child td{border-bottom:none}
 .cal-seg{display:inline-flex;border:0.5px solid var(--bd2);border-radius:var(--r);overflow:hidden}
 .cal-seg button{border:0;background:var(--sur);padding:6px 12px;font-size:12px;cursor:pointer;color:var(--tx2)}
 .cal-seg button.on{background:var(--tx);color:#fff;font-weight:600}
-.cal-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+.cal-dows{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:4px}
 .cal-dow{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--tx3);text-align:center;padding:4px 0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-cell{min-height:84px;border:0.5px solid var(--bd);border-radius:var(--r);padding:5px;display:flex;flex-direction:column;gap:3px;background:var(--sur)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-cell{min-height:98px;border:0.5px solid var(--bd);border-radius:var(--r);padding:5px;display:flex;flex-direction:column;gap:3px;background:var(--sur)}
 .cal-cell.out{background:var(--bg);opacity:.5}
 .cal-cell.we{background:#FAFBFC}
 .cal-cell.today{background:var(--blue-l);border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
 .cal-num{font-size:11px;font-weight:700;color:var(--tx3);text-align:right}
 .cal-cell.today .cal-num{color:var(--blue)}
-.cal-ev{font-size:11px;line-height:1.3;padding:3px 5px;border-radius:6px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0.5px solid transparent;cursor:pointer;text-align:left;width:100%;font-family:inherit}
+.cal-ev{font-size:11px;line-height:1.3;padding:3px 5px;border-radius:6px;font-weight:600;overflow:hidden;border:0.5px solid transparent;cursor:pointer;text-align:left;width:100%;font-family:inherit;white-space:normal}
+.cal-ev-n{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-ev-m{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  font-size:10px;font-weight:500;line-height:1.25;opacity:.8;margin-top:1px;word-break:break-word}
 .cal-ev.conge{background:var(--green-l);color:var(--green);border-color:var(--green)}
 .cal-ev.att{background:repeating-linear-gradient(135deg,#fff,#fff 4px,var(--amber-l) 4px,var(--amber-l) 8px);color:var(--amber);border:1px dashed var(--amber)}
 .cal-ev.ferm{background:var(--red-l);color:var(--red);border-color:var(--red)}
 .cal-ev.sel{outline:2px solid var(--tx);outline-offset:1px}
+.cal-cell.ferie{background:#FBF9F3}
+.cal-cell.constr{background:#F4F9FD}
+.cal-fer{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;
+  color:var(--gray);background:var(--gray-l);border-radius:4px;padding:1px 4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-fer.constr{color:var(--blue);background:var(--blue-l)}
+.cal-fete{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;
+  color:#7A3E86;background:#F7EAF9;border-radius:4px;padding:1px 4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-chk{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--tx2);cursor:pointer;white-space:nowrap}
+.cal-chk input{cursor:pointer;margin:0}
 .cal-leg{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--bd);font-size:11px;color:var(--tx3)}
 .cal-leg span{display:inline-flex;align-items:center;gap:6px}
 .cal-sw{width:14px;height:11px;border-radius:4px;display:inline-block;border:0.5px solid transparent}
@@ -734,6 +748,8 @@ table.ct tr:last-child td{border-bottom:none}
               <button type="button" id="cal_tous" class="on">Toute l'équipe</button>
               <button type="button" id="cal_moi">Mes congés</button>
             </div>
+            <label class="cal-chk"><input type="checkbox" id="cal_feries" checked> Fériés</label>
+            <label class="cal-chk"><input type="checkbox" id="cal_fetes" checked> Fêtes</label>
             <div class="cal-nav">
               <button type="button" id="cal_prev" title="Mois précédent">‹</button>
               <span class="cal-mois" id="cal_mois"></span>
@@ -750,6 +766,9 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="cal-leg">
           <span><i class="cal-sw conge"></i> Congé accepté</span>
           <span><i class="cal-sw att"></i> En attente d'approbation</span>
+          <span><i class="cal-sw" style="background:var(--gray-l);border-color:var(--gray)"></i> Férié</span>
+          <span><i class="cal-sw" style="background:var(--blue-l);border-color:var(--blue)"></i> Vacances construction</span>
+          <span><i class="cal-sw" style="background:#F7EAF9;border-color:#7A3E86"></i> Fête</span>
           <span><i class="cal-sw ferm"></i> Fermeture</span>
           <span><i class="cal-sw today"></i> Aujourd'hui</span>
         </div>
@@ -779,7 +798,6 @@ table.ct tr:last-child td{border-bottom:none}
                 <option value="idee">Idée / amélioration</option>
               </select>
             </div>
-            <div class="fg"><label>Titre *</label><input id="pt_titre" placeholder="Ex: Fermeture lundi"></div>
             <div class="fg"><label>Message *</label><textarea id="pt_msg" placeholder="Écrivez votre communication..."></textarea></div>
             <div class="fg2" id="pt_dates">
               <div class="fg"><label>Date début</label><input type="date" id="pt_debut"></div>
@@ -2093,7 +2111,94 @@ function loadPortail(){
 // --- Calendrier : constantes et helpers ---
 var CAL_MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 var CAL_DOWS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-var calY=(new Date()).getFullYear(),calM=(new Date()).getMonth(),calMoi=false,calSel=null;
+var calY=(new Date()).getFullYear(),calM=(new Date()).getMonth(),calMoi=false,calSel=null,
+    calFeries=true,calFetes=true;
+
+// ── Jours fériés du Québec (Loi sur les normes du travail, 8 jours) ────────────
+// Calculés par règle : rien à ressaisir chaque année.
+// Pâques : la loi laisse le choix entre Vendredi saint et lundi de Pâques.
+// Mettre 'lundi' ici si Technocolor ferme le lundi de Pâques plutôt que le vendredi.
+var PAQUES_CONGE='vendredi';
+
+function _paques(y){ // algorithme grégorien anonyme (Meeus)
+  var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,
+      f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,
+      i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451);
+  return new Date(y,Math.floor((h+l-7*m+114)/31)-1,((h+l-7*m+114)%31)+1);
+}
+function _nieme(y,mois,dow,n){ // n-ième `dow` du mois (dow: 0=dim … 6=sam)
+  var d=new Date(y,mois,1);
+  return new Date(y,mois,1+((dow-d.getDay()+7)%7)+(n-1)*7);
+}
+function _lundiAvant(y,mois,jour){
+  var d=new Date(y,mois,jour);
+  do{d.setDate(d.getDate()-1);}while(d.getDay()!==1);
+  return d;
+}
+function _plus(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
+
+// Vacances de la construction — dates officielles publiées par la CCQ.
+// La règle (2 semaines à partir du dimanche précédant le dernier samedi de juillet,
+// et du dimanche précédant le 25 décembre) reproduit les dates officielles,
+// mais la CCQ reste la source de vérité : vérifier ccq.org si un doute.
+var CCQ_VERIFIE={
+  2026:{ete:['2026-07-19','2026-08-01'],hiver:['2026-12-20','2027-01-02']},
+  2027:{ete:['2027-07-25','2027-08-07'],hiver:['2027-12-19','2028-01-01']}
+};
+function _constructionEte(y){
+  if(CCQ_VERIFIE[y])return CCQ_VERIFIE[y].ete;
+  var d=new Date(y,6,31);                       // dernier samedi de juillet
+  while(d.getDay()!==6)d.setDate(d.getDate()-1);
+  var debut=_plus(d,-6);                        // le dimanche précédent
+  return [calKey(debut),calKey(_plus(debut,13))];
+}
+// Les vacances de la construction d'hiver ne sont PAS affichées :
+// Technocolor ne les observe pas. La table CCQ_VERIFIE garde quand même
+// les dates d'hiver si un jour on veut les réactiver.
+
+// ── Fêtes de l'équipe ─────────────────────────────────────────────────────────
+// Pour ajouter quelqu'un : une ligne [jour, mois (1-12), 'Prénom'].
+var FETES=[
+  [2,  1,  'Claude'],
+  [23, 2,  'Nancie'],
+  [23, 9,  'Dave'],
+  [9,  10, 'Nathan'],
+  [30, 11, 'Alain']
+];
+function fetesPour(y){
+  var out=[];
+  [y-1,y,y+1].forEach(function(an){
+    FETES.forEach(function(f){
+      out.push({d:calKey(new Date(an,f[1]-1,f[0])),nom:f[2]});
+    });
+  });
+  return out;
+}
+
+// Retourne des plages {d1,d2,nom,type} pour l'année donnée
+function feriesQC(y){
+  var p=_paques(y);
+  var canada=new Date(y,6,1); if(canada.getDay()===0)canada=new Date(y,6,2);
+  var f=[
+    ['Jour de l\'An',        new Date(y,0,1)],
+    [PAQUES_CONGE==='lundi'?'Lundi de Pâques':'Vendredi saint',
+                             PAQUES_CONGE==='lundi'?_plus(p,1):_plus(p,-2)],
+    ['Journée des patriotes',_lundiAvant(y,4,25)],
+    ['Fête nationale',       new Date(y,5,24)],
+    ['Fête du Canada',       canada],
+    ['Fête du travail',      _nieme(y,8,1,1)],
+    ['Action de grâce',      _nieme(y,9,1,2)],
+    ['Noël',                 new Date(y,11,25)]
+  ].map(function(x){return {d1:calKey(x[1]),d2:calKey(x[1]),nom:x[0],type:'ferie'};});
+
+  var e=_constructionEte(y);
+  f.push({d1:e[0],d2:e[1],nom:'Vacances construction',type:'constr'});
+  return f;
+}
+// Toutes les plages pertinentes pour le mois affiché (la plage d'hiver déborde sur l'année suivante)
+function feriesPour(y){
+  return feriesQC(y-1).concat(feriesQC(y)).concat(feriesQC(y+1));
+}
 
 function calKey(d){
   var m=d.getMonth()+1,j=d.getDate();
@@ -2116,10 +2221,19 @@ function portalBody(x){return String(x.message||'').replace(/^\s*Dates?\s*:[^\n]
 function portalMine(x){
   return isPortalAuteur(x)||(!!user&&!!x.auteur_email&&x.auteur_email===user.email)||(!!user&&x.auteur===user.email);
 }
-function portalShortName(x){
-  if(x.categorie==='fermeture')return x.titre||'Fermeture';
+// Première ligne du message, tronquée — sert d'étiquette quand il n'y a pas de titre
+function portalFirstLine(x,max){
+  var l=portalBody(x).split('\n')[0].trim();
+  max=max||40;
+  return l.length>max?l.slice(0,max-1)+'…':l;
+}
+function portalAuteur(x){
   var a=String(x.auteur||'Équipe');
   return a.indexOf('@')>-1?a.split('@')[0]:a;
+}
+// Ligne du haut de la pastille : qui (ou « Fermeture »)
+function portalShortName(x){
+  return x.categorie==='fermeture'?'Fermeture':portalAuteur(x);
 }
 function portalVisible(){return portailRows.map(normalizePortalRow).filter(canSeePortal);}
 
@@ -2135,16 +2249,23 @@ function portalBtns(x){
 }
 function portalPostHtml(x){
   var cat=x.categorie,p=portalDates(x),dates='';
-  if(p.d1)dates=' • '+pDateFmt(p.d1)+(p.d2&&p.d2!==p.d1?' au '+pDateFmt(p.d2):'');
-  var meta=esc(x.auteur||'Équipe')+dates+' • '+(x.created_at?esc(fmtD(String(x.created_at).slice(0,10))):'');
+  if(p.d1)dates=pDateFmt(p.d1)+(p.d2&&p.d2!==p.d1?' au '+pDateFmt(p.d2):'');
+  // Plus de champ titre : c'est le message qui sert d'en-tête, l'auteur passe en méta.
+  var body=portalBody(x);
+  var head=portalFirstLine(x,90)||portalAuteur(x);
+  var bits=[esc(portalAuteur(x))];
+  if(dates)bits.push(esc(dates));
+  if(x.created_at)bits.push(esc(fmtD(String(x.created_at).slice(0,10))));
+  var meta=bits.join(' • ');
+  var reste=(body&&body!==head)?body:'';
   return '<div class="portal-post '+esc(cat)+'">'+
-    '<div class="portal-post-head"><div><div class="portal-post-title">'+esc(x.titre)+'</div>'+
+    '<div class="portal-post-head"><div><div class="portal-post-title">'+esc(head)+'</div>'+
     '<div class="portal-post-meta">'+meta+'</div></div>'+
     '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end">'+
       '<span class="portal-tag '+esc(cat)+'">'+pTypeLabel(cat)+'</span>'+
       '<span class="db '+pStatutClass(x.statut)+'">'+pStatutLabel(x.statut)+'</span>'+
     '</div></div>'+
-    '<div class="portal-post-msg">'+esc(portalBody(x))+'</div>'+
+    (reste?'<div class="portal-post-msg">'+esc(reste)+'</div>':'')+
     portalBtns(x)+'</div>';
 }
 
@@ -2182,6 +2303,24 @@ function renderCal(){
     }
   });
 
+  // Fériés et vacances de la construction (couche d'information, pas des messages)
+  var ferByDay={};
+  if(calFeries){
+    // Les plages d'abord, les fériés ensuite : un jour férié tombant dans une plage
+    // doit s'afficher comme férié (sinon le Jour de l'An disparaît sous « Construction »).
+    var plages=[],simples=[];
+    feriesPour(calY).forEach(function(f){(f.d1===f.d2?simples:plages).push(f);});
+    plages.concat(simples).forEach(function(f){
+      var a=calParse(f.d1),b=calParse(f.d2),g=0;
+      for(var d=new Date(a);d<=b&&g<40;d.setDate(d.getDate()+1),g++)ferByDay[calKey(d)]=f;
+    });
+  }
+  // Fêtes de l'équipe (bande distincte, superposable à un férié)
+  var feteByDay={};
+  if(calFetes)fetesPour(calY).forEach(function(f){
+    (feteByDay[f.d]=feteByDay[f.d]||[]).push(f.nom);
+  });
+
   var todayK=calKey(new Date());
   var shift=(new Date(calY,calM,1).getDay()+6)%7;
   var html='',nMois=0;
@@ -2193,11 +2332,28 @@ function renderCal(){
     var ev=list.map(function(x){
       var cls=x.categorie==='fermeture'?'ferm':(x.statut==='en_attente'?'att':'conge');
       if(calSel&&String(calSel)===String(x.id))cls+=' sel';
-      var lbl=portalShortName(x)+(x.statut==='en_attente'?' (att.)':'');
-      return '<button type="button" class="cal-ev '+cls+'" onclick="calShow(\''+esc(x.id)+'\')" title="'+esc(x.titre)+'">'+esc(lbl)+'</button>';
+      var nom=portalShortName(x)+(x.statut==='en_attente'?' (att.)':'');
+      var msg=portalFirstLine(x,60);
+      return '<button type="button" class="cal-ev '+cls+'" onclick="calShow(\''+esc(x.id)+'\')"'+
+        ' title="'+esc(portalAuteur(x)+' — '+portalBody(x))+'">'+
+        '<span class="cal-ev-n">'+esc(nom)+'</span>'+
+        (msg?'<span class="cal-ev-m">'+esc(msg)+'</span>':'')+'</button>';
     }).join('');
-    html+='<div class="cal-cell'+(out?' out':'')+(we&&!out?' we':'')+(k===todayK?' today':'')+'">'+
-          '<div class="cal-num">'+d.getDate()+'</div>'+ev+'</div>';
+    var fer=ferByDay[k],ferHtml='';
+    // Sur une plage longue, le nom n'est répété qu'au début et à chaque lundi :
+    // les autres jours gardent la teinte, sans crier la même étiquette 14 fois.
+    if(fer&&!out&&(k===fer.d1||d.getDay()===1))
+      ferHtml='<div class="cal-fer'+(fer.type==='constr'?' constr':'')+'" title="'+esc(fer.nom)+'">'+
+              esc(fer.type==='constr'?'Construction':fer.nom)+'</div>';
+    else if(fer&&!out)ferHtml='<div class="cal-fer'+(fer.type==='constr'?' constr':'')+
+              '" title="'+esc(fer.nom)+'" style="opacity:.35">&nbsp;</div>';
+    var fete=feteByDay[k];
+    if(fete&&!out)ferHtml+='<div class="cal-fete" title="Fête de '+esc(fete.join(' et '))+'">'+
+              esc('Fête · '+fete.join(', '))+'</div>';
+    html+='<div class="cal-cell'+(out?' out':'')+(we&&!out?' we':'')+
+          (fer&&!out?(fer.type==='constr'?' constr':' ferie'):'')+
+          (k===todayK?' today':'')+'">'+
+          '<div class="cal-num">'+d.getDate()+'</div>'+ferHtml+ev+'</div>';
   }
   grid.innerHTML=html;
   if(Q('cal_note'))Q('cal_note').textContent=nMois?'':'Aucune absence en '+CAL_MOIS[calM]+' '+calY+'. Utilisez ‹ › pour changer de mois.';
@@ -2206,11 +2362,38 @@ function renderCal(){
 // Repli mobile : liste chronologique des absences à venir
 function renderCalAgenda(evs){
   var box=Q('cal_agenda');if(!box)return;
-  var today=calKey(new Date());
-  var up=evs.filter(function(x){var p=portalDates(x);return (p.d2||p.d1)>=today;})
-            .sort(function(a,b){return portalDates(a).d1.localeCompare(portalDates(b).d1);});
-  box.innerHTML=up.length?up.map(portalPostHtml).join('')
-                         :'<div class="empty">Aucune absence à venir.</div>';
+  var today=calKey(new Date()),items=[];
+  evs.forEach(function(x){
+    var p=portalDates(x);
+    if((p.d2||p.d1)>=today)items.push({d1:p.d1,html:portalPostHtml(x)});
+  });
+  if(calFeries){
+    var n=new Date(),limite=calKey(new Date(n.getFullYear(),n.getMonth(),n.getDate()+180));
+    feriesPour(calY).forEach(function(f){
+      if(f.d2<today||f.d1>limite)return;
+      var meme=f.d1===f.d2;
+      items.push({d1:f.d1,html:'<div class="portal-post" style="border-left-color:'+
+        (f.type==='constr'?'var(--blue)':'var(--gray)')+'">'+
+        '<div class="portal-post-head"><div><div class="portal-post-title">'+esc(f.nom)+'</div>'+
+        '<div class="portal-post-meta">'+esc(meme?pDateFmt(f.d1):pDateFmt(f.d1)+' au '+pDateFmt(f.d2))+'</div></div>'+
+        '<span class="portal-tag" style="background:'+(f.type==='constr'?'var(--blue-l)':'var(--gray-l)')+
+        ';color:'+(f.type==='constr'?'var(--blue)':'var(--gray)')+'">'+
+        (f.type==='constr'?'Construction':'Férié')+'</span></div></div>'});
+    });
+  }
+  if(calFetes){
+    var n2=new Date(),lim2=calKey(new Date(n2.getFullYear(),n2.getMonth(),n2.getDate()+180));
+    fetesPour(calY).forEach(function(f){
+      if(f.d<today||f.d>lim2)return;
+      items.push({d1:f.d,html:'<div class="portal-post" style="border-left-color:#7A3E86">'+
+        '<div class="portal-post-head"><div><div class="portal-post-title">Fête de '+esc(f.nom)+'</div>'+
+        '<div class="portal-post-meta">'+esc(pDateFmt(f.d))+'</div></div>'+
+        '<span class="portal-tag" style="background:#F7EAF9;color:#7A3E86">Fête</span></div></div>'});
+    });
+  }
+  items.sort(function(a,b){return a.d1.localeCompare(b.d1);});
+  box.innerHTML=items.length?items.map(function(i){return i.html;}).join('')
+                            :'<div class="empty">Rien à venir.</div>';
 }
 // File d'approbation : ne jamais laisser une demande en attente se perdre dans le calendrier
 function renderCalAttente(){
@@ -2230,15 +2413,15 @@ window.calShow=function(id){
   renderCal();
 };
 function savePortail(){
-  var cat=Q('pt_type').value,titre=Q('pt_titre').value.trim(),msg=Q('pt_msg').value.trim();
-  if(!titre||!msg){toast('Titre et message requis.');return;}
+  var cat=Q('pt_type').value,msg=Q('pt_msg').value.trim();
+  if(!msg){toast('Message requis.');return;}
   var d1=Q('pt_debut').value||'',d2=Q('pt_fin').value||'';
   if(cat==='demande_conge'||cat==='fermeture'){
     if(!d1){toast('Date de début requise pour un congé ou une fermeture.');return;}
     if(d2&&d2<d1){toast('La date de fin précède la date de début.');return;}
   }
   var row={
-    titre:titre,
+    titre:null,
     categorie:cat,
     message:msg,
     date_debut:d1||null,
@@ -2270,7 +2453,7 @@ function savePortail(){
   }
 }
 function clearPortailForm(){
-  Q('pt_titre').value='';Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
+  Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
 }
 function savePortailLocal(row){
   row.id='local_'+Date.now();
@@ -2313,15 +2496,11 @@ window.editPortail=function(id){
   var row=(portailRows||[]).map(normalizePortalRow).find(function(x){return String(x.id)===String(id);});
   if(!row){toast('Message introuvable.');return;}
   if(!canEditPortal(row)){toast('Modification non autorisée.');return;}
-  var nt=prompt('Titre',row.titre||'');
-  if(nt===null)return;
-  nt=nt.trim();
-  if(!nt){toast('Titre requis.');return;}
-  var nm=prompt('Message',row.message||'');
+  var nm=prompt('Message',portalBody(row)||'');
   if(nm===null)return;
   nm=nm.trim();
   if(!nm){toast('Message requis.');return;}
-  var changes={titre:nt,message:nm};
+  var changes={message:nm};
   if(isDated(row)){
     var p=portalDates(row);
     var n1=prompt('Date de début (AAAA-MM-JJ)',p.d1||'');
@@ -2363,6 +2542,10 @@ document.addEventListener('click',function(e){
   else if(t.id==='cal_auj'){var n=new Date();calY=n.getFullYear();calM=n.getMonth();renderCal();}
   else if(t.id==='cal_tous'){calMoi=false;renderCal();}
   else if(t.id==='cal_moi'){calMoi=true;renderCal();}
+});
+document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='cal_feries'){calFeries=e.target.checked;renderCal();}
+  else if(e.target&&e.target.id==='cal_fetes'){calFetes=e.target.checked;renderCal();}
 });
 // Dates obligatoires pour un congé ou une fermeture
 document.addEventListener('change',function(e){
