@@ -246,6 +246,45 @@ table.ct tr:last-child td{border-bottom:none}
 .portal-ok{color:var(--green);background:var(--green-l);border:0.5px solid var(--green)}
 .portal-warn{color:var(--amber);background:var(--amber-l);border:0.5px solid var(--amber)}
 
+/* Calendrier des congés */
+.cal-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:14px}
+.cal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-nav button{width:30px;height:30px;border:0.5px solid var(--bd2);background:var(--sur);border-radius:var(--r);cursor:pointer;font-size:15px;color:var(--tx);line-height:1}
+.cal-nav button:hover{background:var(--bg)}
+.cal-nav .cal-auj{width:auto;padding:0 10px;font-size:12px}
+.cal-mois{min-width:135px;text-align:center;font-weight:700;font-size:14px;text-transform:capitalize}
+.cal-seg{display:inline-flex;border:0.5px solid var(--bd2);border-radius:var(--r);overflow:hidden}
+.cal-seg button{border:0;background:var(--sur);padding:6px 12px;font-size:12px;cursor:pointer;color:var(--tx2)}
+.cal-seg button.on{background:var(--tx);color:#fff;font-weight:600}
+.cal-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+.cal-dow{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--tx3);text-align:center;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-cell{min-height:84px;border:0.5px solid var(--bd);border-radius:var(--r);padding:5px;display:flex;flex-direction:column;gap:3px;background:var(--sur)}
+.cal-cell.out{background:var(--bg);opacity:.5}
+.cal-cell.we{background:#FAFBFC}
+.cal-cell.today{background:var(--blue-l);border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.cal-num{font-size:11px;font-weight:700;color:var(--tx3);text-align:right}
+.cal-cell.today .cal-num{color:var(--blue)}
+.cal-ev{font-size:11px;line-height:1.3;padding:3px 5px;border-radius:6px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0.5px solid transparent;cursor:pointer;text-align:left;width:100%;font-family:inherit}
+.cal-ev.conge{background:var(--green-l);color:var(--green);border-color:var(--green)}
+.cal-ev.att{background:repeating-linear-gradient(135deg,#fff,#fff 4px,var(--amber-l) 4px,var(--amber-l) 8px);color:var(--amber);border:1px dashed var(--amber)}
+.cal-ev.ferm{background:var(--red-l);color:var(--red);border-color:var(--red)}
+.cal-ev.sel{outline:2px solid var(--tx);outline-offset:1px}
+.cal-leg{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--bd);font-size:11px;color:var(--tx3)}
+.cal-leg span{display:inline-flex;align-items:center;gap:6px}
+.cal-sw{width:14px;height:11px;border-radius:4px;display:inline-block;border:0.5px solid transparent}
+.cal-sw.conge{background:var(--green-l);border-color:var(--green)}
+.cal-sw.att{background:repeating-linear-gradient(135deg,#fff,#fff 3px,var(--amber-l) 3px,var(--amber-l) 6px);border:1px dashed var(--amber)}
+.cal-sw.ferm{background:var(--red-l);border-color:var(--red)}
+.cal-sw.today{background:var(--blue-l);border-color:var(--blue)}
+.cal-sec{margin-top:14px;padding-top:14px;border-top:0.5px solid var(--bd)}
+.cal-sec .ftit{margin-bottom:8px}
+.cal-agenda{display:grid;gap:8px}
+.cal-note{font-size:12px;color:var(--tx3);margin-top:10px}
+@media(max-width:760px){.cal-grid,.cal-dows,.cal-nav{display:none}}
+@media(min-width:761px){.cal-agenda-m{display:none}}
+
 
 .settings-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;align-items:start}
 .settings-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px}
@@ -684,6 +723,49 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="portal-sub">Publiez les demandes de congé, fermetures, avis importants, idées d’amélioration ou messages à l’équipe.</div>
       </div>
 
+      <div class="cal-card">
+        <div class="cal-head">
+          <div>
+            <div class="ftit">Congés &amp; fermetures</div>
+            <div class="portal-sub">Qui est absent, et quand.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div class="cal-seg">
+              <button type="button" id="cal_tous" class="on">Toute l'équipe</button>
+              <button type="button" id="cal_moi">Mes congés</button>
+            </div>
+            <div class="cal-nav">
+              <button type="button" id="cal_prev" title="Mois précédent">‹</button>
+              <span class="cal-mois" id="cal_mois"></span>
+              <button type="button" id="cal_next" title="Mois suivant">›</button>
+              <button type="button" id="cal_auj" class="cal-auj">Auj.</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cal-dows" id="cal_dows"></div>
+        <div class="cal-grid" id="cal_grid"></div>
+        <div class="cal-agenda cal-agenda-m" id="cal_agenda"></div>
+
+        <div class="cal-leg">
+          <span><i class="cal-sw conge"></i> Congé accepté</span>
+          <span><i class="cal-sw att"></i> En attente d'approbation</span>
+          <span><i class="cal-sw ferm"></i> Fermeture</span>
+          <span><i class="cal-sw today"></i> Aujourd'hui</span>
+        </div>
+        <div class="cal-note" id="cal_note"></div>
+
+        <div class="cal-sec" id="cal_detail_sec" style="display:none">
+          <div class="ftit">Détail</div>
+          <div class="portal-feed" id="cal_detail"></div>
+        </div>
+
+        <div class="cal-sec" id="cal_attente_sec" style="display:none">
+          <div class="ftit">En attente d'approbation</div>
+          <div class="portal-feed" id="cal_attente"></div>
+        </div>
+      </div>
+
       <div class="portal-grid">
         <div class="portal-card">
           <div class="ftit">Nouvelle communication</div>
@@ -699,7 +781,7 @@ table.ct tr:last-child td{border-bottom:none}
             </div>
             <div class="fg"><label>Titre *</label><input id="pt_titre" placeholder="Ex: Fermeture lundi"></div>
             <div class="fg"><label>Message *</label><textarea id="pt_msg" placeholder="Écrivez votre communication..."></textarea></div>
-            <div class="fg2">
+            <div class="fg2" id="pt_dates">
               <div class="fg"><label>Date début</label><input type="date" id="pt_debut"></div>
               <div class="fg"><label>Date fin</label><input type="date" id="pt_fin"></div>
             </div>
@@ -708,13 +790,12 @@ table.ct tr:last-child td{border-bottom:none}
         </div>
 
         <div class="portal-card">
-          <div class="ftit">Communications récentes</div>
+          <div class="ftit">Avis &amp; idées</div>
+          <div class="portal-sub" style="margin-bottom:10px">Les congés et fermetures sont sur le calendrier ci-dessus.</div>
           <div class="tb">
             <select class="sf" id="pt_filtre">
               <option value="">Tous les types</option>
               <option value="avis">Avis / message</option>
-              <option value="demande_conge">Demande de congé</option>
-                <option value="fermeture">Fermeture</option>
               <option value="idee">Idée / amélioration</option>
             </select>
           </div>
@@ -2009,52 +2090,159 @@ function loadPortail(){
     renderPortail();
   });
 }
-function renderPortail(){
+// --- Calendrier : constantes et helpers ---
+var CAL_MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+var CAL_DOWS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+var calY=(new Date()).getFullYear(),calM=(new Date()).getMonth(),calMoi=false,calSel=null;
+
+function calKey(d){
+  var m=d.getMonth()+1,j=d.getDate();
+  return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(j<10?'0':'')+j;
+}
+function calParse(s){var p=String(s).split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function isDated(x){return x.categorie==='demande_conge'||x.categorie==='fermeture';}
+
+// Lit les colonnes date_debut/date_fin ; repli sur l'ancien format « Dates : … » dans le message
+function portalDates(x){
+  var d1=x.date_debut||null,d2=x.date_fin||null;
+  if(!d1&&x.message){
+    var m=String(x.message).match(/(\d{4}-\d{2}-\d{2})(?:\s*au\s+(\d{4}-\d{2}-\d{2}))?/);
+    if(m){d1=m[1];d2=m[2]||m[1];}
+  }
+  return {d1:d1,d2:d2||d1};
+}
+// Retire la ligne « Dates : … » héritée de l'ancien format
+function portalBody(x){return String(x.message||'').replace(/^\s*Dates?\s*:[^\n]*\n*/i,'').trim();}
+function portalMine(x){
+  return isPortalAuteur(x)||(!!user&&!!x.auteur_email&&x.auteur_email===user.email)||(!!user&&x.auteur===user.email);
+}
+function portalShortName(x){
+  if(x.categorie==='fermeture')return x.titre||'Fermeture';
+  var a=String(x.auteur||'Équipe');
+  return a.indexOf('@')>-1?a.split('@')[0]:a;
+}
+function portalVisible(){return portailRows.map(normalizePortalRow).filter(canSeePortal);}
+
+function portalBtns(x){
+  var btns='';
+  if(isAdmin()){
+    if(x.statut!=='accepte')btns+='<button class="portal-ok" onclick="acceptPortail(\''+esc(x.id)+'\')">Accepter</button>';
+    if(x.statut!=='refuse')btns+='<button class="portal-warn" onclick="refusePortail(\''+esc(x.id)+'\')">Refuser</button>';
+  }
+  if(canEditPortal(x))btns+='<button class="portal-edit" onclick="editPortail(\''+esc(x.id)+'\')">Modifier</button>';
+  if(canDeletePortal(x))btns+='<button class="portal-del" onclick="delPortail(\''+esc(x.id)+'\')">Retirer</button>';
+  return btns?'<div class="portal-actions">'+btns+'</div>':'';
+}
+function portalPostHtml(x){
+  var cat=x.categorie,p=portalDates(x),dates='';
+  if(p.d1)dates=' • '+pDateFmt(p.d1)+(p.d2&&p.d2!==p.d1?' au '+pDateFmt(p.d2):'');
+  var meta=esc(x.auteur||'Équipe')+dates+' • '+(x.created_at?esc(fmtD(String(x.created_at).slice(0,10))):'');
+  return '<div class="portal-post '+esc(cat)+'">'+
+    '<div class="portal-post-head"><div><div class="portal-post-title">'+esc(x.titre)+'</div>'+
+    '<div class="portal-post-meta">'+meta+'</div></div>'+
+    '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end">'+
+      '<span class="portal-tag '+esc(cat)+'">'+pTypeLabel(cat)+'</span>'+
+      '<span class="db '+pStatutClass(x.statut)+'">'+pStatutLabel(x.statut)+'</span>'+
+    '</div></div>'+
+    '<div class="portal-post-msg">'+esc(portalBody(x))+'</div>'+
+    portalBtns(x)+'</div>';
+}
+
+function renderPortail(){renderCal();renderCalAttente();renderFeed();}
+
+// Liste : avis et idées seulement
+function renderFeed(){
   var feed=Q('pt_feed'),f=(Q('pt_filtre')&&Q('pt_filtre').value)||'';
   if(!feed)return;
-  var rows=portailRows.map(normalizePortalRow).filter(canSeePortal).filter(function(x){return !f||x.categorie===f;});
-  if(!rows.length){feed.innerHTML='<div class="empty">Aucune communication pour le moment.</div>';return;}
-  feed.innerHTML=rows.map(function(x){
-    var cat=x.categorie;
-    var dates='';
-    if(x.date_debut||x.date_fin){
-      dates=' • '+(pDateFmt(x.date_debut)||'')+(x.date_fin?' au '+pDateFmt(x.date_fin):'');
-    }
-    var meta=esc(x.auteur||'Équipe')+dates+' • '+(x.created_at?esc(fmtD(String(x.created_at).slice(0,10))):'');
-    var btns='';
-    if(isAdmin()){
-      if(x.statut!=='accepte')btns+='<button class="portal-ok" onclick="acceptPortail(\''+esc(x.id)+'\')">Accepter</button>';
-      if(x.statut!=='refuse')btns+='<button class="portal-warn" onclick="refusePortail(\''+esc(x.id)+'\')">Refuser</button>';
-    }
-    if(canEditPortal(x))btns+='<button class="portal-edit" onclick="editPortail(\''+esc(x.id)+'\')">Modifier</button>';
-    if(canDeletePortal(x))btns+='<button class="portal-del" onclick="delPortail(\''+esc(x.id)+'\')">Retirer</button>';
-    return '<div class="portal-post '+esc(cat)+'">'+
-      '<div class="portal-post-head"><div><div class="portal-post-title">'+esc(x.titre)+'</div>'+
-      '<div class="portal-post-meta">'+meta+'</div></div>'+
-      '<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end">'+
-        '<span class="portal-tag '+esc(cat)+'">'+pTypeLabel(cat)+'</span>'+
-        '<span class="db '+pStatutClass(x.statut)+'">'+pStatutLabel(x.statut)+'</span>'+
-      '</div></div>'+
-      '<div class="portal-post-msg">'+esc(x.message)+'</div>'+
-      (btns?'<div class="portal-actions">'+btns+'</div>':'')+
-      '</div>';
-  }).join('');
+  var rows=portalVisible().filter(function(x){return !isDated(x);})
+                          .filter(function(x){return !f||x.categorie===f;});
+  feed.innerHTML=rows.length?rows.map(portalPostHtml).join('')
+                            :'<div class="empty">Aucun avis ni idée pour le moment.</div>';
 }
-function buildPortalMessage(msg,dateDebut,dateFin){
-  var dates='';
-  if(dateDebut||dateFin){
-    dates='Dates : '+(dateDebut||'')+(dateFin?' au '+dateFin:'');
+
+// Calendrier : congés et fermetures
+function calEvents(){
+  return portalVisible()
+    .filter(function(x){return isDated(x)&&x.statut!=='refuse'&&portalDates(x).d1;})
+    .filter(function(x){return !calMoi||x.categorie==='fermeture'||portalMine(x);});
+}
+function renderCal(){
+  var grid=Q('cal_grid');if(!grid)return;
+  if(Q('cal_mois'))Q('cal_mois').textContent=CAL_MOIS[calM]+' '+calY;
+  if(Q('cal_dows'))Q('cal_dows').innerHTML=CAL_DOWS.map(function(d){return '<div class="cal-dow">'+d+'</div>';}).join('');
+  if(Q('cal_tous'))Q('cal_tous').className=calMoi?'':'on';
+  if(Q('cal_moi'))Q('cal_moi').className=calMoi?'on':'';
+
+  var evs=calEvents(),byDay={};
+  evs.forEach(function(x){
+    var p=portalDates(x),a=calParse(p.d1),b=calParse(p.d2||p.d1),g=0;
+    if(b<a)b=a;
+    for(var d=new Date(a);d<=b&&g<400;d.setDate(d.getDate()+1),g++){
+      var k=calKey(d);(byDay[k]=byDay[k]||[]).push(x);
+    }
+  });
+
+  var todayK=calKey(new Date());
+  var shift=(new Date(calY,calM,1).getDay()+6)%7;
+  var html='',nMois=0;
+  for(var i=0;i<42;i++){
+    var d=new Date(calY,calM,1-shift+i);
+    var k=calKey(d),out=(d.getMonth()!==calM),we=(d.getDay()===0||d.getDay()===6);
+    var list=byDay[k]||[];
+    if(!out)nMois+=list.length;
+    var ev=list.map(function(x){
+      var cls=x.categorie==='fermeture'?'ferm':(x.statut==='en_attente'?'att':'conge');
+      if(calSel&&String(calSel)===String(x.id))cls+=' sel';
+      var lbl=portalShortName(x)+(x.statut==='en_attente'?' (att.)':'');
+      return '<button type="button" class="cal-ev '+cls+'" onclick="calShow(\''+esc(x.id)+'\')" title="'+esc(x.titre)+'">'+esc(lbl)+'</button>';
+    }).join('');
+    html+='<div class="cal-cell'+(out?' out':'')+(we&&!out?' we':'')+(k===todayK?' today':'')+'">'+
+          '<div class="cal-num">'+d.getDate()+'</div>'+ev+'</div>';
   }
-  return dates?dates+'\n\n'+msg:msg;
+  grid.innerHTML=html;
+  if(Q('cal_note'))Q('cal_note').textContent=nMois?'':'Aucune absence en '+CAL_MOIS[calM]+' '+calY+'. Utilisez ‹ › pour changer de mois.';
+  renderCalAgenda(evs);
 }
+// Repli mobile : liste chronologique des absences à venir
+function renderCalAgenda(evs){
+  var box=Q('cal_agenda');if(!box)return;
+  var today=calKey(new Date());
+  var up=evs.filter(function(x){var p=portalDates(x);return (p.d2||p.d1)>=today;})
+            .sort(function(a,b){return portalDates(a).d1.localeCompare(portalDates(b).d1);});
+  box.innerHTML=up.length?up.map(portalPostHtml).join('')
+                         :'<div class="empty">Aucune absence à venir.</div>';
+}
+// File d'approbation : ne jamais laisser une demande en attente se perdre dans le calendrier
+function renderCalAttente(){
+  var box=Q('cal_attente'),sec=Q('cal_attente_sec');if(!box||!sec)return;
+  var rows=portalVisible().filter(function(x){return isDated(x)&&x.statut==='en_attente';});
+  sec.style.display=rows.length?'':'none';
+  box.innerHTML=rows.map(portalPostHtml).join('');
+}
+window.calShow=function(id){
+  var sec=Q('cal_detail_sec'),box=Q('cal_detail');if(!sec||!box)return;
+  var x=portalVisible().filter(function(r){return String(r.id)===String(id);})[0];
+  if(!x)return;
+  calSel=(String(calSel)===String(id))?null:String(id);
+  if(!calSel){sec.style.display='none';box.innerHTML='';renderCal();return;}
+  box.innerHTML=portalPostHtml(x);
+  sec.style.display='';
+  renderCal();
+};
 function savePortail(){
   var cat=Q('pt_type').value,titre=Q('pt_titre').value.trim(),msg=Q('pt_msg').value.trim();
   if(!titre||!msg){toast('Titre et message requis.');return;}
-  var fullMsg=buildPortalMessage(msg,Q('pt_debut').value||'',Q('pt_fin').value||'');
+  var d1=Q('pt_debut').value||'',d2=Q('pt_fin').value||'';
+  if(cat==='demande_conge'||cat==='fermeture'){
+    if(!d1){toast('Date de début requise pour un congé ou une fermeture.');return;}
+    if(d2&&d2<d1){toast('La date de fin précède la date de début.');return;}
+  }
   var row={
     titre:titre,
     categorie:cat,
-    message:fullMsg,
+    message:msg,
+    date_debut:d1||null,
+    date_fin:(d2||d1)||null,
     auteur:(Q('uname')&&Q('uname').textContent)||((user&&user.email)||''),
     role_auteur:role||'',
     created_by:user?user.id:null,
@@ -2134,6 +2322,19 @@ window.editPortail=function(id){
   nm=nm.trim();
   if(!nm){toast('Message requis.');return;}
   var changes={titre:nt,message:nm};
+  if(isDated(row)){
+    var p=portalDates(row);
+    var n1=prompt('Date de début (AAAA-MM-JJ)',p.d1||'');
+    if(n1===null)return;
+    n1=n1.trim();
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(n1)){toast('Date de début invalide (format AAAA-MM-JJ).');return;}
+    var n2=prompt('Date de fin (AAAA-MM-JJ)',p.d2||n1);
+    if(n2===null)return;
+    n2=n2.trim()||n1;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(n2)){toast('Date de fin invalide (format AAAA-MM-JJ).');return;}
+    if(n2<n1){toast('La date de fin précède la date de début.');return;}
+    changes.date_debut=n1;changes.date_fin=n2;
+  }
   if(portailUseDb)updatePortalDb(id,changes,'Communication modifiée.');
   else updatePortalLocal(id,changes,'Communication modifiée.');
 };
@@ -2152,7 +2353,24 @@ window.delPortail=function(id){
   }
 };
 document.addEventListener('click',function(e){if(e.target&&e.target.id==='pt_save')savePortail();});
-document.addEventListener('change',function(e){if(e.target&&e.target.id==='pt_filtre')renderPortail();});
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='pt_filtre')renderFeed();});
+
+// Navigation du calendrier
+document.addEventListener('click',function(e){
+  var t=e.target;if(!t||!t.id)return;
+  if(t.id==='cal_prev'){calM--;if(calM<0){calM=11;calY--;}renderCal();}
+  else if(t.id==='cal_next'){calM++;if(calM>11){calM=0;calY++;}renderCal();}
+  else if(t.id==='cal_auj'){var n=new Date();calY=n.getFullYear();calM=n.getMonth();renderCal();}
+  else if(t.id==='cal_tous'){calMoi=false;renderCal();}
+  else if(t.id==='cal_moi'){calMoi=true;renderCal();}
+});
+// Dates obligatoires pour un congé ou une fermeture
+document.addEventListener('change',function(e){
+  if(!e.target||e.target.id!=='pt_type')return;
+  var dated=(e.target.value==='demande_conge'||e.target.value==='fermeture');
+  var lbl=Q('pt_dates')&&Q('pt_dates').querySelector('label');
+  if(lbl)lbl.textContent=dated?'Date début *':'Date début';
+});
 
 
 // MARGES
