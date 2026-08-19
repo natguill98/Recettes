@@ -128,9 +128,9 @@ table.ct tr:last-child td{border-bottom:none}
 .pc.grn .pl{color:var(--green)}
 .pc.grn .pv{color:var(--green)}
 .hbox{background:var(--gray-l);border:0.5px dashed var(--bd2);border-radius:var(--r);padding:12px;margin-top:16px;text-align:center;font-size:12px;color:var(--tx3)}
-.note-box{background:var(--amber-l);border:0.5px solid #FAC775;border-left:4px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-top:4px}
-.note-box .note-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:4px}
-.note-box .note-text{font-size:14px;color:#633806;line-height:1.5;font-weight:500}
+.note-box{background:var(--amber-l);border:0.5px solid #FAC775;border-left:6px solid var(--amber);border-radius:var(--r);padding:14px 16px;margin:10px 0 16px 0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.note-box .note-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px}
+.note-box .note-text{font-size:16px;color:#633806;line-height:1.5;font-weight:600}
 .fbox{background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin-top:8px}
 .ebar{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--bd);flex-wrap:wrap;align-items:center}
 .nbar{display:flex;align-items:center;gap:8px;padding-top:10px;margin-top:10px;border-top:0.5px solid var(--bd);width:100%}
@@ -501,6 +501,7 @@ table.ct tr:last-child td{border-bottom:none}
     <button class="tab" data-tab="crm" id="tcrm" style="display:none">CRM</button>
     <button class="tab tab-right-first" data-tab="couts" id="tcouts">Couts et Prix</button>
     <button class="tab" data-tab="mistints" id="tmistints" style="display:none">Mistints</button>
+    <button class="tab" data-tab="aerosol" id="taerosol">Aérosols</button>
     <button class="tab" data-tab="reglages" id="treglages" style="display:none">Réglages</button>
     <button class="tab" data-tab="detail" id="tdetail" style="display:none">Fiche</button>
   </div>
@@ -866,6 +867,32 @@ table.ct tr:last-child td{border-bottom:none}
             </select>
           </div>
           <div id="mi_list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="v-aerosol">
+      <div class="portal-grid">
+        <div class="portal-card">
+          <div class="ftit">Ajouter une recette au suivi</div>
+          <div class="portal-form">
+            <div class="fg2">
+              <div class="fg"><label>Client</label><input id="ae_client" autocomplete="off" placeholder="Rechercher un client..."><div class="acl" id="ae-ac-c"></div></div>
+              <div class="fg"><label>Couleur</label><input id="ae_couleur" autocomplete="off" placeholder="Rechercher une couleur..."><div class="acl" id="ae-ac-co"></div></div>
+            </div>
+            <button class="btn btnp" id="ae_search">Chercher</button>
+            <div id="ae_search_results" style="margin-top:10px"></div>
+          </div>
+        </div>
+
+        <div class="portal-card">
+          <div class="ftit" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Stock aérosol par couleur</span>
+            <select class="sf" id="ae_sort_produit" style="max-width:200px">
+              <option value="">Tous les produits</option>
+            </select>
+          </div>
+          <div id="ae_list"></div>
         </div>
       </div>
     </div>
@@ -1912,6 +1939,7 @@ document.querySelectorAll('.tab').forEach(function(t){
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
     if(t.dataset.tab==='mistints'){loadMistints();}
+    if(t.dataset.tab==='aerosol'){loadAerosol();}
     if(t.dataset.tab==='crm'){loadCRM();}
     showView(t.dataset.tab);
   });
@@ -1930,12 +1958,12 @@ function showView(name){
     toast('CRM réservé aux administrateurs');
     name='clients';
   }
-  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','crm','mistints'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
+  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','crm','mistints','aerosol'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
   if(!Q('v-'+name))name='clients';
   if(name==='crm')loadCRM();
   Q('v-'+name).classList.add('on');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',crm:'crm',mistints:'mistints'};
+  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',crm:'crm',mistints:'mistints',aerosol:'aerosol'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
@@ -2591,7 +2619,8 @@ function loadCatalogues(){
   return Promise.all([
     sb.from('bases').select('*').order('produit').then(function(r){allBases=r.data||[];}),
     sb.from('colorants_prix').select('*').order('nom').then(function(r){allCP=r.data||[];}),
-    sb.from('produits_catalyseurs').select('*').order('produit').then(function(r){allPC=r.data||[];})
+    sb.from('produits_catalyseurs').select('*').order('produit').then(function(r){allPC=r.data||[];}),
+    sb.from('stock_aerosol').select('*').then(function(r){aeStock=r.data||[];aeRecMap={};aeStock.forEach(function(s){aeRecMap[s.recette_id]=s;});})
   ]);
 }
 
@@ -2870,8 +2899,15 @@ function openDetail(id){
     return nb;
   }
 
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div><div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div>'+(r.notes?'<div style="grid-column:1/-1"><div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div></div>':'')+'</div><div class="stit">Colorants</div>'+colTable+prixHTML;
+  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div>'+(r.notes?'<div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div>':'')+'<div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div></div><div class="stit">Colorants</div>'+colTable+prixHTML;
   if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(true),Q('detpan').firstChild);}
+
+  // Stock aérosol
+  var aeDiv=document.createElement('div');
+  aeDiv.id='ae-widget';
+  aeDiv.style.cssText='margin-top:12px;';
+  Q('detpan').appendChild(aeDiv);
+  refreshAerosolWidget(id);
 
   // Historique des prix
   var histDiv=document.createElement('div');
@@ -4852,6 +4888,135 @@ if(Q('mi_produit')&&Q('mi-ac-p'))setupAC(Q('mi_produit'),Q('mi-ac-p'),function()
 });
 if(Q('mi_client')&&Q('mi-ac-c'))setupAC(Q('mi_client'),Q('mi-ac-c'),function(){
   return[...new Set(recs.map(function(r){return r.client;}).filter(Boolean))].sort();
+});
+
+// ============================================================
+// STOCK AÉROSOL — quantité de gallon restante par recette,
+// pour la production de canettes. Une ligne par recette (unique).
+// ============================================================
+var AE_OPTS=['1 gal','3/4','2/3','1/2','1/3','1/4','vide'];
+var AE_NUM={'1 gal':1,'3/4':0.75,'2/3':0.667,'1/2':0.5,'1/3':0.333,'1/4':0.25,'vide':0};
+var AE_COL={'1 gal':'#2e7d32','3/4':'#558b2f','2/3':'#9e9d24','1/2':'#B36B00','1/3':'#e65100','1/4':'#c62828','vide':'#999'};
+var aeStock=[]; // [{id,recette_id,quantite_restante}]
+var aeRecMap={}; // recette_id -> stock row
+
+function aeOptionsHtml(current){
+  return AE_OPTS.map(function(o){return'<option value="'+o+'"'+(o===current?' selected':'')+'>'+(o==='vide'?'Vide':o)+'</option>';}).join('');
+}
+
+function refreshAerosolWidget(recId){
+  var el=Q('ae-widget');if(!el)return;
+  var s=aeRecMap[recId];
+  if(!s){
+    el.innerHTML='<div class="stit">Stock aérosol</div><button class="btn" style="font-size:13px" onclick="addAerosol(\''+recId+'\',\'1 gal\')">+ Ajouter au suivi (1 gal)</button>';
+    return;
+  }
+  var col=AE_COL[s.quantite_restante]||'#999';
+  el.innerHTML='<div class="stit">Stock aérosol</div><div style="display:flex;align-items:center;gap:10px">'+
+    '<select class="sf" style="border-color:'+col+';color:'+col+';font-weight:600" onchange="updateAerosolQty(\''+recId+'\',this.value)">'+aeOptionsHtml(s.quantite_restante)+'</select>'+
+    '<button class="be" style="font-size:12px;padding:4px 10px" onclick="removeAerosol(\''+recId+'\')">Retirer du suivi</button>'+
+  '</div>';
+}
+
+function loadAerosol(){
+  sb.from('stock_aerosol').select('*').then(function(resp){
+    if(resp.error){Q('ae_list').innerHTML='<p style="color:var(--red)">Erreur: '+esc(resp.error.message)+'</p>';return;}
+    aeStock=resp.data||[];
+    aeRecMap={};aeStock.forEach(function(s){aeRecMap[s.recette_id]=s;});
+    updateAeProduitOptions();
+    renderAerosol();
+    if(selId)refreshAerosolWidget(selId);
+  });
+}
+
+function updateAeProduitOptions(){
+  var sel=Q('ae_sort_produit');if(!sel)return;
+  var current=sel.value;
+  var produits=aeStock.map(function(s){var r=recs.filter(function(x){return x.id===s.recette_id;})[0];return r?r.produit:null;}).filter(Boolean);
+  produits=[...new Set(produits)].sort();
+  sel.innerHTML='<option value="">Tous les produits</option>'+produits.map(function(p){return'<option value="'+esc(p)+'"'+(p===current?' selected':'')+'>'+esc(p)+'</option>';}).join('');
+}
+
+function renderAerosol(){
+  var produitFiltre=Q('ae_sort_produit')?Q('ae_sort_produit').value:'';
+  var rows=aeStock.map(function(s){
+    var r=recs.filter(function(x){return x.id===s.recette_id;})[0];
+    return r?{stock:s,rec:r}:null;
+  }).filter(Boolean);
+  if(produitFiltre)rows=rows.filter(function(x){return x.rec.produit===produitFiltre;});
+  rows.sort(function(a,b){
+    var na=AE_NUM[a.stock.quantite_restante]!==undefined?AE_NUM[a.stock.quantite_restante]:1;
+    var nb=AE_NUM[b.stock.quantite_restante]!==undefined?AE_NUM[b.stock.quantite_restante]:1;
+    if(na!==nb)return na-nb;
+    return(a.rec.couleur||'').localeCompare(b.rec.couleur||'');
+  });
+  if(!rows.length){Q('ae_list').innerHTML='<p style="color:var(--tx3);font-size:13px;padding:10px 0">Aucune recette suivie pour l\'instant.</p>';return;}
+  Q('ae_list').innerHTML=rows.map(function(x){
+    var col=AE_COL[x.stock.quantite_restante]||'#999';
+    return '<div style="border:0.5px solid var(--bd);border-radius:var(--r);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+      '<div style="flex:1">'+
+        '<div style="font-weight:600">'+esc(x.rec.couleur)+' <span style="color:var(--tx3);font-weight:400">('+esc(x.rec.numero_couleur||'')+')</span></div>'+
+        '<div style="font-size:12px;color:var(--tx3)">'+esc(x.rec.client)+' — '+esc(x.rec.marque||'')+' '+esc(x.rec.produit||'')+'</div>'+
+      '</div>'+
+      '<select class="sf" style="border-color:'+col+';color:'+col+';font-weight:600" onchange="updateAerosolQty(\''+x.stock.recette_id+'\',this.value)">'+aeOptionsHtml(x.stock.quantite_restante)+'</select>'+
+      '<button class="be" style="font-size:12px;padding:4px 10px" onclick="removeAerosol(\''+x.stock.recette_id+'\')">Retirer</button>'+
+    '</div>';
+  }).join('');
+}
+
+window.updateAerosolQty=function(recetteId,val){
+  sb.from('stock_aerosol').update({quantite_restante:val,updated_at:new Date().toISOString()}).eq('recette_id',recetteId).then(function(resp){
+    if(resp.error){toast('Erreur: '+resp.error.message);return;}
+    toast('Quantité mise à jour');
+    loadAerosol();
+  });
+};
+
+window.removeAerosol=function(recetteId){
+  if(!confirm('Retirer cette recette du suivi aérosol?'))return;
+  sb.from('stock_aerosol').delete().eq('recette_id',recetteId).then(function(resp){
+    if(resp.error){toast('Erreur: '+resp.error.message);return;}
+    toast('Retiré du suivi');
+    loadAerosol();
+  });
+};
+
+window.addAerosol=function(recetteId,qty){
+  sb.from('stock_aerosol').upsert({recette_id:recetteId,quantite_restante:qty||'1 gal',updated_at:new Date().toISOString()},{onConflict:'recette_id'}).then(function(resp){
+    if(resp.error){toast('Erreur: '+resp.error.message);return;}
+    toast('Ajouté au suivi aérosol');
+    loadAerosol();
+  });
+};
+
+if(Q('ae_sort_produit'))Q('ae_sort_produit').addEventListener('change',renderAerosol);
+
+if(Q('ae_client')&&Q('ae-ac-c'))setupAC(Q('ae_client'),Q('ae-ac-c'),function(){
+  return[...new Set(recs.map(function(r){return r.client;}).filter(Boolean))].sort();
+});
+if(Q('ae_couleur')&&Q('ae-ac-co'))setupAC(Q('ae_couleur'),Q('ae-ac-co'),function(){
+  var cl=(Q('ae_client').value||'').trim().toLowerCase();
+  var src=cl?recs.filter(function(r){return(r.client||'').toLowerCase().indexOf(cl)>=0;}):recs;
+  return[...new Set(src.map(function(r){return r.couleur;}).filter(Boolean))].sort();
+});
+
+if(Q('ae_search'))Q('ae_search').addEventListener('click',function(){
+  var cl=(Q('ae_client').value||'').trim().toLowerCase();
+  var co=(Q('ae_couleur').value||'').trim().toLowerCase();
+  if(!cl&&!co){Q('ae_search_results').innerHTML='<p style="color:var(--tx3);font-size:13px">Entre au moins un client ou une couleur.</p>';return;}
+  var results=recs.filter(function(r){
+    var okC=!cl||(r.client||'').toLowerCase().indexOf(cl)>=0;
+    var okCo=!co||(r.couleur||'').toLowerCase().indexOf(co)>=0||(r.numero_couleur||'').toLowerCase().indexOf(co)>=0;
+    return okC&&okCo;
+  }).slice(0,25);
+  if(!results.length){Q('ae_search_results').innerHTML='<p style="color:var(--tx3);font-size:13px">Aucune recette trouvée.</p>';return;}
+  Q('ae_search_results').innerHTML=results.map(function(r){
+    var already=!!aeRecMap[r.id];
+    return '<div style="border:0.5px solid var(--bd);border-radius:var(--r);padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+      '<div><strong>'+esc(r.couleur)+'</strong> <span style="color:var(--tx3)">('+esc(r.numero_couleur||'')+')</span><br><span style="font-size:12px;color:var(--tx3)">'+esc(r.client)+' — '+esc(r.marque||'')+' '+esc(r.produit||'')+'</span></div>'+
+      (already?'<span style="font-size:12px;color:var(--tx3)">Déjà suivi</span>':'<button class="btn btnp" style="font-size:12px;padding:6px 12px" onclick="addAerosol(\''+r.id+'\',\'1 gal\')">+ Suivre (1 gal)</button>')+
+    '</div>';
+  }).join('');
 });
 
 })();
