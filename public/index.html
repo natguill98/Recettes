@@ -799,6 +799,7 @@ table.ct tr:last-child td{border-bottom:none}
                 <option value="idee">Idée / amélioration</option>
               </select>
             </div>
+            <div id="pt_pour"></div>
             <div class="fg"><label>Message *</label><textarea id="pt_msg" placeholder="Écrivez votre communication..."></textarea></div>
             <div class="fg2" id="pt_dates">
               <div class="fg"><label>Date début</label><input type="date" id="pt_debut"></div>
@@ -2189,10 +2190,38 @@ function _constructionEte(y){
 
 // ── Fêtes de l'équipe ─────────────────────────────────────────────────────────
 // Pour ajouter quelqu'un : une ligne [jour, mois (1-12), 'Prénom'].
+/** Qui peut apparaître comme auteur d'un congé.
+ *  Les profils Supabase ne sont pas lisibles (RLS : auth.uid() = id), donc la
+ *  liste vient de FETES, des auteurs déjà présents dans le portail, et de soi.
+ *  Pour ajouter quelqu'un durablement : une ligne dans FETES ci-dessous. */
+function equipeNoms(){
+  var vus={},out=[];
+  var ajoute=function(nom){
+    nom=String(nom||'').trim();
+    if(!nom||vus[nom.toLowerCase()])return;
+    vus[nom.toLowerCase()]=1;out.push(nom);
+  };
+  FETES.forEach(function(f){ajoute(f[2]);});
+  // On saute les auteurs hérités stockés en courriel : la liste doit
+  // proposer des noms, pas des adresses.
+  (portailRows||[]).forEach(function(x){
+    var a=x&&x.auteur;if(a&&String(a).indexOf('@')<0)ajoute(a);
+  });
+  ajoute(monNom());
+  return out.sort(function(a,b){return a.localeCompare(b,'fr');});
+}
+/** « Dave Gingras » -> « Dave ». Le roster garde le nom complet du compte,
+ *  l'affichage des fêtes n'a besoin que du prénom. */
+function prenom(nom){return String(nom||'').trim().split(/\s+/)[0];}
+
+function monNom(){
+  return (Q('uname')&&Q('uname').textContent)||((user&&user.email)||'');
+}
+
 var FETES=[
   [2,  1,  'Claude'],
   [23, 2,  'Nancie'],
-  [23, 9,  'Dave'],
+  [23, 9,  'Dave Gingras'],
   [9,  10, 'Nathan'],
   [30, 11, 'Alain']
 ];
@@ -2301,7 +2330,11 @@ function datesTexte(x){
 }
 
 function portalMine(x){
-  return isPortalAuteur(x)||(!!user&&!!x.auteur_email&&x.auteur_email===user.email)||(!!user&&x.auteur===user.email);
+  // Le nom affiché prime : quand l'admin publie au nom d'un employé, le congé
+  // doit tomber dans « Mes congés » de l'employé, pas dans ceux de l'admin.
+  var moi=monNom();
+  if(x&&x.auteur&&moi)return String(x.auteur).trim().toLowerCase()===String(moi).trim().toLowerCase();
+  return isPortalAuteur(x)||(!!user&&!!x.auteur_email&&x.auteur_email===user.email);
 }
 // Première ligne du message, tronquée — sert d'étiquette quand il n'y a pas de titre
 function portalFirstLine(x,max){
@@ -2340,6 +2373,7 @@ var edId=null,edZone='',ed={};
 function edSync(){
   if(!edId)return;
   var g=function(id){var e=Q(id);return e?e.value:undefined;},v;
+  if((v=g('ed_auteur'))!==undefined)ed.auteur=v;
   if((v=g('ed_type'))!==undefined)ed.cat=v;
   if((v=g('ed_msg'))!==undefined)ed.msg=v;
   if((v=g('ed_d1'))!==undefined)ed.d1=v;
@@ -2357,7 +2391,17 @@ function portalEditHtml(x){
   var dated=(ed.cat==='demande_conge'||ed.cat==='fermeture');
   var unJour=dated&&ed.d1&&((ed.d2||ed.d1)===ed.d1);
   var o=function(v,t){return '<option value="'+v+'"'+(ed.cat===v?' selected':'')+'>'+t+'</option>';};
+  var noms=equipeNoms(),moi=monNom();
+  var pour=(ed.auteur||moi);
+  if(noms.indexOf(pour)<0)noms=noms.concat([pour]).sort(function(a,b){return a.localeCompare(b,'fr');});
   return '<div class="portal-post '+esc(ed.cat)+'"><div class="portal-form">'+
+    (isAdmin()
+      ? '<div class="fg"><label>Au nom de</label><select id="ed_auteur">'+
+        noms.map(function(nom){
+          return '<option value="'+esc(nom)+'"'+(nom===pour?' selected':'')+'>'+
+                 esc(nom===moi?nom+' (moi)':nom)+'</option>';
+        }).join('')+'</select></div>'
+      : '')+
     '<div class="fg"><label>Type</label><select id="ed_type">'+
       o('avis','Avis / message')+o('demande_conge','Demande de congé')+
       o('fermeture','Fermeture')+o('idee','Idée / amélioration')+'</select></div>'+
@@ -2409,7 +2453,7 @@ function portalPostHtml(x,zone){
     portalBtns(x,zone)+'</div>';
 }
 
-function renderPortail(){renderCal();renderCalDetail();renderCalAttente();renderFeed();}
+function renderPortail(){renderPtPour();renderCal();renderCalDetail();renderCalAttente();renderFeed();}
 
 // Panneau « Détail » du calendrier, re-rendu à chaque cycle pour que l'édition
 // et les changements de statut s'y répercutent sans re-cliquer sur la pastille.
@@ -2499,7 +2543,7 @@ function renderCal(){
               '" title="'+esc(fer.nom)+'" style="opacity:.35">&nbsp;</div>';
     var fete=feteByDay[k];
     if(fete&&!out)ferHtml+='<div class="cal-fete" title="Fête de '+esc(fete.join(' et '))+'">'+
-              esc('Fête · '+fete.join(', '))+'</div>';
+              esc('Fête · '+fete.map(prenom).join(', '))+'</div>';
     html+='<div class="cal-cell'+(out?' out':'')+(we&&!out?' we':'')+
           (fer&&!out?(fer.type==='constr'?' constr':' ferie'):'')+
           (k===todayK?' today':'')+'">'+
@@ -2536,7 +2580,7 @@ function renderCalAgenda(evs){
     fetesPour(calY).forEach(function(f){
       if(f.d<today||f.d>lim2)return;
       items.push({d1:f.d,html:'<div class="portal-post" style="border-left-color:#7A3E86">'+
-        '<div class="portal-post-head"><div><div class="portal-post-title">Fête de '+esc(f.nom)+'</div>'+
+        '<div class="portal-post-head"><div><div class="portal-post-title">Fête de '+esc(prenom(f.nom))+'</div>'+
         '<div class="portal-post-meta">'+esc(pDateFmt(f.d))+'</div></div>'+
         '<span class="portal-tag" style="background:#F7EAF9;color:#7A3E86">Fête</span></div></div>'});
     });
@@ -2609,8 +2653,9 @@ function savePortail(){
     date_fin:(d2||d1)||null,
     heure_debut:h1,
     heure_fin:h2,
-    auteur:(Q('uname')&&Q('uname').textContent)||((user&&user.email)||''),
-    role_auteur:role||'',
+    // `auteur` est le nom affiché ; `created_by` garde qui a réellement saisi.
+    auteur:(isAdmin()&&ptPour)?ptPour:monNom(),
+    role_auteur:(isAdmin()&&ptPour&&ptPour!==monNom())?'':(role||''),
     created_by:user?user.id:null,
     statut:'en_attente',
     important:false,
@@ -2635,9 +2680,26 @@ function savePortail(){
     savePortailLocal(row);
   }
 }
+// Nom au nom duquel l'admin publie. Vide = en son propre nom.
+var ptPour='';
+
+/** Sélecteur « Au nom de », réservé à l'admin. */
+function renderPtPour(){
+  var box=Q('pt_pour');if(!box)return;
+  if(!isAdmin()){box.innerHTML='';ptPour='';return;}
+  var moi=monNom(),noms=equipeNoms();
+  var courant=ptPour||moi;
+  box.innerHTML='<div class="fg"><label>Au nom de</label><select id="pt_pour_sel">'+
+    noms.map(function(nom){
+      var label=(nom===moi)?nom+' (moi)':nom;
+      return '<option value="'+esc(nom)+'"'+(nom===courant?' selected':'')+'>'+esc(label)+'</option>';
+    }).join('')+
+    '</select></div>';
+}
+
 function clearPortailForm(){
   Q('pt_msg').value='';Q('pt_debut').value='';Q('pt_fin').value='';
-  ptHDebut='';ptHFin='';ptModeHeures=false;renderPtDemi();
+  ptHDebut='';ptHFin='';ptModeHeures=false;ptPour='';renderPtDemi();renderPtPour();
 }
 function savePortailLocal(row){
   row.id='local_'+Date.now();
@@ -2682,7 +2744,7 @@ window.editPortail=function(id,zone){
   if(!canEditPortal(row)){toast('Modification non autorisée.');return;}
   var p=portalDates(row);
   edId=String(id);edZone=zone||'';
-  ed={cat:row.categorie,msg:portalBody(row),
+  ed={cat:row.categorie,msg:portalBody(row),auteur:row.auteur||'',
       d1:p.d1||'',d2:(p.d2||p.d1)||'',
       mode:aDesHeures(row),h1:hhmm(heureDebut(row)),h2:hhmm(heureFin(row))};
   renderPortail();
@@ -2708,6 +2770,7 @@ window.enregistrerEditPortail=function(){
   var changes={
     categorie:cat,
     message:msg,
+    auteur:(isAdmin()&&ed.auteur)?ed.auteur:row.auteur,
     date_debut:dated?(d1||null):null,
     date_fin:dated?((d2||d1)||null):null,
     heure_debut:h1,
@@ -2763,6 +2826,7 @@ document.addEventListener('change',function(e){
     if(!ptModeHeures){ptHDebut='';ptHFin='';}
     renderPtDemi();
   }
+  else if(id==='pt_pour_sel')ptPour=e.target.value||'';
   else if(id==='pt_h1')ptHDebut=e.target.value||'';
   else if(id==='pt_h2')ptHFin=e.target.value||'';
   // Formulaire d'édition : on capture la saisie avant tout re-rendu, sinon
