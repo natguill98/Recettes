@@ -831,6 +831,10 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="ftit">Nouveau mistint</div>
           <div class="portal-form">
             <div class="fg2">
+              <div class="fg"><label>Client (optionnel)</label><input id="mi_client" autocomplete="off" placeholder="Ex: Nom du client d'origine"><div class="acl" id="mi-ac-c"></div></div>
+              <div class="fg"><label>Description / couleur *</label><input id="mi_description" placeholder="Ex: 801C Bleu foncé RAL-5001"></div>
+            </div>
+            <div class="fg2">
               <div class="fg"><label>Marque</label>
                 <select id="mi_marque">
                   <option value="">Choisir...</option>
@@ -842,8 +846,6 @@ table.ct tr:last-child td{border-bottom:none}
               </div>
               <div class="fg"><label>Produit</label><input id="mi_produit" autocomplete="off" placeholder="Ex: Synthane, Intergard 345..."><div class="acl" id="mi-ac-p"></div></div>
             </div>
-            <div class="fg"><label>Description / couleur *</label><input id="mi_description" placeholder="Ex: 801C Bleu foncé RAL-5001"></div>
-            <div class="fg"><label>Client (optionnel)</label><input id="mi_client" autocomplete="off" placeholder="Ex: Nom du client d'origine"><div class="acl" id="mi-ac-c"></div></div>
             <div class="fg2">
               <div class="fg"><label>Format</label>
                 <select id="mi_format">
@@ -5018,19 +5020,28 @@ function updateMiProduitOptions(){
   sel.innerHTML='<option value="">Tous les produits</option>'+produits.map(function(p){return'<option value="'+esc(p)+'"'+(p===current?' selected':'')+'>'+esc(p)+'</option>';}).join('');
 }
 
+function splitMiDesc(desc){
+  desc=(desc||'').trim();
+  var sp=desc.indexOf(' ');
+  if(sp<0)return{code:'',color:desc};
+  var first=desc.slice(0,sp);
+  if(!/\d/.test(first))return{code:'',color:desc}; // pas un code (pas de chiffre) -> tout est la couleur
+  return{code:first,color:desc.slice(sp+1).trim()};
+}
+
 function renderMistints(){
   var produitFiltre=Q('mi_sort_produit')?Q('mi_sort_produit').value:'';
   var items=miItems.filter(function(m){return!produitFiltre||m.produit===produitFiltre;});
   items=items.slice().sort(function(a,b){
-    var pa=(a.produit||'').toLowerCase(),pb=(b.produit||'').toLowerCase();
-    if(pa!==pb)return pa<pb?-1:1;
-    return (a.description||'').trim().localeCompare((b.description||'').trim(),'fr',{numeric:true,sensitivity:'base'});
+    var ca=splitMiDesc(a.description).color,cb=splitMiDesc(b.description).color;
+    return ca.localeCompare(cb,'fr',{numeric:true,sensitivity:'base'});
   });
   if(!items.length){Q('mi_list').innerHTML='<p style="color:var(--tx3);font-size:13px;padding:10px 0">Aucun mistint dans l\'inventaire.</p>';return;}
   Q('mi_list').innerHTML=items.map(function(m){
+    var d=splitMiDesc(m.description);
     return '<div style="border:0.5px solid var(--bd);border-radius:var(--r);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
       '<div style="flex:1">'+
-        '<div style="font-weight:600">'+esc(m.description)+(m.client?' <span style="color:var(--tx3);font-weight:400">— '+esc(m.client)+'</span>':'')+'</div>'+
+        '<div style="font-weight:600">'+esc(d.color)+(d.code?' <span style="color:var(--tx3);font-weight:400">('+esc(d.code)+')</span>':'')+(m.client?' <span style="color:var(--tx3);font-weight:400">— '+esc(m.client)+'</span>':'')+'</div>'+
         '<div style="font-size:12px;color:var(--tx3);margin-top:2px">'+esc(m.marque||'')+' '+esc(m.produit||'')+' — '+esc(String(m.quantite||1))+'x '+esc(m.format||'')+(m.date_mistint?' — '+esc(m.date_mistint):'')+'</div>'+
         (m.notes?'<div style="font-size:12px;color:var(--tx3);margin-top:4px;font-style:italic">'+esc(m.notes)+'</div>':'')+
       '</div>'+
