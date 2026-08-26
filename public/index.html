@@ -5024,7 +5024,7 @@ function renderMistints(){
   items=items.slice().sort(function(a,b){
     var pa=(a.produit||'').toLowerCase(),pb=(b.produit||'').toLowerCase();
     if(pa!==pb)return pa<pb?-1:1;
-    return new Date(b.created_at)-new Date(a.created_at);
+    return (a.description||'').trim().localeCompare((b.description||'').trim(),'fr',{numeric:true,sensitivity:'base'});
   });
   if(!items.length){Q('mi_list').innerHTML='<p style="color:var(--tx3);font-size:13px;padding:10px 0">Aucun mistint dans l\'inventaire.</p>';return;}
   Q('mi_list').innerHTML=items.map(function(m){
@@ -5133,10 +5133,7 @@ function renderAerosol(){
   }).filter(Boolean);
   if(produitFiltre)rows=rows.filter(function(x){return x.rec.produit===produitFiltre;});
   rows.sort(function(a,b){
-    var na=AE_NUM[a.stock.quantite_restante]!==undefined?AE_NUM[a.stock.quantite_restante]:1;
-    var nb=AE_NUM[b.stock.quantite_restante]!==undefined?AE_NUM[b.stock.quantite_restante]:1;
-    if(na!==nb)return na-nb;
-    return(a.rec.couleur||'').localeCompare(b.rec.couleur||'');
+    return(a.rec.couleur||'').trim().localeCompare((b.rec.couleur||'').trim(),'fr',{numeric:true,sensitivity:'base'});
   });
   if(!rows.length){Q('ae_list').innerHTML='<p style="color:var(--tx3);font-size:13px;padding:10px 0">Aucune recette suivie pour l\'instant.</p>';return;}
   Q('ae_list').innerHTML=rows.map(function(x){
