@@ -1108,6 +1108,14 @@ table.ct tr:last-child td{border-bottom:none}
             <button class="addbtn" id="addcol-inter" style="color:var(--blue);font-weight:600">+ Ajouter (Inter/Devoe)</button>
           </div>
 
+          <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px">Disolac (PAS) — grammes</div>
+            <div class="csd" style="margin-bottom:8px">Disolac se dose uniquement en grammes. Entrez le <strong>$/gr</strong> dans la 2e colonne; le $/gallon est facultatif.</div>
+            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr</span><span></span></div>
+            <div id="crows-disolac"></div>
+            <button class="addbtn" id="addcol-disolac" style="color:var(--gray);font-weight:600">+ Ajouter (Disolac)</button>
+          </div>
+
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
             <button class="sbtn" id="savecols" style="background:var(--blue)">Sauvegarder les colorants</button>
             <span class="svd" id="csvd">Sauvegarde!</span>
@@ -3871,6 +3879,7 @@ Q('mconfdel').addEventListener('click',function(){
 var editId=null,isLoading=false;
 function getEditMode(marque,produit){
   var p=(produit||'').toLowerCase();
+  if(marque==='Disolac')return'gr';
   if(marque==='Pepin'&&p.indexOf('synthane')>=0)return'gr';
   if(marque==='Pepin')return'pepin';
   return'inter';
@@ -4090,9 +4099,28 @@ function mkNumIn(cls,val){
 }
 function getColMode(){
   var m=Q('fm').value,p=Q('fprod').value.toLowerCase();
+  if(m==='Disolac')return'gr';
   if(m==='Pepin'&&p.indexOf('synthane')>=0)return'gr';
   if(m==='Pepin')return'pepin';
   return'inter';
+}
+// Famille de colorants applicable a la marque/produit courant du formulaire.
+// Doit rester alignee avec colorants_prix.famille en BD.
+function getColFamille(){
+  var m=Q('fm').value,p=Q('fprod').value.toLowerCase();
+  if(m==='Disolac')return'disolac';
+  if(m==='Pepin'&&p.indexOf('synthane')>=0)return'synthane';
+  if(m==='Pepin')return'pepin';
+  return'inter';
+}
+// Repli pour une ligne colorants_prix dont famille serait vide (ancienne donnee).
+function familleOf(cp){
+  if(cp.famille)return cp.famille;
+  var cn=(cp.nom||'').toLowerCase();
+  if(cn.indexOf('gva')>=0)return'inter';
+  if(cn.indexOf('stx')>=0)return'synthane';
+  if(cn.indexOf('pas')>=0)return'disolac';
+  return'pepin';
 }
 var _lastColMode=null;
 function updateCformHeader(){
@@ -4122,29 +4150,22 @@ function addCRow(nom,oz,f2,f3){
   else row.style.gridTemplateColumns='1fr 50px 50px 50px 28px';
   var wrap=document.createElement('div');wrap.className='crw';
   var n=document.createElement('input');n.type='text';n.className='cn';
-  n.placeholder=mode==='gr'?'Ex: Colorant...':'Ex: GVA 902...';n.value=nom;n.autocomplete='off';
+  var _fam=getColFamille();
+  n.placeholder=_fam==='disolac'?'Ex: PAS 100...':_fam==='synthane'?'Ex: STX10...':_fam==='pepin'?'Ex: 301...':'Ex: GVA 902...';
+  n.value=nom;n.autocomplete='off';
   var acDiv=document.createElement('div');acDiv.className='acl';
   wrap.appendChild(n);wrap.appendChild(acDiv);
   var q=mkNumIn('cq',oz);if(mode==='gr')q.placeholder='gr';
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){row.remove();calcColTotal();});
-  function getColPrefix(){
-    var m=Q('fm').value,p=Q('fprod').value.toLowerCase();
-    if(m==='Pepin'&&p.indexOf('synthane')>=0)return'stx';
-    if(m==='Pepin')return'num';
-    return'gva';
-  }
   function showAC(){
     var v=n.value.toLowerCase();if(!v){acDiv.classList.remove('on');return;}
-    var prefix=getColPrefix();
+    var fam=getColFamille();
     var items=allCP.filter(function(c){
       var cn=c.nom.toLowerCase();
-      var matchV=cn.indexOf(v)>=0;
-      var matchPrefix=false;
-      if(prefix==='gva')matchPrefix=cn.indexOf('gva')>=0;
-      else if(prefix==='stx')matchPrefix=cn.indexOf('stx')>=0;
-      else matchPrefix=cn.indexOf('gva')<0&&cn.indexOf('stx')<0||cn==='fa';
-      return matchV&&matchPrefix;
+      if(cn.indexOf(v)<0)return false;
+      if(cn==='fa')return fam==='pepin'||fam==='synthane';
+      return familleOf(c)===fam;
     });
     if(!items.length){acDiv.classList.remove('on');return;}
     acDiv.innerHTML='';
@@ -4398,18 +4419,22 @@ function loadCP(){
   sb.from('colorants_prix').select('*').order('nom').then(function(r){allCP=r.data||[];renderCP();});
 }
 function renderCP(){
-  ['pepin','inter'].forEach(function(k){var c=Q('crows-'+k);if(c)c.innerHTML='';});
+  ['pepin','inter','disolac'].forEach(function(k){var c=Q('crows-'+k);if(c)c.innerHTML='';});
   allCP.forEach(function(c2){
-    var nom=c2.nom.toLowerCase();
-    var k=nom.indexOf('gva')>=0?'inter':'pepin';
-    addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct,k);
+    var fam=familleOf(c2);
+    // Pepin et Synthane (STX) partagent la meme section a l'ecran.
+    var k=fam==='inter'?'inter':fam==='disolac'?'disolac':'pepin';
+    addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct,k,fam);
   });
 }
-function addCPRow(id,nom,coutGal,poids,section){
+function addCPRow(id,nom,coutGal,poids,section,famille){
   id=id||'';nom=nom||'';coutGal=coutGal||'';poids=poids||'';section=section||'pepin';
   var row=document.createElement('div');row.className='crow3';row.dataset.id=id;
+  // La famille reelle est conservee ici: une ligne STX vit dans la section
+  // 'pepin' a l'ecran mais doit se resauvegarder en famille 'synthane'.
+  row.dataset.famille=famille||(section==='inter'?'inter':section==='disolac'?'disolac':'pepin');
   var n=document.createElement('input');n.type='text';n.className='cpn';
-  n.placeholder=section==='stx'?'Ex: STX10':section==='inter'?'Ex: GVA 902':'Ex: NUM 301';
+  n.placeholder=section==='inter'?'Ex: GVA 902':section==='disolac'?'Ex: PAS 100':'Ex: 301 ou STX10';
   n.value=nom;
   var g=document.createElement('input');g.type='number';g.className='cpg';g.placeholder='$/gal';g.step='0.01';g.value=coutGal;
   var p=document.createElement('input');p.type='number';p.className='cpp';p.placeholder='0.0000';p.step='0.0001';p.value=poids;
@@ -4420,17 +4445,22 @@ function addCPRow(id,nom,coutGal,poids,section){
 }
 Q('addcol-pepin').addEventListener('click',function(){addCPRow('','','','','pepin');});
 Q('addcol-inter').addEventListener('click',function(){addCPRow('','','','','inter');});
+Q('addcol-disolac').addEventListener('click',function(){addCPRow('','','','','disolac');});
 Q('savecols').addEventListener('click',function(){
   var allRows=[];
-  ['crows-pepin','crows-inter'].forEach(function(id){
-    var c=Q(id);if(c)c.querySelectorAll('.crow3').forEach(function(r){allRows.push(r);});
+  ['crows-pepin','crows-inter','crows-disolac'].forEach(function(id){
+    var c=Q(id);if(c)c.querySelectorAll('.crow3').forEach(function(r){allRows.push({row:r,sec:id.replace('crows-','')});});
   });
   var proms=[];
-  allRows.forEach(function(row){
+  allRows.forEach(function(item){
+    var row=item.row;
     var id=row.dataset.id,nom=row.querySelector('.cpn').value.trim(),coutGal=parseFloat(row.querySelector('.cpg').value)||null;
     var poids=parseFloat(row.querySelector('.cpp').value)||null;
     if(!nom)return;
-    var data={nom:nom,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids,cout_gr_direct:poids};
+    // Meme regle deterministe que le backfill SQL: la section donne la famille,
+    // sauf dans la section Pepin ou un code STX bascule en 'synthane'.
+    var fam=item.sec==='inter'?'inter':item.sec==='disolac'?'disolac':(nom.toLowerCase().indexOf('stx')>=0?'synthane':'pepin');
+    var data={nom:nom,famille:fam,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids,cout_gr_direct:poids};
     if(id)proms.push(sb.from('colorants_prix').update(data).eq('id',id));
     else proms.push(sb.from('colorants_prix').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;return r;}));
   });
@@ -4586,13 +4616,18 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
     for(var j=0;j<cols.length;j++){
       var col=cols[j],cp=allCP.filter(function(c){return c.nom.toLowerCase()===col.nom.toLowerCase();})[0];
       if(!cp)continue;
-      var coutGal=parseFloat(cp.cout_gallon)||0;if(!coutGal)continue;
+      var coutGal=parseFloat(cp.cout_gallon)||0;
       var qtyStr=col.quantite||'0',unite=col.unite||'OZ';
       if(unite==='GR'){
+        // En grammes, le $/gr suffit: ne PAS exiger un $/gallon.
+        var coutGr=parseFloat(cp.cout_gr_direct)||0;
+        if(!coutGr&&coutGal&&parseFloat(cp.poids_gr_gal))coutGr=coutGal/parseFloat(cp.poids_gr_gal);
+        if(!coutGr)coutGr=parseFloat(cp.cout_gr)||0;
+        if(!coutGr)continue;
         var gr=parseFloat(qtyStr)||0;
-        var coutGr=cp.cout_gr_direct?parseFloat(cp.cout_gr_direct):(cp.poids_gr_gal?coutGal/parseFloat(cp.poids_gr_gal):0);
         cc+=gr*coutGr;
       }else{
+        if(!coutGal)continue;
         var parts=qtyStr.split(' '),oz=0,f2=0,f3=0;
         parts.forEach(function(p){
           p=p.trim();if(!p)return;
