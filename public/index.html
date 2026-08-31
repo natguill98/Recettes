@@ -100,6 +100,11 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .do{background:var(--amber-l);color:var(--amber)}
 .ds{background:var(--red-l);color:var(--red)}
 .det{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:20px}
+.tcbar{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;padding:9px 14px;background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--r)}
+.tclbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3)}
+.tcval{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;font-weight:700;letter-spacing:.05em;color:var(--tx)}
+.tclock{margin-left:auto;font-size:10px;color:var(--tx3);letter-spacing:.02em}
+.tctag{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:.02em;flex-shrink:0}
 .dhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px}
 .dhl{display:flex;align-items:center;gap:14px}
 .dsw{width:52px;height:52px;border-radius:10px;border:0.5px solid var(--bd2);flex-shrink:0}
@@ -515,7 +520,7 @@ table.ct tr:last-child td{border-bottom:none}
           <button class="sx" id="sc-x" aria-label="Effacer" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
         </div>
         <div class="sw">
-          <input type="text" id="scoul" placeholder="Couleur...">
+          <input type="text" id="scoul" placeholder="Couleur ou TC-...">
           <span class="si" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/><line x1="8.7" y1="8.7" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
           <button class="sx" id="scoul-x" aria-label="Effacer" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
         </div>
@@ -534,7 +539,7 @@ table.ct tr:last-child td{border-bottom:none}
       <div class="bc" id="bcp"></div>
       <div class="tb">
         <div class="sw">
-          <input type="text" id="sp" placeholder="Couleur...">
+          <input type="text" id="sp" placeholder="Couleur ou TC-...">
           <span class="si" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/><line x1="8.7" y1="8.7" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
           <button class="sx" id="sp-x" aria-label="Effacer" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
         </div>
@@ -1111,7 +1116,8 @@ table.ct tr:last-child td{border-bottom:none}
   <div class="mb">
     <div class="mt">Copier la recette?</div>
     <p style="font-size:13px;color:var(--tx2);margin-bottom:6px">Une nouvelle recette sera creee avec les memes colorants et couts.</p>
-    <p style="font-size:13px;color:var(--tx2)">Vous pourrez changer le client et modifier tous les champs avant de sauvegarder.</p>
+    <p style="font-size:13px;color:var(--tx2);margin-bottom:6px">Vous pourrez changer le client et modifier tous les champs avant de sauvegarder.</p>
+    <p style="font-size:13px;color:var(--tx2)"><strong>La copie recevra son propre numero TC</strong>, different de l'original.</p>
     <div class="ma">
       <button class="btn" id="mcancelcopy">Annuler</button>
       <button class="be" id="mconfcopy">Oui, copier</button>
@@ -2931,7 +2937,7 @@ function renderClients(){
   if(qc||qp){
     var matched=recs.filter(function(r){
       var mc=!q||r.client.toLowerCase().indexOf(q)>=0;
-      var mcoul=!qc||(r.couleur.toLowerCase().indexOf(qc)>=0||(r.numero_couleur||'').toLowerCase().indexOf(qc)>=0);
+      var mcoul=!qc||(r.couleur.toLowerCase().indexOf(qc)>=0||(r.numero_couleur||'').toLowerCase().indexOf(qc)>=0||tcMatch(r,qc));
       var mprod=!qp||(r.produit||'').toLowerCase().indexOf(qp)>=0;
       return mc&&mcoul&&mprod;
     });
@@ -2960,7 +2966,7 @@ function renderClients(){
         var sw=r.couleur_hex?'<div class="csw" style="background:'+r.couleur_hex+'"></div>':'';
         var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
         var db2=canP()&&p?dbdg(p.date_prix):'';
-        row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
+        row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub"><span class="tctag">'+tcOf(r)+'</span> - '+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
         row.addEventListener('click',(function(rec,navList){return function(){saveSearchScroll();_detailFrom='search';_navList=navList;_navIdx=navList.indexOf(rec.id);openDetail(rec.id);};})(r,searchNavList));
         body.appendChild(row);
       });
@@ -3015,7 +3021,7 @@ function renderProduits(){
   var sp=document.createElement('span');sp.textContent=selClient;bc.appendChild(sp);
   var rr=recs.filter(function(r){
     return r.client===selClient&&
-      (!q||r.couleur.toLowerCase().indexOf(q)>=0||(r.numero_couleur||'').toLowerCase().indexOf(q)>=0||(r.produit||'').toLowerCase().indexOf(q)>=0)&&
+      (!q||r.couleur.toLowerCase().indexOf(q)>=0||(r.numero_couleur||'').toLowerCase().indexOf(q)>=0||(r.produit||'').toLowerCase().indexOf(q)>=0||tcMatch(r,q))&&
       (!marque||r.marque===marque);
   });
   var prods={};
@@ -3039,7 +3045,7 @@ function renderProduits(){
       var sw=r.couleur_hex?'<div class="csw" style="background:'+r.couleur_hex+'"></div>':'';
       var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
       var db2=canP()&&p?dbdg(p.date_prix):'';
-      row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub">'+(r.numero_couleur?'#'+r.numero_couleur+' - ':'')+( r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
+      row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub"><span class="tctag">'+tcOf(r)+'</span> - '+(r.numero_couleur?'#'+r.numero_couleur+' - ':'')+( r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
       row.addEventListener('click',(function(rec,navList){return function(){saveProdsScroll();_detailFrom='produits';_navList=navList;_navIdx=navList.indexOf(rec.id);openDetail(rec.id);};})(r,prodsNavList));
       body.appendChild(row);
     });
@@ -3063,6 +3069,11 @@ Q('bdet').addEventListener('click',function(){
     restoreClientsScroll();
   }
 });
+
+// NUMERO TC — lecture seule cote client. La valeur est generee et verrouillee
+// par la base de donnees (sequence + triggers sur la table recettes).
+function tcOf(r){return (r&&r.tc_numero)||'—';}
+function tcMatch(r,q){return !!(r&&r.tc_numero&&r.tc_numero.toLowerCase().indexOf(q)>=0);}
 
 // DETAIL
 var _detailFrom='produits';
@@ -3155,6 +3166,12 @@ function openDetail(id){
 
   Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div>'+(r.notes?'<div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div>':'')+'<div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div></div><div class="stit">Colorants</div>'+colTable+prixHTML;
   if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(true),Q('detpan').firstChild);}
+
+  // Numero TC — toujours tout en haut de la fiche. Attribue par la base de
+  // donnees a la creation, jamais modifiable, jamais reutilise.
+  var tcBar=document.createElement('div');tcBar.className='tcbar';
+  tcBar.innerHTML='<span class="tclbl">Numero de recette</span><span class="tcval">'+esc(tcOf(r))+'</span><span class="tclock">permanent - non modifiable</span>';
+  Q('detpan').insertBefore(tcBar,Q('detpan').firstChild);
 
   // Stock aérosol
   var aeDiv=document.createElement('div');
@@ -3257,7 +3274,7 @@ function printFiche(id){
 
   // Section infos
   function makeInfos(){
-    return'<div class="infos"><div><span class="lbl">Client</span><span class="val">'+r.client+'</span></div><div><span class="lbl">Couleur</span><span class="val">'+r.couleur+(r.numero_couleur?' #'+r.numero_couleur:'')+'</span></div><div><span class="lbl">Produit</span><span class="val">'+(r.produit||'-')+'</span></div><div><span class="lbl">Base</span><span class="val">'+(r.numero_base||'-')+'</span></div><div><span class="lbl">Format</span><span class="val">'+(r.quantite||'Gallon')+'</span></div><div><span class="lbl">Marque</span><span class="val">'+r.marque+'</span></div>'+(r.notes?'<div style="grid-column:1/-1"><div style="background:#FAEEDA;border-left:4px solid #BA7517;border-radius:6px;padding:8px 12px;margin-top:4px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#BA7517;margin-bottom:3px">Notes</div><div style="font-size:13px;color:#4A1B0C;font-weight:500">'+r.notes+'</div></div></div>':'')+'</div>';
+    return'<div class="infos"><div><span class="lbl">No recette</span><span class="val tc-print">'+tcOf(r)+'</span></div><div><span class="lbl">Client</span><span class="val">'+r.client+'</span></div><div><span class="lbl">Couleur</span><span class="val">'+r.couleur+(r.numero_couleur?' #'+r.numero_couleur:'')+'</span></div><div><span class="lbl">Produit</span><span class="val">'+(r.produit||'-')+'</span></div><div><span class="lbl">Base</span><span class="val">'+(r.numero_base||'-')+'</span></div><div><span class="lbl">Format</span><span class="val">'+(r.quantite||'Gallon')+'</span></div><div><span class="lbl">Marque</span><span class="val">'+r.marque+'</span></div>'+(r.notes?'<div style="grid-column:1/-1"><div style="background:#FAEEDA;border-left:4px solid #BA7517;border-radius:6px;padding:8px 12px;margin-top:4px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#BA7517;margin-bottom:3px">Notes</div><div style="font-size:13px;color:#4A1B0C;font-weight:500">'+r.notes+'</div></div></div>':'')+'</div>';
   }
 
   // Section prix
@@ -3274,7 +3291,7 @@ function printFiche(id){
   }
 
   function makePage(avecPrix,copieLabel){
-    return'<div class="page"><div class="header"><img src="https://raw.githubusercontent.com/natguill98/Recettes/main/Techno%20logo%20site.jpg" alt="Technocolor"><div class="header-right"><div class="date-print">'+new Date().toLocaleDateString('fr-CA')+'</div>'+(copieLabel?'<div class="copie-badge">'+copieLabel+'</div>':'')+'</div></div><div class="section-title">Informations</div>'+makeInfos()+'<div class="section-title">Colorants</div>'+makeColTable()+(avecPrix?makePrix():'')+'</div>';
+    return'<div class="page"><div class="header"><img src="https://raw.githubusercontent.com/natguill98/Recettes/main/Techno%20logo%20site.jpg" alt="Technocolor"><div class="header-right"><div class="tc-head">'+tcOf(r)+'</div><div class="date-print">'+new Date().toLocaleDateString('fr-CA')+'</div>'+(copieLabel?'<div class="copie-badge">'+copieLabel+'</div>':'')+'</div></div><div class="section-title">Informations</div>'+makeInfos()+'<div class="section-title">Colorants</div>'+makeColTable()+(avecPrix?makePrix():'')+'</div>';
   }
 
   var pages='';
@@ -3295,6 +3312,8 @@ function printFiche(id){
     '.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1.5px solid #1a2a3a}'+
     '.header img{height:36px}'+
     '.header-right{text-align:right}'+
+    '.tc-head{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:19px;font-weight:700;letter-spacing:.05em;color:#111;line-height:1.1}'+
+    '.tc-print{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}'+
     '.date-print{font-size:11px;color:#666}'+
     '.copie-badge{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#1A8FD1;margin-top:2px}'+
     '.section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#666;margin:14px 0 6px;padding-bottom:3px;border-bottom:0.5px solid #ddd}'+
@@ -3802,7 +3821,7 @@ Q('mconfcopy').addEventListener('click',function(){
   _lastColMode=mode; // Empêche updateCformHeader d'effacer les colorants chargés
   setTimeout(function(){isLoading=false;},500);
   // Titre et mode nouvelle recette
-  Q('ftit').textContent='Copie de '+r.couleur+' — choisir un client';
+  Q('ftit').innerHTML='Copie de '+esc(r.couleur)+' — choisir un client <span class="tctag" style="margin-left:8px">nouveau no TC a la sauvegarde</span>';
   Q('savebtn').textContent='Sauvegarder la copie';
   delete Q('savebtn').dataset.editid; // mode nouvelle recette
   updatePrev();
@@ -3882,6 +3901,8 @@ function openEdit(id){
     if(canP()&&!p){autofillBase();setTimeout(calcColTotal,150);}
   },500);
   Q('ftit').textContent='Modifier la recette';
+  // Rappel du numero TC en mode edition — affichage seul, non modifiable.
+  Q('ftit').innerHTML='Modifier la recette <span class="tctag" style="margin-left:8px">'+esc(tcOf(r))+'</span>';
   Q('savebtn').textContent='Sauvegarder les modifications';
   Q('savebtn').dataset.editid=id;
   updatePrev();showView('ajouter');
@@ -4246,7 +4267,7 @@ Q('savebtn').addEventListener('click',function(){
       return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_historique').insert(pdata);});
     }()):Promise.resolve();
     Promise.all([p1,p2]).then(function(){
-      toast('Recette sauvegardee!');btn.textContent='Sauvegarder';btn.disabled=false;
+      toast('Recette sauvegardee — '+tcOf(rec)+'!',3200);btn.textContent='Sauvegarder';btn.disabled=false;
       curHex='#cccccc';updateHex('#cccccc');
       ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fdateprix','fmarge','fprixgal','fprixcat'].forEach(function(id){var el=Q(id);if(el)el.value='';});
       if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
