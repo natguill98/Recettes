@@ -56,6 +56,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .r-admin{background:var(--blue-l);color:var(--blue);border:0.5px solid var(--blue-m)}
 .r-comptoir{background:var(--amber-l);color:var(--amber);border:0.5px solid #EF9F27}
 .r-production{background:var(--green-l);color:var(--green);border:0.5px solid #639922}
+.r-comptabilite{background:var(--gray-l);color:var(--gray);border:0.5px solid var(--bd2)}
 .uname{font-size:12px;color:var(--tx2)}
 .lout{font-size:12px;color:var(--tx2);background:var(--gray-l);border:0.5px solid var(--bd);border-radius:var(--r);padding:4px 10px;cursor:pointer}
 .tabs{display:flex;background:#1a2a3a;padding:0 16px;overflow-x:auto;gap:4px;align-items:center}
@@ -518,8 +519,8 @@ table.ct tr:last-child td{border-bottom:none}
   </div>
   <div class="tabs">
     <button class="tab on" data-tab="clients">Recettes</button>
-    <button class="tab" data-tab="ajouter">+ Ajouter</button>
-    <button class="tab" data-tab="conversions">Conversions</button>
+    <button class="tab" id="tajouter" data-tab="ajouter">+ Ajouter</button>
+    <button class="tab" id="tconversions" data-tab="conversions">Conversions</button>
     <button class="tab" data-tab="portail">Portail</button>
     <button class="tab" data-tab="crm" id="tcrm" style="display:none">CRM</button>
     <button class="tab tab-right-first" data-tab="couts" id="tcouts">Couts et Prix</button>
@@ -950,7 +951,7 @@ table.ct tr:last-child td{border-bottom:none}
               <div class="fg2">
                 <div class="fg"><label>Courriel *</label><input id="new_user_email" type="email" placeholder="employe@courriel.com"></div>
                 <div class="fg"><label>Nom affiché *</label><input id="new_user_nom" placeholder="Prénom"></div>
-                <div class="fg"><label>Rôle</label><select id="new_user_role"><option value="production">Production</option><option value="comptoir">Comptoir</option><option value="admin">Admin</option></select></div>
+                <div class="fg"><label>Rôle</label><select id="new_user_role"><option value="production">Production</option><option value="comptoir">Comptoir</option><option value="comptabilite">Comptabilité</option><option value="admin">Admin</option></select></div>
                 <div class="fg"><label>Mot de passe temporaire *</label><input id="new_user_password" type="password" placeholder="Mot de passe temporaire"></div>
               </div>
               <button class="btn btnp" id="create_user_btn">Créer l’utilisateur</button>
@@ -1058,8 +1059,9 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
 
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
-            <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px">Disolac</div>
-            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>1 gal $</span><span>3 gal $</span><span>5 gal $</span><span>g/gallon</span><span></span></div>
+            <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px">Disolac — formats metriques</div>
+            <div class="csd" style="margin-bottom:8px">Disolac est un systeme europeen : les contenants sont en litres. Laissez vide un format que le produit n'offre pas — aucun repli n'est fait sur un autre format.</div>
+            <div class="bhd"><span>Produit</span><span>Code base</span><span>Marque</span><span>4 L $</span><span>200 L $</span><span>20 L $</span><span>g/4 L</span><span></span></div>
             <div id="brows-disolac"></div>
             <button class="addbtn" id="addbtn-disolac" style="color:var(--gray);font-weight:600">+ Ajouter (Disolac)</button>
           </div>
@@ -1913,7 +1915,10 @@ function firstNameFromProfile(nom,email){
   var base=(nom||'').trim()||(email||'').split('@')[0]||'Utilisateur';
   return base.split(/\s+/)[0];
 }
-function roleLabel(r){return r==='admin'?'Admin':r==='comptoir'?'Comptoir':r==='production'?'Production':(r||'Utilisateur');}
+function roleLabel(r){return r==='admin'?'Admin':r==='comptoir'?'Comptoir':r==='production'?'Production':r==='comptabilite'?'Comptabilité':(r||'Utilisateur');}
+// Comptabilite : acces limite aux Recettes (lecture) et au Portail.
+function isCompta(){return role==='comptabilite';}
+var VUES_COMPTA=['clients','produits','detail','portail'];
 function initApp(u){
   user=u;
   sb.from('profiles').select('role,nom').eq('id',u.id).single().then(function(r){
@@ -1928,7 +1933,11 @@ function initApp(u){
     Q('tcouts').style.display=canP()?'':'none';
     if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
     if(Q('tcrm'))Q('tcrm').style.display=role==='admin'?'':'none';
-    if(Q('tmistints'))Q('tmistints').style.display='';
+    if(Q('tmistints'))Q('tmistints').style.display=isCompta()?'none':'';
+    if(isCompta()){
+      ['tajouter','tconversions','taerosol','tcouts'].forEach(function(t){if(Q(t))Q(t).style.display='none';});
+      Q('psec').style.display='none';
+    }
     Q('fdate').value=new Date().toISOString().slice(0,10);
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
@@ -1990,6 +1999,10 @@ function loadCRM(){
   });
 }
 function showView(name){
+  if(isCompta()&&VUES_COMPTA.indexOf(name)<0){
+    toast('Accès limité aux Recettes et au Portail');
+    name='clients';
+  }
   if(name==='crm'&&role!=='admin'){
     toast('CRM réservé aux administrateurs');
     name='clients';
@@ -2085,7 +2098,7 @@ function renderUsersList(){
     return '<div class="user-row">'+
       '<input id="u_nom_'+id+'" value="'+esc(u.nom||'')+'" placeholder="Nom affiché">'+
       '<div class="uemail" title="'+id+'">ID: '+id.slice(0,8)+'...</div>'+
-      '<select id="u_role_'+id+'"><option value="production" '+((u.role||'')==='production'?'selected':'')+'>Production</option><option value="comptoir" '+((u.role||'')==='comptoir'?'selected':'')+'>Comptoir</option><option value="admin" '+((u.role||'')==='admin'?'selected':'')+'>Admin</option></select>'+
+      '<select id="u_role_'+id+'"><option value="production" '+((u.role||'')==='production'?'selected':'')+'>Production</option><option value="comptoir" '+((u.role||'')==='comptoir'?'selected':'')+'>Comptoir</option><option value="comptabilite" '+((u.role||'')==='comptabilite'?'selected':'')+'>Comptabilité</option><option value="admin" '+((u.role||'')==='admin'?'selected':'')+'>Admin</option></select>'+
       '<button class="btn" onclick="saveUserProfile(\''+id+'\')">Sauver</button>'+
       '</div>';
   }).join('');
@@ -3135,7 +3148,7 @@ function openDetail(id){
     var pCatRaw=p.prix_catalyseur?parseFloat(p.prix_catalyseur):null;
     var pCatDisplay=pCatRaw?pCatRaw.toFixed(2):'0.00';
     var prixKit=pc&&pCatRaw?parseFloat((pc.gal+pCatRaw).toFixed(2)):null;
-    var qtyLbl=r.quantite==='3 gallons'?'3 gal':r.quantite==='5 gallons'?'5 gal':r.quantite==='Pinte'?'pinte':'gallon';
+    var qtyLbl=libelleQty(r.quantite);
     // Prix gallon — vert
     var galCard=pc?'<div class="pc grn"><div class="pl">Prix '+qtyLbl+'</div><div class="pv">'+pc.gal.toFixed(2)+' $</div></div>':'';
     // Part B + Kit — vert
@@ -3278,7 +3291,7 @@ function printFiche(id){
   var pc=p&&total>0?calcPrix(r.marque,total,isSynRec,margeSpec):null;
   if(pc&&p&&p.prix_gallon)pc.gal=parseFloat(p.prix_gallon);
   if(pc&&p&&p.prix_pinte)pc.pinte=parseFloat(p.prix_pinte);
-  var qtyLbl=r.quantite==='3 gallons'?'3 gal':r.quantite==='5 gallons'?'5 gal':r.quantite==='Pinte'?'pinte':'gallon';
+  var qtyLbl=libelleQty(r.quantite);
   var pCatRaw=p&&p.prix_catalyseur?parseFloat(p.prix_catalyseur):null;
   var prixKit=pc&&pCatRaw?parseFloat((pc.gal+pCatRaw).toFixed(2)):null;
 
@@ -3952,15 +3965,27 @@ function parseQtyFields(qty){
 
 // AUTOCOMPLETE
 function setupAC(inp,list,getItems){
+  // Sur le champ Code base, une valeur contenant '+' est un mix de binders:
+  // on n'autocomplete alors que le dernier segment, sans effacer les autres.
+  function segInfo(){
+    var val=inp.value;
+    if(inp.id!=='fbase'||val.indexOf('+')<0)return null;
+    var i=val.lastIndexOf('+');
+    return{prefixe:val.slice(0,i+1),seg:val.slice(i+1).trim()};
+  }
   function upd(){
-    var v=inp.value.toLowerCase();
+    var si=segInfo();
+    var v=(si?si.seg:inp.value).toLowerCase();
     var items=getItems().filter(function(i){return i&&i.toLowerCase().indexOf(v)>=0;});
     if(!items.length||!v){list.classList.remove('on');return;}
     list.innerHTML='';
     items.slice(0,8).forEach(function(item){
       var d=document.createElement('div');d.className='aci';d.textContent=item;
       d.addEventListener('mousedown',function(e){
-        e.preventDefault();inp.value=item;list.classList.remove('on');
+        e.preventDefault();
+        var si2=segInfo();
+        inp.value=si2?si2.prefixe+' '+item:item;
+        list.classList.remove('on');
         if(inp.id==='fprod'||inp.id==='fbase')setTimeout(autofillBase,100);
       });
       list.appendChild(d);
@@ -3983,9 +4008,61 @@ setupAC(Q('fbase'),Q('ac-b'),function(){
   return allBases.filter(function(b){return(!m||b.marque===m)&&(!p||b.produit.toLowerCase().indexOf(p)>=0);}).map(function(b){return b.numero_base;}).filter(Boolean).sort();
 });
 
+// ---- Mix de binders au comptoir ------------------------------------------
+// Certaines gammes Disolac n'offrent pas de fini satine: le semi-gloss se fait
+// en melangeant le Gloss et le Matt. Plutot que d'ajouter un 2e binder au
+// schema, le ratio s'ecrit directement dans le champ Code base:
+//   '840-G 60 + 840-M 40'  -> ponderation 60/40
+//   '840-G + 840-M'        -> parts egales
+// La chaine est stockee telle quelle dans numero_base, donc elle apparait
+// sur la fiche imprimee: le peintre lit la proportion exacte.
+function parseMixBase(str){
+  if(!str||str.indexOf('+')<0)return null;
+  var out=[],valide=true;
+  str.split('+').forEach(function(t){
+    t=t.trim();if(!t){valide=false;return;}
+    var m=t.match(/^(.+?)\s+([0-9]+(?:[.,][0-9]+)?)\s*%?$/);
+    out.push({code:m?m[1].trim():t,pct:m?parseFloat(m[2].replace(',','.')):null});
+  });
+  if(!valide||out.length<2)return null;
+  var sansPct=out.filter(function(o){return o.pct===null;}).length;
+  if(sansPct===out.length){var e=100/out.length;out.forEach(function(o){o.pct=e;});}
+  else if(sansPct>0)return null; // melange de codes avec et sans %: ambigu, on refuse
+  var tot=out.reduce(function(a,o){return a+o.pct;},0);
+  if(!(tot>0))return null;
+  out.forEach(function(o){o.frac=o.pct/tot;}); // normalise: 60+40 comme 3+2
+  return out;
+}
+function coutBaseMix(mix,marque,qty){
+  var total=0,manquants=[];
+  mix.forEach(function(m){
+    var b=allBases.filter(function(bb){
+      return(!marque||bb.marque===marque)&&bb.numero_base&&bb.numero_base.toLowerCase()===m.code.toLowerCase();
+    })[0];
+    var c=b?coutBasePourQty(b,qty):0;
+    if(c>0)total+=c*m.frac;else manquants.push(m.code);
+  });
+  return{cout:total,manquants:manquants};
+}
+function libelleMix(mix){
+  return mix.map(function(m){return m.code+' '+Math.round(m.frac*100)+'%';}).join(' + ');
+}
+
 // AUTO-FILL BASE COST
 function autofillBase(){
   var produit=Q('fprod').value.trim(),base=Q('fbase').value.trim(),marque=Q('fm').value,qty=Q('fqty').value;
+  var mix=parseMixBase(base);
+  if(mix){
+    var hm=Q('base-hint'),rm=coutBaseMix(mix,marque,qty);
+    if(rm.manquants.length){
+      if(hm){hm.textContent='⚠ Base introuvable en '+qty+' : '+rm.manquants.join(', ');hm.style.color='var(--red)';}
+    }else if(rm.cout>0){
+      Q('fcb').value=rm.cout.toFixed(2);
+      if(hm){hm.textContent='Mix: '+libelleMix(mix);hm.style.color='';}
+      if(Q('fprixgal'))Q('fprixgal').value='';if(Q('fmarge'))Q('fmarge').value='';updatePrev();
+    }
+    return;
+  }
   var found=allBases.filter(function(b){
     var matchBase=!base||(b.numero_base&&b.numero_base.toLowerCase()===base.toLowerCase());
     var matchMarque=!marque||b.marque===marque;
@@ -3995,13 +4072,16 @@ function autofillBase(){
   })[0];
   var hint=Q('base-hint');
   if(found){
-    var cost=0;
-    if(qty==='3 gallons'&&found.cout_3gal)cost=parseFloat(found.cout_3gal);
-    else if(qty==='5 gallons'&&found.cout_5gal)cost=parseFloat(found.cout_5gal);
-    else if(found.cout_1gal)cost=parseFloat(found.cout_1gal);
-    else if(found.cout_gallon)cost=parseFloat(found.cout_gallon);
-    if(cost>0){Q('fcb').value=cost.toFixed(2);if(hint)hint.textContent='Auto: '+found.produit+' '+qty;if(Q('fprixgal'))Q('fprixgal').value='';if(Q('fmarge'))Q('fmarge').value='';updatePrev();}
-  }else{if(hint)hint.textContent='';}
+    var cost=coutBasePourQty(found,qty);
+    if(cost>0){
+      Q('fcb').value=cost.toFixed(2);
+      if(hint){hint.textContent='Auto: '+found.produit+' '+qty;hint.style.color='';}
+      if(Q('fprixgal'))Q('fprixgal').value='';if(Q('fmarge'))Q('fmarge').value='';updatePrev();
+    }else if(isQtyMetrique(qty)&&hint){
+      hint.textContent='⚠ Aucun prix '+qty+' pour '+found.produit+' '+(found.numero_base||'');
+      hint.style.color='var(--red)';
+    }
+  }else{if(hint){hint.textContent='';hint.style.color='';}}
 }
 Q('fprod').addEventListener('blur',function(){if(isLoading)return;setTimeout(function(){autofillBase();updateCformHeader();},300);});
 Q('fprod').addEventListener('input',function(){
@@ -4056,10 +4136,43 @@ if(Q('fprixgal'))Q('fprixgal').addEventListener('input',function(){
 });
 
 function isSynthane(){return Q('fm').value==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0;}
+
+// ---- Formats metriques Disolac -------------------------------------------
+// Disolac est un systeme europeen: les contenants sont en litres, pas en
+// gallons. Les libelles '4 L' / '20 L' / '200 L' sont des valeurs NEUVES que
+// Pepin et International n'utilisent jamais, donc tout ce qui suit s'ajoute
+// aux branches existantes sans en modifier aucune.
+// Correspondance avec les colonnes de la table bases:
+//   '4 L' -> cout_1gal   '200 L' -> cout_3gal   '20 L' -> cout_5gal
+function isQtyMetrique(q){return q==='4 L'||q==='20 L'||q==='200 L';}
+// Le 20 L joue le meme role que le 5 gallons pour le choix du prix catalyseur.
+function isGrandFormat(q){return q==='5 gallons'||q==='20 L';}
+function coutBasePourQty(found,qty){
+  if(!found)return 0;
+  if(isQtyMetrique(qty)){
+    // Strict, sans repli: facturer un 20 L au prix du 4 L sous-facturerait
+    // d'un facteur 5 sans rien afficher a l'ecran.
+    var v=qty==='20 L'?found.cout_5gal:qty==='200 L'?found.cout_3gal:found.cout_1gal;
+    return parseFloat(v)||0;
+  }
+  if(qty==='3 gallons'&&found.cout_3gal)return parseFloat(found.cout_3gal);
+  if(isGrandFormat(qty)&&found.cout_5gal)return parseFloat(found.cout_5gal);
+  if(found.cout_1gal)return parseFloat(found.cout_1gal);
+  if(found.cout_gallon)return parseFloat(found.cout_gallon);
+  return 0;
+}
+function optionsQtyPour(marque,syn){
+  if(marque==='Disolac')return'<option>4 L</option><option>20 L</option><option>200 L</option>';
+  return'<option>Gallon</option><option>3 gallons</option><option>5 gallons</option>'+(syn?'<option>Pinte</option>':'');
+}
+function libelleQty(q){
+  if(isQtyMetrique(q))return q;
+  return q==='3 gallons'?'3 gal':q==='5 gallons'?'5 gal':q==='Pinte'?'pinte':'gallon';
+}
 function updateQtyOptions(){
   var sel=Q('fqty');if(!sel)return;
   var cur=sel.value,syn=isSynthane();
-  sel.innerHTML='<option>Gallon</option><option>3 gallons</option><option>5 gallons</option>'+(syn?'<option>Pinte</option>':'');
+  sel.innerHTML=optionsQtyPour(Q('fm').value,syn);
   var found=false;
   for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){found=true;break;}}
   if(found)sel.value=cur;
@@ -4078,7 +4191,7 @@ function updatePrev(){
   var p=calcPrix(m,tot+(isSynthane()?17.25:0),isSynthane(),margeSpecV);
   if(prixGalManuel>0)p.gal=prixGalManuel;
   prev.style.display='block';
-  var qtyLabel=qty==='3 gallons'?'3 gal':qty==='5 gallons'?'5 gal':'gallon';
+  var qtyLabel=libelleQty(qty);
   var pgalEl=Q('pgal'),ppEl=Q('ppinte');
   if(pgalEl)pgalEl.textContent=p.gal.toFixed(2)+' $';
   var pinteCard=ppEl?ppEl.closest('.pc'):null;
@@ -4195,7 +4308,7 @@ function addCRow(nom,oz,f2,f3){
 }
 function calcColTotal(){
   if(!canP())return;
-  var tot=0,mode=getColMode();
+  var tot=0,mode=getColMode(),sansPrix=[];
   Q('cform').querySelectorAll('.cr').forEach(function(row){
     var n=row.querySelector('.cn');if(!n)return;
     var cp=allCP.filter(function(c){return c.nom.toLowerCase()===n.value.trim().toLowerCase();})[0];
@@ -4207,7 +4320,10 @@ function calcColTotal(){
       if(cp.cout_gr_direct&&parseFloat(cp.cout_gr_direct)>0)coutGr=parseFloat(cp.cout_gr_direct);
       else if(cp.poids_gr_gal&&parseFloat(cp.poids_gr_gal)>0&&coutGal>0)coutGr=coutGal/parseFloat(cp.poids_gr_gal);
       else if(cp.cout_gr&&parseFloat(cp.cout_gr)>0)coutGr=parseFloat(cp.cout_gr);
+      // Un colorant dose mais sans $/gr donnerait un cout de 0 sans rien dire:
+      // on le signale au lieu de sous-facturer en silence.
       if(coutGr>0)tot+=gr*coutGr;
+      else if(gr>0)sansPrix.push(cp.nom);
     }else if(mode==='pepin'){
       var oz=parseFloat((row.querySelector('.cq')||{value:0}).value)||0;
       var f48=parseFloat((row.querySelector('.c48')||{value:0}).value)||0;
@@ -4222,12 +4338,16 @@ function calcColTotal(){
   var cc=Q('fcc'),hint=Q('col-hint');
   if(cc&&tot>0){
     cc.value=tot.toFixed(2);
-    if(hint)hint.textContent='Auto';
+    if(hint){hint.textContent='Auto';hint.style.color='';}
     // Effacer le prix gallon manuel pour recalculer automatiquement
     if(Q('fprixgal'))Q('fprixgal').value='';
     if(Q('fmarge'))Q('fmarge').value='';
     updatePrev();
   }
+  if(hint&&sansPrix.length){
+    hint.textContent='⚠ Prix/gr manquant : '+sansPrix.join(', ')+' — cout colorant incomplet';
+    hint.style.color='var(--red)';
+  }else if(hint&&hint.style.color){hint.style.color='';}
 }
 Q('addcbtn').addEventListener('click',function(){addCRow();});
 
@@ -4280,8 +4400,8 @@ Q('savebtn').addEventListener('click',function(){
           })[0];
           if(baseFound){
             var ccat_new=0;
-            if(qty_new==='5 gallons'&&baseFound.catalyseur_cout_5gal)ccat_new=parseFloat(baseFound.catalyseur_cout_5gal);
-            else if(qty_new==='5 gallons'&&baseFound.catalyseur_cout_1gal)ccat_new=parseFloat(baseFound.catalyseur_cout_1gal);
+            if(isGrandFormat(qty_new)&&baseFound.catalyseur_cout_5gal)ccat_new=parseFloat(baseFound.catalyseur_cout_5gal);
+            else if(isGrandFormat(qty_new)&&baseFound.catalyseur_cout_1gal)ccat_new=parseFloat(baseFound.catalyseur_cout_1gal);
             else if(baseFound.catalyseur_cout_1l)ccat_new=parseFloat(baseFound.catalyseur_cout_1l);
             else if(baseFound.catalyseur_cout_1gal)ccat_new=parseFloat(baseFound.catalyseur_cout_1gal);
             if(ccat_new>0)prixCatNew=parseFloat((ccat_new/div_new).toFixed(2));
@@ -4293,8 +4413,8 @@ Q('savebtn').addEventListener('click',function(){
           })[0];
           if(pcFound){
             var ccat_new2=0;
-            if(qty_new==='5 gallons'&&pcFound.catalyseur_cout_5gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_5gal);
-            else if(qty_new==='5 gallons'&&pcFound.catalyseur_cout_1gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_1gal);
+            if(isGrandFormat(qty_new)&&pcFound.catalyseur_cout_5gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_5gal);
+            else if(isGrandFormat(qty_new)&&pcFound.catalyseur_cout_1gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_1gal);
             else if(pcFound.catalyseur_cout_1l)ccat_new2=parseFloat(pcFound.catalyseur_cout_1l);
             else if(pcFound.catalyseur_cout_1gal)ccat_new2=parseFloat(pcFound.catalyseur_cout_1gal);
             if(ccat_new2>0)prixCatNew=parseFloat((ccat_new2/div_new).toFixed(2));
@@ -4372,9 +4492,10 @@ function addBRow(id,prod,num,marque,c1,c3,c5,section,masse){
   var n=document.createElement('input');n.type='text';n.className='bn';n.placeholder='Ex: NT4201C';n.value=num;
   var sel=document.createElement('select');sel.className='bm';sel.innerHTML='<option value="">Marque...</option>';
   ['Pepin','International','Devoe','Disolac'].forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;if(m===marque)o.selected=true;sel.appendChild(o);});
-  var i1=document.createElement('input');i1.type='number';i1.className='bc1';i1.placeholder='1 gal';i1.step='0.01';i1.value=c1;
-  var i3=document.createElement('input');i3.type='number';i3.className='bc3';i3.placeholder='3 gal';i3.step='0.01';i3.value=c3;
-  var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder='5 gal';i5.step='0.01';i5.value=c5;
+  var _dis=section==='disolac';
+  var i1=document.createElement('input');i1.type='number';i1.className='bc1';i1.placeholder=_dis?'4 L':'1 gal';i1.step='0.01';i1.value=c1;
+  var i3=document.createElement('input');i3.type='number';i3.className='bc3';i3.placeholder=_dis?'200 L':'3 gal';i3.step='0.01';i3.value=c3;
+  var i5=document.createElement('input');i5.type='number';i5.className='bc5';i5.placeholder=_dis?'20 L':'5 gal';i5.step='0.01';i5.value=c5;
   var im=document.createElement('input');im.type='number';im.className='bmg';im.placeholder='g/gal';im.step='1';im.title='Masse du gallon en grammes (pour calcul canettes)';im.value=masse;
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){
@@ -4525,8 +4646,8 @@ function saveEdit(id){
             })[0];
             if(baseFoundE){
               var ccatE=0;
-              if(qty_e==='5 gallons'&&baseFoundE.catalyseur_cout_5gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_5gal);
-              else if(qty_e==='5 gallons'&&baseFoundE.catalyseur_cout_1gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_1gal);
+              if(isGrandFormat(qty_e)&&baseFoundE.catalyseur_cout_5gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_5gal);
+              else if(isGrandFormat(qty_e)&&baseFoundE.catalyseur_cout_1gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_1gal);
               else if(baseFoundE.catalyseur_cout_1l)ccatE=parseFloat(baseFoundE.catalyseur_cout_1l);
               else if(baseFoundE.catalyseur_cout_1gal)ccatE=parseFloat(baseFoundE.catalyseur_cout_1gal);
               if(ccatE>0)prixCatOverride=parseFloat((ccatE/div_e2).toFixed(2));
@@ -4537,8 +4658,8 @@ function saveEdit(id){
             })[0];
             if(pcFoundE){
               var ccatE2=0;
-              if(qty_e==='5 gallons'&&pcFoundE.catalyseur_cout_5gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_5gal);
-              else if(qty_e==='5 gallons'&&pcFoundE.catalyseur_cout_1gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_1gal);
+              if(isGrandFormat(qty_e)&&pcFoundE.catalyseur_cout_5gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_5gal);
+              else if(isGrandFormat(qty_e)&&pcFoundE.catalyseur_cout_1gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_1gal);
               else if(pcFoundE.catalyseur_cout_1l)ccatE2=parseFloat(pcFoundE.catalyseur_cout_1l);
               else if(pcFoundE.catalyseur_cout_1gal)ccatE2=parseFloat(pcFoundE.catalyseur_cout_1gal);
               if(ccatE2>0)prixCatOverride=parseFloat((ccatE2/div_e2).toFixed(2));
@@ -4592,7 +4713,13 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
     var r=recsARecalc[i],marque=r.marque,produit=(r.produit||'').toLowerCase();
     var isSyn=marque==='Pepin'&&produit.indexOf('synthane')>=0;
     var qty=r.quantite||'Gallon',cb=0,ccat_auto=0;
-    if(!isSyn){
+    var mixR=isSyn?null:parseMixBase(r.numero_base||'');
+    if(mixR){
+      // Base melangee: cout pondere, meme regle qu'au formulaire.
+      var rmR=coutBaseMix(mixR,marque,qty);
+      if(rmR.manquants.length){errors++;continue;} // ne pas recalculer a l'aveugle
+      cb=rmR.cout;
+    }else if(!isSyn){
       var baseCandidates=allBases.filter(function(b){
         var matchBase=!r.numero_base||(b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
         var matchMarque=!marque||b.marque.toLowerCase()===marque.toLowerCase();
@@ -4602,12 +4729,9 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
       });
       var base=baseCandidates.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0]||baseCandidates[0];
       if(base){
-        if(qty==='3 gallons'&&base.cout_3gal)cb=parseFloat(base.cout_3gal);
-        else if(qty==='5 gallons'&&base.cout_5gal)cb=parseFloat(base.cout_5gal);
-        else if(base.cout_1gal)cb=parseFloat(base.cout_1gal);
-        else if(base.cout_gallon)cb=parseFloat(base.cout_gallon);
-        if(qty==='5 gallons'&&base.catalyseur_cout_5gal)ccat_auto=parseFloat(base.catalyseur_cout_5gal);
-        else if(qty==='5 gallons'&&base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
+        cb=coutBasePourQty(base,qty);
+        if(isGrandFormat(qty)&&base.catalyseur_cout_5gal)ccat_auto=parseFloat(base.catalyseur_cout_5gal);
+        else if(isGrandFormat(qty)&&base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
         else if(base.catalyseur_cout_1l)ccat_auto=parseFloat(base.catalyseur_cout_1l);
         else if(base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
       }
@@ -4652,8 +4776,8 @@ document.getElementById('recalcbtn').addEventListener('click',async function(){
         return pc.marque===marque&&normProd(pc.produit)===normProd(r.produit);
       })[0];
       if(pcEntry){
-        if(qty==='5 gallons'&&pcEntry.catalyseur_cout_5gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_5gal);
-        else if(qty==='5 gallons'&&pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
+        if(isGrandFormat(qty)&&pcEntry.catalyseur_cout_5gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_5gal);
+        else if(isGrandFormat(qty)&&pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
         else if(pcEntry.catalyseur_cout_1l)ccat_r=parseFloat(pcEntry.catalyseur_cout_1l);
         else if(pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
       }else{
@@ -5008,6 +5132,10 @@ function qtyFactor(quantite,marque,produit){
   if(q.indexOf('pinte')>=0)return 0.25;
   if(q.indexOf('3 gallon')>=0)return 3;
   if(q.indexOf('5 gallon')>=0)return isSyn?4:5; // règle Synthane: 5gl = 4x, pas 5x
+  // Formats metriques Disolac, normalises sur le 4 L (= format de reference)
+  if(q==='200 l')return 50;
+  if(q==='20 l')return 5;
+  if(q==='4 l')return 1;
   return 1; // 'Gallon'
 }
 
