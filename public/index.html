@@ -635,7 +635,7 @@ table.ct tr:last-child td{border-bottom:none}
             <div class="fg full"><label>Date des prix</label><input type="date" id="fdateprix"></div>
             <div class="fg"><label>Prix gallon ($) <span style="font-size:11px;color:var(--tx3)">(laissez vide pour calcul auto)</span></label><input type="number" id="fprixgal" placeholder="Ex: 145.00" step="0.01"></div>
             <div class="fg" id="fg-prixcat"><label>Prix catalyseur ($) <span style="font-size:11px;color:var(--tx3)">(optionnel)</span></label><input type="number" id="fprixcat" placeholder="Ex: 85.00" step="0.01"></div>
-            <div class="fg full" id="fg-marge"><label>% Profit special (optionnel - laissez vide pour utiliser la marge standard)</label><input type="number" id="fmarge" placeholder="Ex: 45 pour 45%" step="0.1" min="1" max="99"></div>
+            <div class="fg full" id="fg-marge"><label>% Profit special (optionnel - laissez vide pour utiliser la marge standard)</label><input type="number" id="fmarge" placeholder="Ex: 45 pour 45%" step="0.01" min="0.1" max="99"><div id="marge-hint" style="font-size:11px;color:var(--tx3);margin-top:5px;line-height:1.45"></div></div>
           </div>
           <div class="pprev" id="pprev">
             <div class="pprevt">Prix calcules automatiquement</div>
@@ -1026,7 +1026,11 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
           <div style="margin-top:20px;padding-top:16px;border-top:0.5px solid var(--bd)">
             <div style="font-size:13px;font-weight:600;margin-bottom:4px">Recalcul des prix</div>
-            <div style="font-size:12px;color:var(--tx3);margin-bottom:12px">Recalcule uniquement les recettes des marques selectionnees. Seules les recettes dont le prix a change seront ajoutees a l'historique.</div>
+            <div style="font-size:12px;color:var(--tx3);margin-bottom:12px">
+              Choisis la portee : une marque complete, <b>un seul produit</b> (changement de prix en cours d'annee, nouveau produit) ou <b>une seule base</b>.<br>
+              Les prix speciaux des clients gardent <b>toujours</b> leur pourcentage de marge : seul le cout est rafraichi, le % ne bouge jamais.<br>
+              Seules les recettes dont le prix change sont ajoutees a l'historique.
+            </div>
             <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
               <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
                 <input type="checkbox" id="rc-pepin"> Pepin
@@ -1038,8 +1042,28 @@ table.ct tr:last-child td{border-bottom:none}
                 <input type="checkbox" id="rc-disolac"> Disolac
               </label>
             </div>
-            <button class="sbtn" id="recalcbtn" style="background:#3B6D11">Recalculer les marques selectionnees</button>
-            <span class="svd" id="recalcsvd" style="margin-left:10px"></span>
+            <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:240px;flex:1">
+                <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Produit</div>
+                <select id="rc-produit" style="width:100%;padding:8px;border:0.5px solid var(--bd);border-radius:8px;font-size:13px;background:#fff">
+                  <option value="">Tous les produits</option>
+                </select>
+              </div>
+              <div style="min-width:200px;flex:1">
+                <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Code de base</div>
+                <select id="rc-base" style="width:100%;padding:8px;border:0.5px solid var(--bd);border-radius:8px;font-size:13px;background:#fff">
+                  <option value="">Toutes les bases</option>
+                </select>
+              </div>
+              <button class="addbtn" id="rc-reset" style="font-size:12px">Toute la marque</button>
+            </div>
+            <div id="rc-count" style="font-size:12px;color:var(--tx3);margin-bottom:10px"></div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <button class="sbtn" id="rc-previewbtn" style="background:var(--blue)">Apercu (n'ecrit rien)</button>
+              <button class="sbtn" id="recalcbtn" style="background:#3B6D11">Recalculer la selection</button>
+              <span class="svd" id="recalcsvd" style="margin-left:4px"></span>
+            </div>
+            <div id="rc-res" style="margin-top:12px"></div>
           </div>
         </div>
         <div class="cs">
@@ -1893,7 +1917,56 @@ function calcPrix(m,t,isSyn,margeSpec){
   if(isSyn){var costPinte=t/4;pinte=costPinte/div+5;}
   else{pinte=(gal/4)*1.10;}
   var can=(gal/24)+14.95;
-  return{gal:gal,pinte:pinte,can:can,div:div,mg:Math.round((1-div)*100)};
+  return{gal:gal,pinte:pinte,can:can,div:div,mg:Math.round((1-div)*1000)/10};
+}
+
+/* =====================================================================
+   VERROU DE MARGE
+   Regle absolue : quand un client a un prix special, sa marge ne change
+   JAMAIS. Un recalcul met a jour les COUTS et refait le prix au meme
+   pourcentage. Il ne remet jamais la recette a la marge standard et
+   n'efface jamais le % enregistre.
+   ===================================================================== */
+var MARGE_TOL=0.5; // points de % : en deca, la recette est consideree au standard de la marque
+function margeStandardPct(m){return parseFloat(((1-(marges[m]||0.60))*100).toFixed(4));}
+function margeToMarkup(mg){var d=1-(parseFloat(mg)/100);return d>0?((1/d)-1)*100:0;}
+function fmtPct(v){return (Math.round(parseFloat(v)*10)/10).toString().replace('.',',');}
+function prixDeRecette(r){return (r&&r.prix&&r.prix[0])||null;}
+// Marge REELLEMENT appliquee au prix enregistre (peinture = base + colorants)
+function margeExactePrix(p){
+  if(!p)return null;
+  var tot=(parseFloat(p.cost_base)||0)+(parseFloat(p.cost_colorant)||0);
+  var gal=parseFloat(p.prix_gallon)||0;
+  if(!(tot>0&&gal>0))return null;
+  var mg=(1-(tot/gal))*100;
+  if(!isFinite(mg)||mg<=0||mg>=100)return null;
+  return parseFloat(mg.toFixed(4));
+}
+// Marge a conserver pour une recette.
+// {marge: Number|null, source: 'speciale'|'prix'|'standard', stockee, exacte}
+// marge null = suivre la marge standard de la marque.
+function margeVerrou(r){
+  var p=prixDeRecette(r);
+  var stockee=(p&&p.marge_speciale!==null&&p.marge_speciale!==undefined&&p.marge_speciale!=='')?parseFloat(p.marge_speciale):null;
+  if(!(stockee>0&&stockee<100))stockee=null;
+  var exacte=margeExactePrix(p);
+  var std=margeStandardPct(r.marque);
+  if(stockee!==null){
+    // % enregistre : intouchable. On prend la marge exacte quand elle ne fait que
+    // corriger l'arrondi a l'entier (ex. 23 stocke pour 22,647 reel).
+    var mg=(exacte!==null&&Math.abs(exacte-stockee)<5)?exacte:stockee;
+    return{marge:mg,source:'speciale',stockee:stockee,exacte:exacte};
+  }
+  if(exacte!==null&&Math.abs(exacte-std)>MARGE_TOL){
+    // Prix special saisi a la main sans % enregistre : c'est la cause des marges
+    // qui "disparaissaient". On la protege comme une marge speciale.
+    return{marge:exacte,source:'prix',stockee:null,exacte:exacte};
+  }
+  return{marge:null,source:'standard',stockee:null,exacte:exacte};
+}
+function margeVerrouTxt(v,marque){
+  if(!v||v.marge===null)return 'marge standard '+marque+' ('+fmtPct(margeStandardPct(marque))+' %)';
+  return fmtPct(v.marge)+' % de marge (cost +'+fmtPct(margeToMarkup(v.marge))+' %)'+(v.source==='prix'?' - deduite du prix special':'');
 }
 
 // AUTH
@@ -1979,7 +2052,7 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
     if(t.dataset.tab==='crm'&&role!=='admin'){toast('CRM réservé aux administrateurs');showView('clients');return;}
-    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();}
+    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();}
     if(t.dataset.tab==='conversions'){initConversions();}
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
@@ -3128,6 +3201,12 @@ function openDetail(id){
   var d=ageDays(p&&p.date_prix),ageTxt=d<=90?'Recent':d<=365?'A verifier':'A mettre a jour';
   var ageCls=d<=90?'df':d<=365?'do':'ds';
   var margeSpec=p&&p.marge_speciale?parseFloat(p.marge_speciale):null;
+  var vMarge=margeVerrou(r);
+  // Formule affichee : deduite du prix REELLEMENT enregistre (base + colorants),
+  // le cout du part B n'entre pas dans le prix de la peinture.
+  var totPeint=p?((parseFloat(p.cost_base)||0)+(parseFloat(p.cost_colorant)||0)):0;
+  var mgReel=(vMarge.exacte!==null?vMarge.exacte:(vMarge.marge!==null?vMarge.marge:margeStandardPct(r.marque)));
+  var divReel=1-(mgReel/100);
   var pc=p&&total>0?calcPrix(r.marque,total,isSynRec,margeSpec):null;
   // Toujours utiliser le prix_gallon sauvegardé en BD (respecte les overrides manuels)
   if(pc&&p&&p.prix_gallon)pc.gal=parseFloat(p.prix_gallon);
@@ -3161,7 +3240,7 @@ function openDetail(id){
     var costPinteDisplay=isSynRec?'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost pinte</div><div class="pv" style="color:var(--tx)">'+(total/4).toFixed(2)+' $</div></div>':'';
     var pinteCard=isSynRec&&pc?costPinteDisplay+'<div class="pc grn"><div class="pl">Prix pinte</div><div class="pv">'+pc.pinte.toFixed(2)+' $</div></div>':'';
     var formuleKit=prixKit?' &nbsp;|&nbsp; Kit : '+pc.gal.toFixed(2)+' + '+pCatDisplay+' = '+prixKit.toFixed(2)+' $':'';
-    prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span>'+(margeSpec?'<span style="font-size:11px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:500">Profit special: '+margeSpec+'%</span>':'')+'</div></div><div class="pcards">'+baseCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost colorant</div><div class="pv" style="color:var(--tx)">'+(isSynRec?Math.max(0,parseFloat(p.cost_colorant||0)-17.25).toFixed(2):parseFloat(p.cost_colorant||0).toFixed(2))+' $</div></div>'+fraisCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Total cost</div><div class="pv" style="color:var(--tx)">'+total.toFixed(2)+' $</div></div>'+galCard+pinteCard+catCard+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+total.toFixed(2)+' $ / '+pc.div+' = '+pc.gal.toFixed(2)+' $/'+qtyLbl+' - Marge '+pc.mg+'%'+formuleKit+'</div>':'')+'</div>';
+    prixHTML='<div class="pbox"><div class="pbh"><span class="pbt">Prix - comptoir seulement</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="db '+ageCls+'">'+fmtD(p.date_prix)+'</span><span style="font-size:11px;color:var(--tx3)">'+ageTxt+'</span>'+(vMarge.marge!==null?'<span style="font-size:11px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:500" title="Cette marge est protegee : un recalcul ne la change pas">&#128274; Profit special: '+fmtPct(vMarge.marge)+' % (cost +'+fmtPct(margeToMarkup(vMarge.marge))+' %)'+(vMarge.source==='prix'?' - deduit du prix':'')+'</span>':'')+'</div></div><div class="pcards">'+baseCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cost colorant</div><div class="pv" style="color:var(--tx)">'+(isSynRec?Math.max(0,parseFloat(p.cost_colorant||0)-17.25).toFixed(2):parseFloat(p.cost_colorant||0).toFixed(2))+' $</div></div>'+fraisCard+'<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Total cost</div><div class="pv" style="color:var(--tx)">'+total.toFixed(2)+' $</div></div>'+galCard+pinteCard+catCard+'</div>'+(pc?'<div class="fbox">Formule '+r.marque+' : '+totPeint.toFixed(2)+' $ / '+divReel.toFixed(4)+' = '+pc.gal.toFixed(2)+' $/'+qtyLbl+' - '+fmtPct(mgReel)+' % de marge (cost +'+fmtPct(margeToMarkup(mgReel))+' %)'+formuleKit+'</div>':'')+'</div>';
   }else if(!canP()){prixHTML='<div class="hbox">Prix non disponibles - vue Production</div>';}
 
   // Tableau colorants avec colonnes selon mode
@@ -3288,6 +3367,7 @@ function printFiche(id){
   var isPepin=r.marque==='Pepin';
   var total=p?(parseFloat(p.cost_base||0)+parseFloat(p.cost_colorant||0)+(isPepin?parseFloat(p.cost_catalyseur||0):0)):0;
   var margeSpec=p&&p.marge_speciale?parseFloat(p.marge_speciale):null;
+  var vMargeP=margeVerrou(r);
   var pc=p&&total>0?calcPrix(r.marque,total,isSynRec,margeSpec):null;
   if(pc&&p&&p.prix_gallon)pc.gal=parseFloat(p.prix_gallon);
   if(pc&&p&&p.prix_pinte)pc.pinte=parseFloat(p.prix_pinte);
@@ -3326,7 +3406,7 @@ function printFiche(id){
     rows3+='<tr class="prix-row"><td>Prix '+qtyLbl+'</td><td>'+pc.gal.toFixed(2)+' $</td></tr>';
     if(prixKit)rows3+='<tr class="prix-row"><td>Prix part B</td><td>'+pCatDisplay+' $</td></tr><tr class="prix-row"><td>Prix kit</td><td>'+prixKit.toFixed(2)+' $</td></tr>';
     if(isSynRec&&pc.pinte)rows3+='<tr class="prix-row"><td>Prix pinte</td><td>'+pc.pinte.toFixed(2)+' $</td></tr>';
-    return'<div class="section-title">Prix</div><table>'+rows3+'</table>'+(margeSpec?'<p style="font-size:10px;margin-top:4px">Profit special: '+margeSpec+'%</p>':'');
+    return'<div class="section-title">Prix</div><table>'+rows3+'</table>'+(vMargeP.marge!==null?'<p style="font-size:10px;margin-top:4px">Profit special: '+fmtPct(vMargeP.marge)+' % de marge (cost +'+fmtPct(margeToMarkup(vMargeP.marge))+' %)</p>':'');
   }
 
   function makePage(avecPrix,copieLabel){
@@ -3834,7 +3914,8 @@ Q('mconfcopy').addEventListener('click',function(){
     if(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0)ccLoadC=Math.max(0,ccLoadC-17.25);
     Q('fcc').value=ccLoadC?parseFloat(ccLoadC.toFixed(2)):'';
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
-    if(Q('fmarge'))Q('fmarge').value=p.marge_speciale||'';
+    if(Q('fmarge')){var vMg=margeVerrou(r);Q('fmarge').value=p.marge_speciale||(vMg.source==='prix'?parseFloat(vMg.marge.toFixed(2)):'');}
+    setMargeVerrouUI(!!(Q('fmarge')&&Q('fmarge').value));
     if(Q('fprixgal'))Q('fprixgal').value=''; // prix à recalculer
     if(Q('fprixcat'))Q('fprixcat').value=p.prix_catalyseur||'';
   }
@@ -3912,7 +3993,8 @@ function openEdit(id){
     if(r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0)ccLoadE=Math.max(0,ccLoadE-17.25);
     Q('fcc').value=ccLoadE?parseFloat(ccLoadE.toFixed(2)):'';
     if(Q('fdateprix'))Q('fdateprix').value=p.date_prix||new Date().toISOString().slice(0,10);
-    if(Q('fmarge'))Q('fmarge').value=p.marge_speciale||'';
+    if(Q('fmarge')){var vMg=margeVerrou(r);Q('fmarge').value=p.marge_speciale||(vMg.source==='prix'?parseFloat(vMg.marge.toFixed(2)):'');}
+    setMargeVerrouUI(!!(Q('fmarge')&&Q('fmarge').value));
     if(Q('fprixgal'))Q('fprixgal').value=p.prix_gallon||'';
     if(Q('fprixcat'))Q('fprixcat').value=p.prix_catalyseur||'';
   }
@@ -4049,6 +4131,40 @@ function libelleMix(mix){
 }
 
 // AUTO-FILL BASE COST
+/* ---- Verrou du % de profit special dans le formulaire -------------------
+   Avant, changer la marque, la base ou un colorant effacait le champ en
+   silence : en sauvegardant, la marge du client disparaissait. Le champ
+   n'est plus jamais vide par accident, seul un clic sur "Retirer" l'enleve. */
+var margeVerrouUI=false;
+function setMargeVerrouUI(on){margeVerrouUI=!!on;majMargeHint();}
+function effacerMargeAuto(){
+  if(margeVerrouUI)return; // marge protegee : on n'y touche pas
+  if(Q('fmarge'))Q('fmarge').value='';
+  majMargeHint();
+}
+function majMargeHint(){
+  var el=Q('marge-hint');if(!el)return;
+  var v=Q('fmarge')?parseFloat(Q('fmarge').value):NaN;
+  if(!(v>0)){
+    margeVerrouUI=false;
+    el.textContent='Vide = marge standard de la marque ('+fmtPct(margeStandardPct(Q('fm')?Q('fm').value:''))+' %).';
+    el.style.color='var(--tx3)';
+    return;
+  }
+  el.innerHTML='🔒 <b>Marge protegee</b> : '+fmtPct(v)+' % de marge (cost +'+fmtPct(margeToMarkup(v))+' %). '+
+    'Elle ne bougera pas toute seule - ni en changeant la marque, la base ou les colorants, ni lors d\'un recalcul. '+
+    '<a id="marge-clear" style="cursor:pointer;text-decoration:underline;color:var(--red)">Retirer</a>';
+  el.style.color='var(--tx)';
+  var a=Q('marge-clear');
+  if(a)a.addEventListener('click',function(){
+    if(!confirm('Retirer la marge speciale ?\n\nLa recette repassera a la marge standard de la marque et son prix sera recalcule.'))return;
+    margeVerrouUI=false;
+    if(Q('fmarge'))Q('fmarge').value='';
+    if(Q('fprixgal'))Q('fprixgal').value='';
+    majMargeHint();updatePrev();
+  });
+}
+
 function autofillBase(){
   var produit=Q('fprod').value.trim(),base=Q('fbase').value.trim(),marque=Q('fm').value,qty=Q('fqty').value;
   var mix=parseMixBase(base);
@@ -4059,7 +4175,7 @@ function autofillBase(){
     }else if(rm.cout>0){
       Q('fcb').value=rm.cout.toFixed(2);
       if(hm){hm.textContent='Mix: '+libelleMix(mix);hm.style.color='';}
-      if(Q('fprixgal'))Q('fprixgal').value='';if(Q('fmarge'))Q('fmarge').value='';updatePrev();
+      if(Q('fprixgal'))Q('fprixgal').value='';effacerMargeAuto();updatePrev();
     }
     return;
   }
@@ -4076,7 +4192,7 @@ function autofillBase(){
     if(cost>0){
       Q('fcb').value=cost.toFixed(2);
       if(hint){hint.textContent='Auto: '+found.produit+' '+qty;hint.style.color='';}
-      if(Q('fprixgal'))Q('fprixgal').value='';if(Q('fmarge'))Q('fmarge').value='';updatePrev();
+      if(Q('fprixgal'))Q('fprixgal').value='';effacerMargeAuto();updatePrev();
     }else if(isQtyMetrique(qty)&&hint){
       hint.textContent='⚠ Aucun prix '+qty+' pour '+found.produit+' '+(found.numero_base||'');
       hint.style.color='var(--red)';
@@ -4098,7 +4214,7 @@ Q('fbase').addEventListener('input',function(){
   setTimeout(function(){
     autofillBase();
     if(Q('fprixgal'))Q('fprixgal').value='';
-    if(Q('fmarge'))Q('fmarge').value='';
+    effacerMargeAuto();
     updatePrev();
   },300);
 });
@@ -4110,13 +4226,17 @@ Q('fm').addEventListener('change',function(){
   setTimeout(function(){
     autofillBase();
     if(Q('fprixgal'))Q('fprixgal').value='';
-    if(Q('fmarge'))Q('fmarge').value='';
+    effacerMargeAuto();
     updatePrev();
   },200);
 });
 Q('fcb').addEventListener('input',updatePrev);
 Q('fcc').addEventListener('input',updatePrev);
-if(Q('fmarge'))Q('fmarge').addEventListener('input',updatePrev);
+if(Q('fmarge'))Q('fmarge').addEventListener('input',function(){
+  var v=parseFloat(Q('fmarge').value);
+  margeVerrouUI=(v>0); // saisi a la main = protege
+  majMargeHint();updatePrev();
+});
 
 // CORRECTION: profit spécial — recalcule le % quand on entre un prix gallon manuel
 if(Q('fprixgal'))Q('fprixgal').addEventListener('input',function(){
@@ -4126,12 +4246,15 @@ if(Q('fprixgal'))Q('fprixgal').addEventListener('input',function(){
   var syn=isSynthane();
   var tot=cb+cc+(syn?17.25:0);
   if(prixGal>0&&tot>0){
-    var mg=Math.round((1-(tot/prixGal))*100);
+    // 2 decimales : un arrondi a l'entier faisait deriver le prix au recalcul suivant
+    var mg=Math.round((1-(tot/prixGal))*10000)/100;
     if(Q('fmarge'))Q('fmarge').value=mg>0?mg:'';
+    setMargeVerrouUI(mg>0);
   } else if(!prixGal){
-    // Si on efface le prix manuel, on remet le % à vide pour revenir au standard
-    if(Q('fmarge'))Q('fmarge').value='';
+    // On efface le prix manuel : le % special enregistre reste protege
+    effacerMargeAuto();
   }
+  majMargeHint();
   updatePrev();
 });
 
@@ -4341,7 +4464,7 @@ function calcColTotal(){
     if(hint){hint.textContent='Auto';hint.style.color='';}
     // Effacer le prix gallon manuel pour recalculer automatiquement
     if(Q('fprixgal'))Q('fprixgal').value='';
-    if(Q('fmarge'))Q('fmarge').value='';
+    effacerMargeAuto();
     updatePrev();
   }
   if(hint&&sansPrix.length){
@@ -4422,6 +4545,12 @@ Q('savebtn').addEventListener('click',function(){
         }
       }
       if(prixGalOverride)pc.gal=prixGalOverride;
+      // Filet de securite : un prix special saisi a la main sans % enregistre laissait
+      // la recette sans marge - elle repassait au standard au premier recalcul.
+      if(margeSpecS===null&&prixGalOverride>0&&tot>0){
+        var mgImpS=(1-(tot/prixGalOverride))*100;
+        if(isFinite(mgImpS)&&mgImpS>0&&mgImpS<100&&Math.abs(mgImpS-margeStandardPct(marque))>MARGE_TOL)margeSpecS=parseFloat(mgImpS.toFixed(4));
+      }
       var pdata={recette_id:rec.id,cost_base:cb,cost_colorant:parseFloat((cc+synFrais).toFixed(2)),cost_catalyseur:0,prix_gallon:parseFloat(pc.gal.toFixed(2)),prix_pinte:parseFloat(pc.pinte.toFixed(2)),prix_canette:parseFloat(pc.can.toFixed(2)),prix_catalyseur:prixCatNew,date_prix:datePrix,marge_speciale:margeSpecS};
       return sb.from('prix').insert(pdata).then(function(){return sb.from('prix_historique').insert(pdata);});
     }()):Promise.resolve();
@@ -4669,6 +4798,12 @@ function saveEdit(id){
         var pc=calcPrix(marque,tot,synFe,margeSpecE);
         // Si prix gallon manuel: l'utiliser tel quel sans recalcul
         var finalGal=prixGalOverride||parseFloat(pc.gal.toFixed(2));
+        // Filet de securite : prix special sans % enregistre -> on ecrit le % deduit,
+        // sinon la marge du client disparait au premier recalcul.
+        if(margeSpecE===null&&finalGal>0&&tot>0){
+          var mgImpE=(1-(tot/finalGal))*100;
+          if(isFinite(mgImpE)&&mgImpE>0&&mgImpE<100&&Math.abs(mgImpE-margeStandardPct(marque))>MARGE_TOL)margeSpecE=parseFloat(mgImpE.toFixed(4));
+        }
         var finalPinte=parseFloat(pc.pinte.toFixed(2));
         var finalCan=parseFloat(pc.can.toFixed(2));
         p2=sb.from('prix').delete().eq('recette_id',id).then(function(){
@@ -4687,6 +4822,7 @@ function saveEdit(id){
 
 function resetForm(){
   curHex='#cccccc';updateHex('#cccccc');
+  margeVerrouUI=false;
   ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fdateprix','fmarge','fprixgal','fprixcat'].forEach(function(id){var el=Q(id);if(el)el.value='';});
   Q('fm').value='';Q('fdate').value=new Date().toISOString().slice(0,10);
   if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
@@ -4695,114 +4831,291 @@ function resetForm(){
   addCRow();updateCformHeader();updateQtyOptions();
 }
 
-// RECALCUL TOUS LES PRIX
-document.getElementById('recalcbtn').addEventListener('click',async function(){
-  var btn=document.getElementById('recalcbtn'),svd=document.getElementById('recalcsvd');
-  // Marques sélectionnées
-  var marquesSelec=[];
-  if(Q('rc-pepin')&&Q('rc-pepin').checked)marquesSelec.push('Pepin');
-  if(Q('rc-inter')&&Q('rc-inter').checked){marquesSelec.push('International');marquesSelec.push('Devoe');}
-  if(Q('rc-disolac')&&Q('rc-disolac').checked)marquesSelec.push('Disolac');
-  if(!marquesSelec.length){toast('Selectionnez au moins une marque!');return;}
-  btn.textContent='Recalcul en cours...';btn.disabled=true;svd.style.display='none';
-  await loadCatalogues();
-  var updated=0,errors=0;
-  // Filtrer seulement les recettes des marques sélectionnées
-  var recsARecalc=recs.filter(function(r){return marquesSelec.indexOf(r.marque)>=0;});
-  for(var i=0;i<recsARecalc.length;i++){
-    var r=recsARecalc[i],marque=r.marque,produit=(r.produit||'').toLowerCase();
-    var isSyn=marque==='Pepin'&&produit.indexOf('synthane')>=0;
-    var qty=r.quantite||'Gallon',cb=0,ccat_auto=0;
-    var mixR=isSyn?null:parseMixBase(r.numero_base||'');
-    if(mixR){
-      // Base melangee: cout pondere, meme regle qu'au formulaire.
-      var rmR=coutBaseMix(mixR,marque,qty);
-      if(rmR.manquants.length){errors++;continue;} // ne pas recalculer a l'aveugle
-      cb=rmR.cout;
-    }else if(!isSyn){
-      var baseCandidates=allBases.filter(function(b){
-        var matchBase=!r.numero_base||(b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
-        var matchMarque=!marque||b.marque.toLowerCase()===marque.toLowerCase();
-        var matchProd=!r.produit||b.produit.toLowerCase()===r.produit.toLowerCase();
-        if(r.numero_base)return matchBase&&matchMarque;
-        return matchProd&&matchMarque;
-      });
-      var base=baseCandidates.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0]||baseCandidates[0];
-      if(base){
-        cb=coutBasePourQty(base,qty);
-        if(isGrandFormat(qty)&&base.catalyseur_cout_5gal)ccat_auto=parseFloat(base.catalyseur_cout_5gal);
-        else if(isGrandFormat(qty)&&base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
-        else if(base.catalyseur_cout_1l)ccat_auto=parseFloat(base.catalyseur_cout_1l);
-        else if(base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
-      }
+// ===== RECALCUL CIBLE (marque / produit / base) =====
+
+// Calcul PUR des couts d'une recette : aucune ecriture, sert aussi a l'apercu.
+function calcCoutsRecette(r){
+  var marque=r.marque,produit=(r.produit||'').toLowerCase();
+  var isSyn=marque==='Pepin'&&produit.indexOf('synthane')>=0;
+  var qty=r.quantite||'Gallon',cb=0,ccat_auto=0;
+  var mixR=isSyn?null:parseMixBase(r.numero_base||'');
+  if(mixR){
+    // Base melangee: cout pondere, meme regle qu'au formulaire.
+    var rmR=coutBaseMix(mixR,marque,qty);
+    if(rmR.manquants.length)return{erreur:'Base melangee incomplete ('+rmR.manquants.join(', ')+')'};
+    cb=rmR.cout;
+  }else if(!isSyn){
+    var baseCandidates=allBases.filter(function(b){
+      var matchBase=!r.numero_base||(b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
+      var matchMarque=!marque||b.marque.toLowerCase()===marque.toLowerCase();
+      var matchProd=!r.produit||b.produit.toLowerCase()===r.produit.toLowerCase();
+      if(r.numero_base)return matchBase&&matchMarque;
+      return matchProd&&matchMarque;
+    });
+    var base=baseCandidates.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0]||baseCandidates[0];
+    if(base){
+      cb=coutBasePourQty(base,qty);
+      if(isGrandFormat(qty)&&base.catalyseur_cout_5gal)ccat_auto=parseFloat(base.catalyseur_cout_5gal);
+      else if(isGrandFormat(qty)&&base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
+      else if(base.catalyseur_cout_1l)ccat_auto=parseFloat(base.catalyseur_cout_1l);
+      else if(base.catalyseur_cout_1gal)ccat_auto=parseFloat(base.catalyseur_cout_1gal);
     }
-    var cc=0,cols=(r.colorants||[]);
-    for(var j=0;j<cols.length;j++){
-      var col=cols[j],cp=allCP.filter(function(c){return c.nom.toLowerCase()===col.nom.toLowerCase();})[0];
-      if(!cp)continue;
-      var coutGal=parseFloat(cp.cout_gallon)||0;
-      var qtyStr=col.quantite||'0',unite=col.unite||'OZ';
-      if(unite==='GR'){
-        // En grammes, le $/gr suffit: ne PAS exiger un $/gallon.
-        var coutGr=parseFloat(cp.cout_gr_direct)||0;
-        if(!coutGr&&coutGal&&parseFloat(cp.poids_gr_gal))coutGr=coutGal/parseFloat(cp.poids_gr_gal);
-        if(!coutGr)coutGr=parseFloat(cp.cout_gr)||0;
-        if(!coutGr)continue;
-        var gr=parseFloat(qtyStr)||0;
-        cc+=gr*coutGr;
-      }else{
-        if(!coutGal)continue;
-        var parts=qtyStr.split(' '),oz=0,f2=0,f3=0;
-        parts.forEach(function(p){
-          p=p.trim();if(!p)return;
-          if(p.indexOf('/48')>=0)f2=parseFloat(p)||0;
-          else if(p.indexOf('/64')>=0)f2=parseFloat(p)||0;
-          else if(p.indexOf('/128')>=0)f3=parseFloat(p)||0;
-          else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
-        });
-        var coutBase=coutGal/126;
-        if(marque==='Pepin')cc+=(oz+f2/64)*coutBase;else cc+=(oz+f2/64+f3/128)*coutBase;
-      }
-    }
-    if(isSyn)cc+=17.25;
-    if(cc<=0&&cb<=0)continue;
-    // Catalyseur: Pepin → depuis bases (par base), Inter/Devoe → depuis produits_catalyseurs (par produit)
-    var ccat_r=0;
-    if(marque==='Pepin'){
-      ccat_r=ccat_auto>0?ccat_auto:(r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0);
+  }
+  var cc=0,cols=(r.colorants||[]);
+  for(var j=0;j<cols.length;j++){
+    var col=cols[j],cp=allCP.filter(function(c){return c.nom.toLowerCase()===col.nom.toLowerCase();})[0];
+    if(!cp)continue;
+    var coutGal=parseFloat(cp.cout_gallon)||0;
+    var qtyStr=col.quantite||'0',unite=col.unite||'OZ';
+    if(unite==='GR'){
+      var coutGr=parseFloat(cp.cout_gr_direct)||0;
+      if(!coutGr&&coutGal&&parseFloat(cp.poids_gr_gal))coutGr=coutGal/parseFloat(cp.poids_gr_gal);
+      if(!coutGr)coutGr=parseFloat(cp.cout_gr)||0;
+      if(!coutGr)continue;
+      cc+=(parseFloat(qtyStr)||0)*coutGr;
     }else{
-      // Inter/Devoe: cherche dans produits_catalyseurs par produit+marque
-      var pcEntry=allPC.filter(function(pc){
-        return pc.marque===marque&&normProd(pc.produit)===normProd(r.produit);
-      })[0];
-      if(pcEntry){
-        if(isGrandFormat(qty)&&pcEntry.catalyseur_cout_5gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_5gal);
-        else if(isGrandFormat(qty)&&pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
-        else if(pcEntry.catalyseur_cout_1l)ccat_r=parseFloat(pcEntry.catalyseur_cout_1l);
-        else if(pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
-      }else{
-        ccat_r=r.prix&&r.prix[0]?parseFloat(r.prix[0].cost_catalyseur||0):0;
-      }
+      if(!coutGal)continue;
+      var parts=qtyStr.split(' '),oz=0,f2=0,f3=0;
+      parts.forEach(function(p){
+        p=p.trim();if(!p)return;
+        if(p.indexOf('/48')>=0)f2=parseFloat(p)||0;
+        else if(p.indexOf('/64')>=0)f2=parseFloat(p)||0;
+        else if(p.indexOf('/128')>=0)f3=parseFloat(p)||0;
+        else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
+      });
+      var coutBase=coutGal/126;
+      if(marque==='Pepin')cc+=(oz+f2/64)*coutBase;else cc+=(oz+f2/64+f3/128)*coutBase;
     }
-    var margeSpec_r=r.prix&&r.prix[0]&&r.prix[0].marge_speciale?parseFloat(r.prix[0].marge_speciale)||null:null;
-    var tot=cb+cc,p=calcPrix(marque,tot,isSyn,margeSpec_r);
-    var now=new Date(),today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-    try{
-      var existing=r.prix&&r.prix[0],div_r=marges[marque]||0.60;
-      var pCat_r=ccat_r>0?parseFloat((ccat_r/div_r).toFixed(2)):null;
-      var histData={recette_id:r.id,cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_catalyseur:pCat_r,prix_gallon:parseFloat(p.gal.toFixed(2)),prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),date_prix:today,marge_speciale:margeSpec_r};
-      if(existing){await sb.from('prix').update({cost_base:cb,cost_colorant:cc,cost_catalyseur:ccat_r,prix_gallon:histData.prix_gallon,prix_pinte:histData.prix_pinte,prix_canette:histData.prix_canette,prix_catalyseur:pCat_r,date_prix:today,marge_speciale:margeSpec_r}).eq('id',existing.id);}
-      else{await sb.from('prix').insert(histData);}
-      var existingPrix=existing?parseFloat(existing.prix_gallon||0):0;
-      if(!existing||Math.abs(existingPrix-histData.prix_gallon)>0.01){await sb.from('prix_historique').insert(histData);}
-      updated++;
-    }catch(e){errors++;}
+  }
+  if(isSyn)cc+=17.25;
+  if(cc<=0&&cb<=0)return{erreur:'Aucun cout calculable'};
+  // Catalyseur: Pepin -> depuis bases (par base), Inter/Devoe -> depuis produits_catalyseurs (par produit)
+  var existing=prixDeRecette(r),ccat_r=0;
+  if(marque==='Pepin'){
+    ccat_r=ccat_auto>0?ccat_auto:(existing?parseFloat(existing.cost_catalyseur||0):0);
+  }else{
+    var pcEntry=allPC.filter(function(pc){
+      return pc.marque===marque&&normProd(pc.produit)===normProd(r.produit);
+    })[0];
+    if(pcEntry){
+      if(isGrandFormat(qty)&&pcEntry.catalyseur_cout_5gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_5gal);
+      else if(isGrandFormat(qty)&&pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
+      else if(pcEntry.catalyseur_cout_1l)ccat_r=parseFloat(pcEntry.catalyseur_cout_1l);
+      else if(pcEntry.catalyseur_cout_1gal)ccat_r=parseFloat(pcEntry.catalyseur_cout_1gal);
+    }else{
+      ccat_r=existing?parseFloat(existing.cost_catalyseur||0):0;
+    }
+  }
+  return{cb:cb,cc:cc,ccat:ccat_r,isSyn:isSyn,tot:cb+cc};
+}
+
+// Recalcule UNE recette. opt.dryRun = apercu, aucune ecriture.
+// La marge est TOUJOURS celle de margeVerrou() : un prix special garde son %.
+async function recalcUneRecette(r,opt){
+  opt=opt||{};
+  var c=calcCoutsRecette(r);
+  if(c.erreur)return{statut:'erreur',msg:c.erreur,r:r};
+  var v=margeVerrou(r);
+  var p=calcPrix(r.marque,c.tot,c.isSyn,v.marge);
+  var existing=prixDeRecette(r);
+  var avant=existing?parseFloat(existing.prix_gallon||0):0;
+  var apres=parseFloat(p.gal.toFixed(2));
+  // Part B : toujours au diviseur standard de la marque, jamais la marge speciale.
+  var div_r=marges[r.marque]||0.60;
+  var pCat=c.ccat>0?parseFloat((c.ccat/div_r).toFixed(2)):null;
+  // Garde-fou : ne jamais effacer un prix de Part B deja enregistre quand
+  // le catalogue ne donne aucun cout de catalyseur.
+  if(pCat===null&&existing&&parseFloat(existing.prix_catalyseur||0)>0)pCat=parseFloat(existing.prix_catalyseur);
+  var margeOut=v.marge===null?null:parseFloat(parseFloat(v.marge).toFixed(4));
+  var res={statut:'ok',r:r,avant:avant,apres:apres,verrou:v,marge:margeOut,
+           cb:c.cb,cc:c.cc,ccat:c.ccat,pCat:pCat,
+           securisee:(v.source==='prix'),
+           corrigee:(v.source==='speciale'&&v.stockee!==null&&v.exacte!==null&&Math.abs(v.exacte-v.stockee)>0.005)};
+  if(Math.abs(avant-apres)<=0.005&&avant>0)res.statut='inchange';
+  if(opt.dryRun)return res;
+  var now=new Date(),today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var data={cost_base:c.cb,cost_colorant:c.cc,cost_catalyseur:c.ccat,
+            prix_gallon:apres,prix_pinte:parseFloat(p.pinte.toFixed(2)),prix_canette:parseFloat(p.can.toFixed(2)),
+            prix_catalyseur:pCat,date_prix:today,marge_speciale:margeOut};
+  try{
+    if(existing){await sb.from('prix').update(data).eq('id',existing.id);}
+    else{var ins=Object.assign({recette_id:r.id},data);await sb.from('prix').insert(ins);}
+    if(!existing||Math.abs(avant-apres)>0.01){
+      await sb.from('prix_historique').insert(Object.assign({recette_id:r.id},data));
+    }
+  }catch(e){return{statut:'erreur',msg:(e&&e.message)||'Erreur ecriture',r:r};}
+  return res;
+}
+
+// ---- Filtres de portee (marque / produit / base) ----
+function rcMarquesSelec(){
+  var m=[];
+  if(Q('rc-pepin')&&Q('rc-pepin').checked)m.push('Pepin');
+  if(Q('rc-inter')&&Q('rc-inter').checked){m.push('International');m.push('Devoe');}
+  if(Q('rc-disolac')&&Q('rc-disolac').checked)m.push('Disolac');
+  return m;
+}
+function rcBaseMatch(recBase,cible){
+  if(!cible)return true;
+  var rb=normProd(recBase||'');if(!rb)return false;
+  var c=normProd(cible);
+  if(rb===c)return true;
+  // bases melangees : "VKA044+VKA011", "VKA044 / VKA011"...
+  return (recBase||'').split(/[+\/,;&]| et /i).some(function(part){
+    return normProd(part.replace(/[0-9]+\s*%/g,''))===c;
+  });
+}
+function rcRecettesVisees(){
+  var mq=rcMarquesSelec();
+  var prod=Q('rc-produit')?Q('rc-produit').value:'';
+  var base=Q('rc-base')?Q('rc-base').value:'';
+  return recs.filter(function(r){
+    if(mq.indexOf(r.marque)<0)return false;
+    if(prod&&normProd(r.produit)!==prod)return false;
+    if(base&&!rcBaseMatch(r.numero_base,base))return false;
+    return true;
+  });
+}
+// Remplit les listes Produit / Code de base selon les marques cochees
+function rcFillFiltres(){
+  var mq=rcMarquesSelec(),selP=Q('rc-produit'),selB=Q('rc-base');
+  if(!selP||!selB)return;
+  var oldP=selP.value,oldB=selB.value;
+  var pool=recs.filter(function(r){return mq.indexOf(r.marque)>=0;});
+  var prods={},bases={};
+  pool.forEach(function(r){
+    if(r.produit&&r.produit.trim()){var k=normProd(r.produit);if(!prods[k])prods[k]={lbl:r.produit.trim(),n:0};prods[k].n++;}
+    (r.numero_base||'').split(/[+\/,;&]| et /i).forEach(function(part){
+      var b=part.replace(/[0-9]+\s*%/g,'').trim();
+      if(!b)return;var kb=normProd(b);if(!kb)return;
+      if(!bases[kb])bases[kb]={lbl:b.toUpperCase(),n:0};bases[kb].n++;
+    });
+  });
+  function fill(sel,map,vide,old){
+    var keys=Object.keys(map).sort(function(a,b){return map[a].lbl.localeCompare(map[b].lbl,'fr',{numeric:true,sensitivity:'base'});});
+    sel.innerHTML='';
+    var o0=document.createElement('option');o0.value='';o0.textContent=vide;sel.appendChild(o0);
+    keys.forEach(function(k){
+      var o=document.createElement('option');o.value=k;o.textContent=map[k].lbl+' ('+map[k].n+')';sel.appendChild(o);
+    });
+    if(old&&map[old])sel.value=old;else sel.value='';
+  }
+  fill(selP,prods,'Tous les produits',oldP);
+  fill(selB,bases,'Toutes les bases',oldB);
+  rcMajCompteur();
+}
+function rcMajCompteur(){
+  var el=Q('rc-count');if(!el)return;
+  var mq=rcMarquesSelec();
+  if(!mq.length){el.textContent='Coche au moins une marque.';el.style.color='var(--tx3)';return;}
+  var list=rcRecettesVisees();
+  var nSpec=list.filter(function(r){return margeVerrou(r).source!=='standard';}).length;
+  el.innerHTML='<b>'+list.length+'</b> recette'+(list.length!==1?'s':'')+' visee'+(list.length!==1?'s':'')+
+    (nSpec?' - dont <b>'+nSpec+'</b> a marge protegee (leur % ne bougera pas)':'');
+  el.style.color=list.length?'var(--tx)':'var(--tx3)';
+}
+function rcResetPortee(){
+  if(Q('rc-produit'))Q('rc-produit').value='';
+  if(Q('rc-base'))Q('rc-base').value='';
+  rcMajCompteur();
+}
+function rcPorteeTxt(){
+  var selP=Q('rc-produit'),selB=Q('rc-base');
+  var t=rcMarquesSelec().join(' / ')||'aucune marque';
+  if(selP&&selP.value)t+=' - produit '+selP.options[selP.selectedIndex].textContent.replace(/\s*\(\d+\)$/,'');
+  if(selB&&selB.value)t+=' - base '+selB.options[selB.selectedIndex].textContent.replace(/\s*\(\d+\)$/,'');
+  return t;
+}
+function rcLigneRecette(r){
+  return (r.client||'')+' - '+(r.couleur||'')+(r.numero_couleur?' ('+r.numero_couleur+')':'')+' - '+(r.produit||'')+(r.numero_base?' / '+r.numero_base:'')+' - '+(r.quantite||'');
+}
+
+['rc-pepin','rc-inter','rc-disolac'].forEach(function(id){
+  if(Q(id))Q(id).addEventListener('change',rcFillFiltres);
+});
+if(Q('rc-produit'))Q('rc-produit').addEventListener('change',rcMajCompteur);
+if(Q('rc-base'))Q('rc-base').addEventListener('change',rcMajCompteur);
+if(Q('rc-reset'))Q('rc-reset').addEventListener('click',rcResetPortee);
+
+// ---- Apercu : aucune ecriture ----
+if(Q('rc-previewbtn'))Q('rc-previewbtn').addEventListener('click',async function(){
+  var btn=this,box=Q('rc-res');
+  if(!rcMarquesSelec().length){toast('Selectionnez au moins une marque!');return;}
+  var list=rcRecettesVisees();
+  if(!list.length){toast('Aucune recette pour cette portee.');return;}
+  btn.textContent='Calcul...';btn.disabled=true;
+  await loadCatalogues();
+  var rows=[],nChg=0,nInch=0,nErr=0,nProt=0;
+  for(var i=0;i<list.length;i++){
+    var res=await recalcUneRecette(list[i],{dryRun:true});
+    if(res.statut==='erreur'){nErr++;rows.push({r:list[i],err:res.msg});continue;}
+    if(res.verrou.source!=='standard')nProt++;
+    if(res.statut==='inchange'){nInch++;continue;}
+    nChg++;rows.push(res);
+  }
+  var html='<div style="font-size:12px;color:var(--tx3);margin-bottom:6px">Apercu - <b>rien n\'a ete enregistre</b>. Portee : '+rcPorteeTxt()+'</div>';
+  html+='<div style="font-size:12px;margin-bottom:8px">'+list.length+' recettes - <b>'+nChg+'</b> prix changeraient, '+nInch+' inchanges, '+nProt+' a marge protegee'+(nErr?', <span style="color:var(--red)">'+nErr+' en erreur</span>':'')+'</div>';
+  if(rows.length){
+    html+='<div style="max-height:320px;overflow:auto;border:0.5px solid var(--bd);border-radius:8px">';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:11px">';
+    html+='<tr style="background:var(--bg2)"><th style="text-align:left;padding:6px">Recette</th><th style="text-align:right;padding:6px">Avant</th><th style="text-align:right;padding:6px">Apres</th><th style="text-align:right;padding:6px">Ecart</th><th style="text-align:left;padding:6px">Marge appliquee</th></tr>';
+    rows.slice(0,300).forEach(function(x){
+      if(x.err){
+        html+='<tr><td style="padding:6px;border-top:0.5px solid var(--bd)">'+esc(rcLigneRecette(x.r))+'</td><td colspan="4" style="padding:6px;border-top:0.5px solid var(--bd);color:var(--red)">'+esc(x.err)+'</td></tr>';
+        return;
+      }
+      var d=x.apres-x.avant,col=d>0?'var(--green)':'var(--red)';
+      html+='<tr><td style="padding:6px;border-top:0.5px solid var(--bd)">'+esc(rcLigneRecette(x.r))+'</td>'+
+        '<td style="padding:6px;text-align:right;border-top:0.5px solid var(--bd)">'+x.avant.toFixed(2)+' $</td>'+
+        '<td style="padding:6px;text-align:right;border-top:0.5px solid var(--bd);font-weight:600">'+x.apres.toFixed(2)+' $</td>'+
+        '<td style="padding:6px;text-align:right;border-top:0.5px solid var(--bd);color:'+col+'">'+(d>0?'+':'')+d.toFixed(2)+' $</td>'+
+        '<td style="padding:6px;border-top:0.5px solid var(--bd)">'+esc(margeVerrouTxt(x.verrou,x.r.marque))+(x.securisee?' <span style="color:var(--blue)">(sera enregistree)</span>':'')+'</td></tr>';
+    });
+    html+='</table></div>';
+    if(rows.length>300)html+='<div style="font-size:11px;color:var(--tx3);margin-top:6px">... '+(rows.length-300)+' autres non affichees</div>';
+  }else{
+    html+='<div style="font-size:12px;color:var(--tx3)">Aucun prix ne changerait.</div>';
+  }
+  box.innerHTML=html;
+  btn.textContent='Apercu (n\'ecrit rien)';btn.disabled=false;
+});
+
+// ---- Recalcul reel ----
+document.getElementById('recalcbtn').addEventListener('click',async function(){
+  var btn=document.getElementById('recalcbtn'),svd=document.getElementById('recalcsvd'),box=Q('rc-res');
+  if(!rcMarquesSelec().length){toast('Selectionnez au moins une marque!');return;}
+  var list=rcRecettesVisees();
+  if(!list.length){toast('Aucune recette pour cette portee.');return;}
+  if(!confirm('Recalculer '+list.length+' recette'+(list.length!==1?'s':'')+' ?\n\nPortee : '+rcPorteeTxt()+'\n\nLes marges speciales des clients sont conservees : seul le cout change.')){return;}
+  btn.disabled=true;svd.style.display='none';
+  await loadCatalogues();
+  var updated=0,inchange=0,errors=0,protegees=0,securisees=0,corrigees=0,errList=[];
+  for(var i=0;i<list.length;i++){
+    btn.textContent='Recalcul '+(i+1)+' / '+list.length+'...';
+    var res=await recalcUneRecette(list[i],{});
+    if(res.statut==='erreur'){errors++;if(errList.length<20)errList.push(rcLigneRecette(list[i])+' : '+res.msg);continue;}
+    if(res.verrou.source!=='standard')protegees++;
+    if(res.securisee)securisees++;
+    if(res.corrigee)corrigees++;
+    if(res.statut==='inchange')inchange++;else updated++;
   }
   await loadRecs();
-  btn.textContent='Recalculer tous les prix';btn.disabled=false;
-  svd.textContent=updated+' recettes mises a jour'+(errors?' ('+errors+' erreurs)':'')+'!';
-  svd.style.display='inline-block';setTimeout(function(){svd.style.display='none';},5000);
+  btn.textContent='Recalculer la selection';btn.disabled=false;
+  svd.textContent=updated+' prix mis a jour'+(inchange?', '+inchange+' inchanges':'')+(errors?' ('+errors+' erreurs)':'');
+  svd.style.display='inline-block';setTimeout(function(){svd.style.display='none';},6000);
+  var html='<div style="font-size:12px;margin-bottom:6px">Portee : '+esc(rcPorteeTxt())+'</div>';
+  html+='<ul style="font-size:12px;margin:0 0 0 16px;padding:0">';
+  html+='<li><b>'+updated+'</b> prix mis a jour</li>';
+  html+='<li>'+inchange+' prix inchanges</li>';
+  html+='<li><b>'+protegees+'</b> recettes a marge protegee - leur % n\'a pas bouge</li>';
+  if(securisees)html+='<li>'+securisees+' prix speciaux qui n\'avaient aucun % enregistre : le % est maintenant ecrit en base, il ne peut plus se perdre</li>';
+  if(corrigees)html+='<li>'+corrigees+' marges arrondies a l\'entier remplacees par la marge reelle (le prix ne derive plus)</li>';
+  if(errors)html+='<li style="color:var(--red)">'+errors+' erreurs</li>';
+  html+='</ul>';
+  if(errList.length)html+='<div style="font-size:11px;color:var(--red);margin-top:6px">'+errList.map(esc).join('<br>')+'</div>';
+  if(box)box.innerHTML=html;
   toast(updated+' prix recalcules!');
+  rcMajCompteur();
 });
 
 // CATALYSEURS — Inter/Devoe par produit, Pepin par base
