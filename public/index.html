@@ -556,6 +556,35 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="view" id="v-produits">
       <button class="bbtn" id="bprod">← Retour aux clients</button>
       <div class="bc" id="bcp"></div>
+      <div id="cli-head" style="background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:12px 14px;margin-bottom:10px;flex-direction:column;gap:0">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;width:100%">
+          <div style="min-width:0">
+            <div id="cli-nom" style="font-size:15px;font-weight:600"></div>
+            <div id="cli-sub" style="font-size:11px;color:var(--tx3);margin-top:2px"></div>
+            <div id="cli-coord" style="font-size:12px;color:var(--tx2);margin-top:4px"></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="addbtn" id="cli-fiche-tog" style="font-size:12px">Coordonnees</button>
+            <button class="addbtn" id="cli-ren" style="font-size:12px">Renommer ce client</button>
+          </div>
+        </div>
+        <div id="cli-fiche" style="display:none;width:100%;margin-top:12px;border-top:0.5px solid var(--bd);padding-top:12px">
+          <div class="fg2">
+            <div class="fg"><label>Contact</label><input type="text" id="cf-contact" placeholder="Personne-ressource"></div>
+            <div class="fg"><label>Telephone</label><input type="tel" id="cf-tel" placeholder="450 000-0000"></div>
+            <div class="fg"><label>Courriel</label><input type="email" id="cf-mail" placeholder="nom@entreprise.ca"></div>
+            <div class="fg"><label>Adresse</label><input type="text" id="cf-adr" placeholder="123 rue Principale"></div>
+            <div class="fg"><label>Ville</label><input type="text" id="cf-ville"></div>
+            <div class="fg"><label>Code postal</label><input type="text" id="cf-cp" placeholder="J0J 0J0"></div>
+          </div>
+          <div class="fg" style="margin-top:12px"><label>Notes</label><textarea id="cf-notes" rows="3" placeholder="Ententes, particularites, historique..."></textarea></div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+            <button class="btn btnp" id="cf-save">Enregistrer</button>
+            <span class="svd" id="cf-svd">Enregistre!</span>
+            <span id="cf-ro" style="font-size:11px;color:var(--tx3);display:none">Lecture seule</span>
+          </div>
+        </div>
+      </div>
       <div class="tb">
         <div class="sw">
           <input type="text" id="sp" placeholder="Couleur ou TC-...">
@@ -1050,7 +1079,7 @@ table.ct tr:last-child td{border-bottom:none}
                 </select>
               </div>
               <div style="min-width:200px;flex:1">
-                <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Code de base</div>
+                <div style="font-size:11px;color:var(--tx3);margin-bottom:4px" id="rc-base-lbl">Code de base</div>
                 <select id="rc-base" style="width:100%;padding:8px;border:0.5px solid var(--bd);border-radius:8px;font-size:13px;background:#fff">
                   <option value="">Toutes les bases</option>
                 </select>
@@ -1303,6 +1332,30 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="ma">
       <button class="btn" id="sauv-cancel">Fermer</button>
       <button class="btn btnp" id="sauv-search">Chercher</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="mrenclient">
+  <div class="mb">
+    <div class="mt">Renommer le client</div>
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:14px;line-height:1.55">
+      Le nouveau nom s'applique d'un coup a <b>toutes</b> les recettes du client, plus ses
+      mistints et ses marges negociees. Aucun prix, aucune marge et aucun colorant n'est touche.
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Nom actuel</label>
+      <input type="text" id="ren-old" disabled style="opacity:.7">
+    </div>
+    <div class="fg">
+      <label>Nouveau nom</label>
+      <input type="text" id="ren-new" list="ren-clients" placeholder="Nom du client" autocomplete="off" autocapitalize="characters">
+      <datalist id="ren-clients"></datalist>
+    </div>
+    <div id="ren-info" style="font-size:12px;margin-top:12px;line-height:1.55"></div>
+    <div class="ma">
+      <button class="btn" id="ren-cancel">Annuler</button>
+      <button class="btn btnp" id="ren-ok">Renommer</button>
     </div>
   </div>
 </div>
@@ -1869,6 +1922,7 @@ var SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
 var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,role=null,recs=[],selClient=null,selId=null;
+
 var clientsScrollY=0,prodsScrollY=0,searchScrollY=0;
 var _navList=[],_navIdx=-1;
 var curHex='#cccccc',camStream=null;
@@ -2017,6 +2071,7 @@ function initApp(u){
     Q('app').style.display='block';
     loadMarges();
     loadCatalogues().then(function(){loadRecs();});
+    loadClients();
     etqFetchFromDb();
     showView('clients');
   });
@@ -3125,7 +3180,147 @@ Q('bprod').addEventListener('click',backToClientsKeepScroll);
 
 // PRODUITS
 function openClient(name){saveClientsScroll();selClient=name;Q('sp').value='';Q('sfm').value='';prodsScrollY=0;renderProduits();showView('produits');window.scrollTo(0,0);}
+/* ---- Entete client + renommage global -----------------------------------
+   Le nom du client est ecrit en toutes lettres sur chaque recette : il n'y a
+   pas de table clients. Renommer = une seule mise a jour par table, jamais
+   recette par recette. */
+function clientsDistincts(){
+  var m={};recs.forEach(function(r){if(r.client)m[r.client]=1;});
+  return Object.keys(m).sort(function(a,b){return a.localeCompare(b,'fr',{sensitivity:'base'});});
+}
+function nbRecettesClient(nom){
+  return recs.filter(function(r){return r.client===nom;}).length;
+}
+/* ---- Fiche client (coordonnees) ---- */
+var allClients=[];
+function loadClients(){
+  return sb.from('clients').select('*').then(function(r){allClients=r.data||[];return allClients;});
+}
+function ficheClient(nom){
+  var k=(nom||'').trim().toLowerCase();
+  return allClients.filter(function(c){return (c.nom||'').trim().toLowerCase()===k;})[0]||null;
+}
+function cliResumeFiche(nom){
+  var f=ficheClient(nom);if(!f)return '';
+  var b=[];
+  if(f.contact)b.push(f.contact);
+  if(f.telephone)b.push(f.telephone);
+  if(f.courriel)b.push(f.courriel);
+  if(f.ville)b.push(f.ville);
+  return b.join(' · ');
+}
+function cliRemplirFiche(){
+  var f=ficheClient(selClient)||{},ro=!canP();
+  var map={'cf-contact':'contact','cf-tel':'telephone','cf-mail':'courriel','cf-adr':'adresse',
+           'cf-ville':'ville','cf-cp':'code_postal','cf-notes':'notes'};
+  Object.keys(map).forEach(function(id){
+    var el=Q(id);if(!el)return;
+    el.value=f[map[id]]||'';
+    el.disabled=ro;
+  });
+  if(Q('cf-save'))Q('cf-save').style.display=ro?'none':'';
+  if(Q('cf-ro'))Q('cf-ro').style.display=ro?'':'none';
+}
+function cliToggleFiche(){
+  var box=Q('cli-fiche');if(!box)return;
+  var ouvert=box.style.display!=='none';
+  if(ouvert){box.style.display='none';Q('cli-fiche-tog').textContent='Coordonnees';}
+  else{cliRemplirFiche();box.style.display='';Q('cli-fiche-tog').textContent='Masquer';}
+}
+async function cliSaveFiche(){
+  if(!canP()||!selClient)return;
+  function v(id){var el=Q(id);var s=el?(el.value||'').trim():'';return s||null;}
+  var btn=Q('cf-save');btn.disabled=true;btn.textContent='Enregistrement...';
+  var data={contact:v('cf-contact'),telephone:v('cf-tel'),courriel:v('cf-mail'),
+            adresse:v('cf-adr'),ville:v('cf-ville'),code_postal:v('cf-cp'),notes:v('cf-notes')};
+  var f=ficheClient(selClient),r;
+  if(f)r=await sb.from('clients').update(data).eq('id',f.id);
+  else r=await sb.from('clients').insert(Object.assign({nom:selClient},data));
+  btn.disabled=false;btn.textContent='Enregistrer';
+  if(r&&r.error){toast('Erreur : '+r.error.message,4500);return;}
+  await loadClients();
+  cliMajHead();
+  var s=Q('cf-svd');if(s){s.style.display='inline-block';setTimeout(function(){s.style.display='none';},2500);}
+}
+function cliMajHead(){
+  var box=Q('cli-head');if(!box)return;
+  if(!selClient){box.style.display='none';return;}
+  box.style.display='flex';
+  Q('cli-nom').textContent=selClient;
+  var n=nbRecettesClient(selClient);
+  Q('cli-sub').textContent=n+' recette'+(n!==1?'s':'')+' a ce nom';
+  var coord=cliResumeFiche(selClient);
+  Q('cli-coord').textContent=coord;
+  Q('cli-coord').style.display=coord?'':'none';
+  if(Q('cli-ren'))Q('cli-ren').style.display=canP()?'':'none';
+  var tog=Q('cli-fiche-tog');
+  if(tog)tog.textContent=(Q('cli-fiche')&&Q('cli-fiche').style.display!=='none')?'Masquer':(coord?'Coordonnees':(canP()?'+ Coordonnees':'Coordonnees'));
+  if(Q('cli-fiche')&&Q('cli-fiche').style.display!=='none')cliRemplirFiche();
+}
+function majRenInfo(){
+  var el=Q('ren-info');if(!el)return;
+  var nouveau=(Q('ren-new').value||'').trim(),n=nbRecettesClient(selClient);
+  if(!nouveau){el.innerHTML='<span style="color:var(--red)">Entre un nom.</span>';return;}
+  if(nouveau===selClient){el.innerHTML='<span style="color:var(--tx3)">C\'est deja le nom actuel.</span>';return;}
+  var existe=clientsDistincts().filter(function(c){return c.toLowerCase()===nouveau.toLowerCase();})[0];
+  if(existe){
+    var ne=nbRecettesClient(existe);
+    el.innerHTML='<b style="color:var(--amber)">Fusion de deux clients.</b><br>'+
+      (n>1?'Les <b>'+n+'</b> recettes':'La <b>1</b> recette')+' de « '+esc(selClient)+' » '+
+      (n>1?'rejoindront':'rejoindra')+' '+(ne>1?'les <b>'+ne+'</b>':'la <b>1</b>')+' de « '+esc(existe)+
+      ' » — total '+(n+ne)+'. Les deux noms n\'en feront plus qu\'un, les coordonnees de « '+esc(existe)+
+      ' » sont conservees et celles de « '+esc(selClient)+' » sont perdues. On ne pourra pas les reseparer automatiquement.';
+  }else{
+    el.innerHTML='<b>'+n+' recette'+(n!==1?'s':'')+'</b> '+(n>1?'passeront':'passera')+' de « '+esc(selClient)+' » a « '+esc(nouveau)+' ».';
+  }
+}
+function ouvrirRenClient(){
+  if(!selClient||!canP())return;
+  Q('ren-old').value=selClient;
+  Q('ren-new').value=selClient;
+  var dl=Q('ren-clients');dl.innerHTML='';
+  clientsDistincts().forEach(function(c){var o=document.createElement('option');o.value=c;dl.appendChild(o);});
+  majRenInfo();
+  Q('mrenclient').classList.add('on');
+  setTimeout(function(){var i=Q('ren-new');if(i){i.focus();i.select();}},80);
+}
+async function executerRenClient(){
+  var ancien=selClient,nouveau=(Q('ren-new').value||'').trim();
+  if(!ancien||!nouveau){toast('Entre un nom.');return;}
+  if(nouveau===ancien){toast('Aucun changement.');return;}
+  // Si le nom vise existe deja avec une autre casse, on adopte l'orthographe existante
+  var existe=clientsDistincts().filter(function(c){return c.toLowerCase()===nouveau.toLowerCase()&&c!==ancien;})[0];
+  if(existe)nouveau=existe;
+  var btn=Q('ren-ok');btn.disabled=true;btn.textContent='Renommage...';
+  // Une seule fonction Postgres : recettes + mistints + marges + fiche, tout ou rien.
+  var rp=await sb.rpc('renommer_client',{ancien:ancien,nouveau:nouveau});
+  btn.disabled=false;btn.textContent='Renommer';
+  if(rp.error){toast('Erreur : '+rp.error.message,5000);return;}
+  var info=rp.data||{};
+  if(info.nom)nouveau=info.nom;
+  Q('mrenclient').classList.remove('on');
+  await Promise.all([loadRecs(),loadClients()]);
+  selClient=nouveau;
+  renderProduits();
+  window.scrollTo(0,0);
+  var nr=info.recettes||0,mot=nr+' recette'+(nr>1?'s':'');
+  var msg='Client renomme : '+nouveau+' ('+mot+')';
+  if(info.fusion)msg='Clients fusionnes sous « '+nouveau+' » — '+mot+' deplacee'+(nr>1?'s':'');
+  toast(msg,3600);
+}
+if(Q('cli-ren'))Q('cli-ren').addEventListener('click',ouvrirRenClient);
+if(Q('cli-fiche-tog'))Q('cli-fiche-tog').addEventListener('click',cliToggleFiche);
+if(Q('cf-save'))Q('cf-save').addEventListener('click',cliSaveFiche);
+if(Q('ren-cancel'))Q('ren-cancel').addEventListener('click',function(){Q('mrenclient').classList.remove('on');});
+if(Q('ren-ok'))Q('ren-ok').addEventListener('click',executerRenClient);
+if(Q('ren-new')){
+  Q('ren-new').addEventListener('input',majRenInfo);
+  Q('ren-new').addEventListener('keydown',function(e){if(e.key==='Enter')executerRenClient();});
+}
+if(Q('mrenclient'))Q('mrenclient').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');});
+
 function renderProduits(){
+  cliMajHead();
   var q=(Q('sp').value||'').toLowerCase(),marque=Q('sfm').value;
   var bc=Q('bcp');bc.innerHTML='';
   var a1=document.createElement('a');a1.textContent='Recettes';a1.addEventListener('click',backToClientsKeepScroll);bc.appendChild(a1);
@@ -4976,20 +5171,18 @@ function rcRecettesVisees(){
     return true;
   });
 }
-// Remplit les listes Produit / Code de base selon les marques cochees
+// Remplit les listes Produit / Code de base.
+// Produit : selon les marques cochees.
+// Code de base : UNIQUEMENT les bases du produit choisi, pour eviter de melanger
+// des codes qui n'ont rien a voir avec le produit qu'on recalcule.
 function rcFillFiltres(){
   var mq=rcMarquesSelec(),selP=Q('rc-produit'),selB=Q('rc-base');
   if(!selP||!selB)return;
   var oldP=selP.value,oldB=selB.value;
   var pool=recs.filter(function(r){return mq.indexOf(r.marque)>=0;});
-  var prods={},bases={};
+  var prods={};
   pool.forEach(function(r){
     if(r.produit&&r.produit.trim()){var k=normProd(r.produit);if(!prods[k])prods[k]={lbl:r.produit.trim(),n:0};prods[k].n++;}
-    (r.numero_base||'').split(/[+\/,;&]| et /i).forEach(function(part){
-      var b=part.replace(/[0-9]+\s*%/g,'').trim();
-      if(!b)return;var kb=normProd(b);if(!kb)return;
-      if(!bases[kb])bases[kb]={lbl:b.toUpperCase(),n:0};bases[kb].n++;
-    });
   });
   function fill(sel,map,vide,old){
     var keys=Object.keys(map).sort(function(a,b){return map[a].lbl.localeCompare(map[b].lbl,'fr',{numeric:true,sensitivity:'base'});});
@@ -5001,7 +5194,40 @@ function rcFillFiltres(){
     if(old&&map[old])sel.value=old;else sel.value='';
   }
   fill(selP,prods,'Tous les produits',oldP);
-  fill(selB,bases,'Toutes les bases',oldB);
+  rcFillBases(oldB);
+}
+// Les bases proposees suivent le produit selectionne.
+function rcFillBases(garder){
+  var mq=rcMarquesSelec(),selP=Q('rc-produit'),selB=Q('rc-base');
+  if(!selB)return;
+  var prod=selP?selP.value:'';
+  var old=(garder!==undefined)?garder:selB.value;
+  var pool=recs.filter(function(r){
+    if(mq.indexOf(r.marque)<0)return false;
+    if(prod&&normProd(r.produit)!==prod)return false;
+    return true;
+  });
+  var bases={};
+  pool.forEach(function(r){
+    (r.numero_base||'').split(/[+\/,;&]| et /i).forEach(function(part){
+      var b=part.replace(/[0-9]+\s*%/g,'').trim();
+      if(!b)return;var kb=normProd(b);if(!kb)return;
+      if(!bases[kb])bases[kb]={lbl:b.toUpperCase(),n:0};bases[kb].n++;
+    });
+  });
+  var keys=Object.keys(bases).sort(function(a,b){return bases[a].lbl.localeCompare(bases[b].lbl,'fr',{numeric:true,sensitivity:'base'});});
+  selB.innerHTML='';
+  var o0=document.createElement('option');o0.value='';
+  o0.textContent=prod?'Toutes les bases de ce produit':'Toutes les bases';
+  selB.appendChild(o0);
+  keys.forEach(function(k){
+    var o=document.createElement('option');o.value=k;o.textContent=bases[k].lbl+' ('+bases[k].n+')';selB.appendChild(o);
+  });
+  // Si la base retenue n'appartient pas au produit choisi, on la laisse tomber
+  // plutot que de recalculer une portee que l'utilisateur ne voit plus a l'ecran.
+  selB.value=(old&&bases[old])?old:'';
+  var lbl=Q('rc-base-lbl');
+  if(lbl)lbl.textContent=prod?'Code de base (de ce produit)':'Code de base';
   rcMajCompteur();
 }
 function rcMajCompteur(){
@@ -5017,7 +5243,7 @@ function rcMajCompteur(){
 function rcResetPortee(){
   if(Q('rc-produit'))Q('rc-produit').value='';
   if(Q('rc-base'))Q('rc-base').value='';
-  rcMajCompteur();
+  rcFillBases('');
 }
 function rcPorteeTxt(){
   var selP=Q('rc-produit'),selB=Q('rc-base');
@@ -5033,7 +5259,7 @@ function rcLigneRecette(r){
 ['rc-pepin','rc-inter','rc-disolac'].forEach(function(id){
   if(Q(id))Q(id).addEventListener('change',rcFillFiltres);
 });
-if(Q('rc-produit'))Q('rc-produit').addEventListener('change',rcMajCompteur);
+if(Q('rc-produit'))Q('rc-produit').addEventListener('change',function(){rcFillBases();});
 if(Q('rc-base'))Q('rc-base').addEventListener('change',rcMajCompteur);
 if(Q('rc-reset'))Q('rc-reset').addEventListener('click',rcResetPortee);
 
