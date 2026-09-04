@@ -65,6 +65,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .tab:hover:not(.on){background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85)}
 .tab-right-first{margin-left:auto}
 .pg{max-width:960px;margin:0 auto;padding:20px}
+.pg.pg-large{max-width:1280px}
 .view{display:none}.view.on{display:block}
 .bbtn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--tx);background:var(--sur);border:0.5px solid var(--bd2);border-radius:20px;padding:6px 14px;cursor:pointer;margin-bottom:14px}
 .bbtn:hover{background:var(--bg);border-color:var(--blue)}
@@ -327,17 +328,40 @@ table.ct tr:last-child td{border-bottom:none}
 .settings-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;align-items:start}
 .settings-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px}
 .settings-note{font-size:12px;color:var(--tx2);line-height:1.5;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 12px;margin-top:10px}
-.user-row{display:grid;grid-template-columns:1.1fr 1.4fr 130px auto;gap:6px;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--bd)}
-.user-meta{grid-column:1/-1;font-size:11px;color:var(--tx3);margin-top:-2px}
-.user-acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.user-acts button{padding:6px 10px;font-size:11px;border-radius:var(--r);border:0.5px solid var(--bd2);background:var(--sur);color:var(--tx);cursor:pointer;white-space:nowrap}
-.user-acts button.uprim{background:#1A8FD1;color:#fff;border-color:#1A8FD1;font-weight:500}
-.user-acts button.udel{color:var(--red);border-color:var(--red)}
-.umoi{font-size:10px;background:var(--blue-l);color:var(--blue);padding:1px 6px;border-radius:20px;margin-left:6px}
+/* --- Gestion des utilisateurs (Reglages) --- */
+.uhdr{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.unew{background:var(--bg2,#f6f7f9);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;margin-bottom:16px}
+.uhead{display:grid;grid-template-columns:1.3fr 1.9fr 150px 310px;gap:12px;padding:0 12px 8px;
+  font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3);
+  border-bottom:0.5px solid var(--bd)}
+.user-row{display:grid;grid-template-columns:1.3fr 1.9fr 150px 310px;gap:12px;align-items:center;
+  padding:11px 12px;border-radius:var(--r);border-bottom:0.5px solid var(--bd)}
+.user-row:hover{background:var(--bg2,#f6f7f9)}
 .user-row:last-child{border-bottom:none}
-.user-row input,.user-row select{padding:7px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
-.user-row .uemail{font-size:12px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:760px){.settings-grid{grid-template-columns:1fr}.user-row{grid-template-columns:1fr}.user-acts{justify-content:flex-start}}
+.user-row input,.user-row select{padding:8px 10px;font-size:13px;border:0.5px solid var(--bd2);
+  border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
+.user-row input:focus,.user-row select:focus{outline:none;border-color:#1A8FD1;box-shadow:0 0 0 2px rgba(26,143,209,.15)}
+.user-meta{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:11px;color:var(--tx3);padding-left:2px;margin-top:-3px}
+.user-acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.user-acts button{padding:7px 11px;font-size:12px;border-radius:var(--r);border:0.5px solid var(--bd2);
+  background:var(--sur);color:var(--tx);cursor:pointer;white-space:nowrap;transition:all .12s}
+.user-acts button:hover{background:var(--bg2,#f0f2f5)}
+.user-acts button.uprim{background:#1A8FD1;color:#fff;border-color:#1A8FD1;font-weight:500}
+.user-acts button.uprim:hover{opacity:.88}
+.user-acts button.uprim:disabled{background:var(--sur);color:var(--tx3);border-color:var(--bd2);
+  font-weight:400;cursor:default;opacity:1}
+.user-acts button.udel{color:var(--red);border-color:rgba(200,60,60,.35)}
+.user-acts button.udel:hover{background:rgba(200,60,60,.08)}
+.upast{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.upast.moi{background:var(--blue-l);color:var(--blue)}
+.upast.warn{background:#fdf1dc;color:#a06a12}
+.upast.mod{background:#fdf1dc;color:#a06a12}
+@media(max-width:900px){
+  .uhead{display:none}
+  .user-row{grid-template-columns:1fr;gap:8px;padding:14px 12px;border:0.5px solid var(--bd);margin-bottom:10px}
+  .user-acts{justify-content:flex-start}
+}
 
 @media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
 
@@ -966,33 +990,32 @@ table.ct tr:last-child td{border-bottom:none}
         <div class="portal-sub">Modifier l’affichage utilisateur et gérer les accès.</div>
       </div>
 
-      <div class="settings-grid">
-        <div class="settings-card">
-          <div class="ftit">Mon profil</div>
-          <div class="portal-form">
-            <div class="fg"><label>Prénom / nom affiché</label><input id="set_nom" placeholder="Ex: Nathan"></div>
-            <button class="btn btnp" id="set_save_profile">Sauvegarder mon nom</button>
+      <div class="settings-card" id="admin_settings_box" style="display:none">
+        <div class="uhdr">
+          <div>
+            <div class="ftit" style="margin-bottom:2px">Utilisateurs</div>
+            <div style="font-size:12px;color:var(--tx3)" id="users_count"></div>
+          </div>
+          <button class="btn btnp" id="toggle_new_user" style="font-size:12px;padding:7px 14px">+ Ajouter un utilisateur</button>
+        </div>
+
+        <div id="new_user_box" class="unew" style="display:none">
+          <div class="fg2">
+            <div class="fg"><label>Nom affiché *</label><input id="new_user_nom" placeholder="Prénom"></div>
+            <div class="fg"><label>Courriel *</label><input id="new_user_email" type="email" placeholder="employe@courriel.com"></div>
+            <div class="fg"><label>Rôle</label><select id="new_user_role"><option value="production">Production</option><option value="comptoir">Comptoir</option><option value="comptabilite">Comptabilité</option><option value="admin">Admin</option></select></div>
+            <div class="fg"><label>Mot de passe temporaire *</label><input id="new_user_password" type="password" placeholder="8 caractères minimum"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btnp" id="create_user_btn">Créer l’utilisateur</button>
+            <button class="btn" id="cancel_new_user">Annuler</button>
           </div>
         </div>
 
-        <div class="settings-card" id="admin_settings_box" style="display:none">
-          <div class="ftit">Utilisateurs</div>
-          <div class="settings-note">Admin : modifie le nom, le courriel de connexion et le rôle de chaque utilisateur, change son mot de passe ou supprime son compte. Les changements prennent effet à sa prochaine connexion.</div>
-          <div id="users_list" style="margin-top:12px"></div>
-
-          <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
-            <div class="ftit">Ajouter un utilisateur</div>
-            <div class="portal-form">
-              <div class="fg2">
-                <div class="fg"><label>Courriel *</label><input id="new_user_email" type="email" placeholder="employe@courriel.com"></div>
-                <div class="fg"><label>Nom affiché *</label><input id="new_user_nom" placeholder="Prénom"></div>
-                <div class="fg"><label>Rôle</label><select id="new_user_role"><option value="production">Production</option><option value="comptoir">Comptoir</option><option value="comptabilite">Comptabilité</option><option value="admin">Admin</option></select></div>
-                <div class="fg"><label>Mot de passe temporaire *</label><input id="new_user_password" type="password" placeholder="Mot de passe temporaire"></div>
-              </div>
-              <button class="btn btnp" id="create_user_btn">Créer l’utilisateur</button>
-            </div>
-          </div>
+        <div class="uhead">
+          <span>Nom affiché</span><span>Courriel de connexion</span><span>Rôle</span><span></span>
         </div>
+        <div id="users_list"></div>
       </div>
 
       <!-- CONFIG ÉTIQUETTES -->
@@ -2061,7 +2084,6 @@ function initApp(u){
     var pill=Q('rpill');
     pill.textContent=roleLabel(role);
     pill.className='rpill r-'+role;
-    if(Q('set_nom'))Q('set_nom').value=nom||'';
     Q('psec').style.display=canP()?'':'none';
     Q('tcouts').style.display=canP()?'':'none';
     if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
@@ -2145,6 +2167,9 @@ function showView(name){
   if(!Q('v-'+name))name='clients';
   if(name==='crm')loadCRM();
   Q('v-'+name).classList.add('on');
+  // La gestion des utilisateurs a besoin de largeur : on elargit la page sur cet onglet.
+  var pg=document.querySelector('.pg');
+  if(pg)pg.classList.toggle('pg-large',name==='reglages');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
   var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',crm:'crm',mistints:'mistints',aerosol:'aerosol'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
@@ -2193,30 +2218,14 @@ Q('logoHomeBtn').addEventListener('click',function(){
 // RÉGLAGES
 var settingsUsers=[];
 function loadReglages(){
-  if(Q('set_nom')&&user){
-    sb.from('profiles').select('nom').eq('id',user.id).single().then(function(r){
-      if(r.data&&typeof r.data.nom==='string')Q('set_nom').value=r.data.nom;
-    });
-  }
   if(Q('admin_settings_box'))Q('admin_settings_box').style.display=isAdmin()?'':'none';
   if(isAdmin())loadUsersList();
   renderEtqConfig();
 }
-function saveMyProfile(){
-  if(!user)return;
-  var nom=(Q('set_nom')&&Q('set_nom').value.trim())||'';
-  if(!nom){toast('Nom requis.');return;}
-  sb.from('profiles').update({nom:nom}).eq('id',user.id).then(function(r){
-    if(r.error){console.error(r.error);toast('Erreur lors de la sauvegarde.');return;}
-    Q('uname').textContent=firstNameFromProfile(nom,user.email);
-    toast('Nom mis à jour.');
-    loadUsersList();
-  });
-}
 function loadUsersList(){
   var box=Q('users_list');
   if(!box||!isAdmin())return;
-  box.innerHTML='<div class="empty" style="padding:18px">Chargement des utilisateurs...</div>';
+  box.innerHTML='<div class="empty" style="padding:18px">Chargement des utilisateurs…</div>';
   sb.functions.invoke('admin-utilisateurs',{body:{action:'list'}}).then(function(res){
     var d=res&&res.data;
     if((res&&res.error)||!d||d.error){
@@ -2229,38 +2238,58 @@ function loadUsersList(){
   });
 }
 function fmtConnexion(iso){
-  if(!iso)return 'jamais connecte';
+  if(!iso)return 'jamais connecté';
   var d=new Date(iso);if(isNaN(d))return '';
   var j=Math.floor((Date.now()-d.getTime())/86400000);
   var txt=d.toLocaleDateString('fr-CA',{day:'numeric',month:'short',year:'numeric'});
-  if(j<=0)return 'connecte aujourd\'hui';
-  if(j===1)return 'connecte hier';
-  if(j<30)return 'connecte il y a '+j+' jours';
-  return 'derniere connexion : '+txt;
+  if(j<=0)return 'connecté aujourd\'hui';
+  if(j===1)return 'connecté hier';
+  if(j<30)return 'connecté il y a '+j+' jours';
+  return 'dernière connexion : '+txt;
 }
 function renderUsersList(){
-  var box=Q('users_list');
+  var box=Q('users_list'),cnt=Q('users_count');
   if(!box)return;
-  if(!settingsUsers.length){box.innerHTML='<div class="empty" style="padding:18px">Aucun utilisateur trouve.</div>';return;}
+  if(cnt)cnt.textContent=settingsUsers.length+' compte'+(settingsUsers.length!==1?'s':'')+' actif'+(settingsUsers.length!==1?'s':'');
+  if(!settingsUsers.length){box.innerHTML='<div class="empty" style="padding:18px">Aucun utilisateur trouvé.</div>';return;}
   box.innerHTML=settingsUsers.map(function(u){
     var id=esc(u.id),rl=u.role||'production';
     function opt(v,lbl){return '<option value="'+v+'"'+(rl===v?' selected':'')+'>'+lbl+'</option>';}
-    return '<div class="user-row">'+
-      '<input id="u_nom_'+id+'" value="'+esc(u.nom||'')+'" placeholder="Nom affiche">'+
+    return '<div class="user-row" id="u_row_'+id+'">'+
+      '<input id="u_nom_'+id+'" value="'+esc(u.nom||'')+'" placeholder="Nom affiché">'+
       '<input id="u_mail_'+id+'" value="'+esc(u.courriel||'')+'" placeholder="courriel" type="email" autocomplete="off">'+
       '<select id="u_role_'+id+'">'+opt('production','Production')+opt('comptoir','Comptoir')+
-        opt('comptabilite','Comptabilite')+opt('admin','Admin')+'</select>'+
+        opt('comptabilite','Comptabilité')+opt('admin','Admin')+'</select>'+
       '<div class="user-acts">'+
-        '<button class="uprim" onclick="saveUserProfile(\''+id+'\')">Enregistrer</button>'+
+        '<button class="uprim" id="u_save_'+id+'" disabled onclick="saveUserProfile(\''+id+'\')">Enregistré</button>'+
         '<button onclick="changerMotDePasse(\''+id+'\')">Mot de passe</button>'+
         (u.moi?'':'<button class="udel" onclick="supprimerUtilisateur(\''+id+'\')">Supprimer</button>')+
       '</div>'+
       '<div class="user-meta">'+esc(fmtConnexion(u.derniere_connexion))+
-        (u.moi?'<span class="umoi">c\'est toi</span>':'')+
-        (u.sans_profil?'<span class="umoi" style="background:var(--amber-l,#fdf1dc);color:var(--amber)">compte sans profil</span>':'')+
+        (u.moi?'<span class="upast moi">c\'est toi</span>':'')+
+        (u.sans_profil?'<span class="upast warn">compte sans profil</span>':'')+
+        '<span class="upast mod" id="u_mod_'+id+'" style="display:none">modifié, non enregistré</span>'+
       '</div>'+
       '</div>';
   }).join('');
+  settingsUsers.forEach(function(u){
+    ['u_nom_','u_mail_','u_role_'].forEach(function(p){
+      var el=Q(p+u.id);if(!el)return;
+      el.addEventListener('input',function(){majEtatLigne(u.id);});
+      el.addEventListener('change',function(){majEtatLigne(u.id);});
+    });
+  });
+}
+// Le bouton Enregistrer ne s'allume que si la ligne a vraiment change.
+function majEtatLigne(id){
+  var u=usagerPar(id),btn=Q('u_save_'+id),mod=Q('u_mod_'+id);
+  if(!btn)return;
+  var chg=((Q('u_nom_'+id)||{}).value||'').trim()!==(u.nom||'')
+        ||((Q('u_mail_'+id)||{}).value||'').trim().toLowerCase()!==(u.courriel||'').toLowerCase()
+        ||((Q('u_role_'+id)||{}).value||'')!==(u.role||'production');
+  btn.disabled=!chg;
+  btn.textContent=chg?'Enregistrer':'Enregistré';
+  if(mod)mod.style.display=chg?'':'none';
 }
 function usagerPar(id){return settingsUsers.filter(function(u){return u.id===id;})[0]||{};}
 window.saveUserProfile=function(id){
@@ -2271,12 +2300,12 @@ window.saveUserProfile=function(id){
   if(!nom){toast('Nom requis.');return;}
   var u=usagerPar(id);
   if(mail&&mail.toLowerCase()!==(u.courriel||'').toLowerCase()){
-    if(!confirm('Changer le courriel de connexion de « '+(u.courriel||'?')+' » a « '+mail+' » ?\n\nIl devra utiliser ce nouveau courriel pour se connecter.'))return;
+    if(!confirm('Changer le courriel de connexion de « '+(u.courriel||'?')+' » à « '+mail+' » ?\n\nIl devra utiliser ce nouveau courriel pour se connecter.'))return;
   }
   sb.functions.invoke('admin-utilisateurs',{body:{action:'update',id:id,nom:nom,role:r,courriel:mail}}).then(function(res){
     var d=res&&res.data;
-    if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'non autorise'),4500);return;}
-    toast('Utilisateur mis a jour.');
+    if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'non autorisé'),4500);return;}
+    toast('Utilisateur mis à jour.');
     if(user&&id===user.id){
       role=r;Q('rpill').textContent=roleLabel(role);Q('rpill').className='rpill r-'+role;
       Q('uname').textContent=firstNameFromProfile(nom,user.email);
@@ -2287,24 +2316,24 @@ window.saveUserProfile=function(id){
 window.changerMotDePasse=function(id){
   if(!isAdmin()){toast('Admin seulement.');return;}
   var u=usagerPar(id);
-  var mp=prompt('Nouveau mot de passe pour '+(u.nom||u.courriel||'cet utilisateur')+' (8 caracteres minimum) :');
+  var mp=prompt('Nouveau mot de passe pour '+(u.nom||u.courriel||'cet utilisateur')+' (8 caractères minimum) :');
   if(mp===null)return;
   mp=mp.trim();
-  if(mp.length<8){toast('8 caracteres minimum.');return;}
+  if(mp.length<8){toast('8 caractères minimum.');return;}
   sb.functions.invoke('admin-utilisateurs',{body:{action:'password',id:id,password:mp}}).then(function(res){
     var d=res&&res.data;
-    if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'non autorise'),4500);return;}
-    toast('Mot de passe change. Transmets-le a la personne.',4000);
+    if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'non autorisé'),4500);return;}
+    toast('Mot de passe changé. Transmets-le à la personne.',4000);
   });
 };
 window.supprimerUtilisateur=function(id){
   if(!isAdmin()){toast('Admin seulement.');return;}
   var u=usagerPar(id),nom=u.nom||u.courriel||'cet utilisateur';
-  if(!confirm('Supprimer definitivement '+nom+' ('+(u.courriel||'')+') ?\n\nSon acces est retire immediatement et le compte ne peut pas etre recree automatiquement. Les recettes et le contenu qu\'il a saisis restent en place.'))return;
+  if(!confirm('Supprimer définitivement '+nom+' ('+(u.courriel||'')+') ?\n\nSon accès est retiré immédiatement et le compte ne peut pas être recréé automatiquement. Les recettes et le contenu qu\'il a saisis restent en place.'))return;
   sb.functions.invoke('admin-utilisateurs',{body:{action:'delete',id:id}}).then(function(res){
     var d=res&&res.data;
     if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'suppression impossible'),5000);return;}
-    toast(nom+' supprime.',3200);
+    toast(nom+' supprimé.',3200);
     loadUsersList();
   });
 };
@@ -2321,12 +2350,26 @@ function createUserFromSettings(){
     if(res.error){console.error(res.error);toast('Edge Function admin-create-user non configurée ou erreur.');return;}
     toast('Utilisateur créé.');
     Q('new_user_email').value='';Q('new_user_nom').value='';Q('new_user_password').value='';Q('new_user_role').value='production';
+    toggleNewUser(false);
     loadUsersList();
   });
 }
+function toggleNewUser(ouvrir){
+  var box=Q('new_user_box'),btn=Q('toggle_new_user');
+  if(!box)return;
+  var v=(ouvrir===undefined)?(box.style.display==='none'):ouvrir;
+  box.style.display=v?'':'none';
+  if(btn)btn.textContent=v?'Fermer':'+ Ajouter un utilisateur';
+  if(v&&Q('new_user_nom'))Q('new_user_nom').focus();
+}
 document.addEventListener('click',function(e){
-  if(e.target&&e.target.id==='set_save_profile')saveMyProfile();
-  if(e.target&&e.target.id==='create_user_btn')createUserFromSettings();
+  if(!e.target)return;
+  if(e.target.id==='create_user_btn')createUserFromSettings();
+  if(e.target.id==='toggle_new_user')toggleNewUser();
+  if(e.target.id==='cancel_new_user'){
+    ['new_user_email','new_user_nom','new_user_password'].forEach(function(id){if(Q(id))Q(id).value='';});
+    toggleNewUser(false);
+  }
 });
 
 
