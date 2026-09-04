@@ -365,13 +365,7 @@ table.ct tr:last-child td{border-bottom:none}
 
 @media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
 
-/* CRM intégré */
-.crm-wrap{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);overflow:hidden;min-height:760px}
-.crm-frame{width:100%;height:calc(100vh - 145px);min-height:760px;border:0;display:block;background:#f5f3ee}
-
-
-
-/* Ajustements mobile — centrage général et CRM */
+/* Ajustements mobile — centrage général */
 @media(max-width:760px){
   body{overflow-x:hidden}
   .topbar{padding:10px 12px;gap:8px}
@@ -382,13 +376,10 @@ table.ct tr:last-child td{border-bottom:none}
   .tab-right-first{margin-left:0}
   .pg{max-width:none;width:100%;padding:12px 10px;margin:0 auto}
   .portal-hero,.fw,.cs,.portal-card,.settings-card,.det{border-radius:10px}
-  .crm-wrap{border-radius:10px;margin:0 auto;width:100%;min-height:calc(100vh - 150px)}
-  .crm-frame{height:calc(100vh - 150px);min-height:680px;width:100%}
 }
 @media(max-width:420px){
   .pg{padding-left:8px;padding-right:8px}
   .tab{padding:7px 10px}
-  .crm-frame{min-height:720px}
 }
 
 
@@ -552,7 +543,6 @@ table.ct tr:last-child td{border-bottom:none}
     <button class="tab" id="tajouter" data-tab="ajouter">+ Ajouter</button>
     <button class="tab" id="tconversions" data-tab="conversions">Conversions</button>
     <button class="tab" data-tab="portail">Portail</button>
-    <button class="tab" data-tab="crm" id="tcrm" style="display:none">CRM</button>
     <button class="tab tab-right-first" data-tab="couts" id="tcouts">Couts et Prix</button>
     <button class="tab" data-tab="mistints" id="tmistints" style="display:none">Mistints</button>
     <button class="tab" data-tab="aerosol" id="taerosol">Aérosols</button>
@@ -1049,16 +1039,6 @@ table.ct tr:last-child td{border-bottom:none}
       </div>
     </div>
 
-    <div class="view" id="v-crm">
-      <div class="portal-hero">
-        <div class="portal-title">CRM</div>
-        <div class="portal-sub">Gestion clients, pipeline, clients potentiels et visites. Section réservée aux administrateurs.</div>
-      </div>
-      <div class="crm-wrap">
-        <iframe id="crmFrame" class="crm-frame" title="CRM Technocolor"></iframe>
-      </div>
-    </div>
-
     <div class="view" id="v-couts">
       <div class="cgr">
         <div class="cs">
@@ -1391,559 +1371,6 @@ table.ct tr:last-child td{border-bottom:none}
 
 <div class="toast" id="toast"></div>
 
-<template id="crmTemplate">
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRM — Gestion Clients</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#f5f3ee;--surface:#fff;--surface2:#efece5;--border:#dedad2;--border2:#c8c4bb;
-  --text:#1c1b17;--text2:#6b6860;--text3:#a8a59e;
-  --green:#2d6a4f;--green-bg:#d8f3dc;
-  --red:#7f1d1d;--red-bg:#fee2e2;
-  --amber:#92400e;--amber-bg:#fef3c7;
-  --blue:#1e3a5f;--blue-bg:#dbeafe;
-  --purple:#4c1d95;--purple-bg:#ede9fe;
-  --r:10px;--rl:14px;
-}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
-
-/* ── HEADER ── */
-.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.app-title{font-family:'DM Serif Display',serif;font-size:21px;color:var(--text)}
-.app-title em{font-style:normal;color:var(--text3);font-size:12px;font-family:'DM Sans',sans-serif;font-weight:300;margin-left:10px}
-.hstats{display:flex;gap:1.5rem}
-.hstat .n{font-size:17px;font-weight:500;color:var(--text);text-align:right}
-.hstat .l{font-size:11px;color:var(--text3);text-align:right}
-
-/* ── TABS ── */
-.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;overflow-x:auto}
-.tab{padding:11px 17px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;flex-shrink:0}
-.tab.active{color:var(--text);border-bottom-color:var(--text)}
-.tab:hover:not(.active){color:var(--text);background:var(--surface2)}
-
-/* ── TOOLBAR ── */
-.toolbar{padding:.85rem 1.5rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg);border-bottom:1px solid var(--border)}
-.toolbar input[type=text]{padding:7px 12px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;background:var(--surface);color:var(--text);outline:none;width:210px;font-family:'DM Sans',sans-serif}
-.toolbar input[type=text]:focus{border-color:var(--text2)}
-.toolbar select{padding:7px 11px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;background:var(--surface);color:var(--text);outline:none;cursor:pointer;font-family:'DM Sans',sans-serif}
-.btn{padding:7px 15px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text2)}
-.btn:hover{background:var(--surface2);color:var(--text)}
-.btn-dark{background:var(--text);color:#fff;border-color:var(--text);font-weight:500}
-.btn-dark:hover{opacity:.85;background:var(--text);color:#fff}
-.spacer{flex:1}
-
-/* ── CONTENT ── */
-.content{padding:1.25rem 1.5rem}
-.section-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.1rem}
-.section-bar h2{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text)}
-.count-pill{font-size:12px;background:var(--surface2);border-radius:20px;padding:2px 10px;color:var(--text2);font-weight:500}
-
-/* ── METRICS ROW ── */
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
-.metric{background:var(--surface2);border-radius:var(--r);padding:12px 14px}
-.metric .ml{font-size:11px;color:var(--text2);margin-bottom:5px}
-.metric .mv{font-size:22px;font-weight:500;color:var(--text)}
-.metric .ms{font-size:11px;color:var(--text3);margin-top:2px}
-
-/* ── PIPELINE ── */
-.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.col-header{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:var(--r);margin-bottom:8px}
-.col-title{font-size:12px;font-weight:500}
-.col-cnt{font-size:11px;border-radius:20px;padding:2px 8px;font-weight:500}
-.col-body{min-height:150px;display:flex;flex-direction:column;gap:8px}
-
-/* ── PIPELINE CARD ── */
-.pipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:12px;transition:border-color .15s}
-.pipe-card:hover{border-color:var(--border2)}
-.pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.pc-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
-.pc-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:1px}
-.pc-co{font-size:11px;color:var(--text2);margin-bottom:5px}
-.pc-val{font-size:12px;font-weight:500;color:var(--text)}
-.pc-meta{font-size:11px;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.pc-actions button{font-size:11px;padding:4px 9px;border:1px solid var(--border);border-radius:7px;background:transparent;color:var(--text2);cursor:pointer}
-.pc-actions button:hover{background:var(--surface2);color:var(--text)}
-.pc-actions button.danger{color:var(--red)}
-
-/* ── CLIENT CARDS GRID ── */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
-.client-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:border-color .15s}
-.client-card:hover{border-color:var(--border2)}
-.card-top{padding:13px 15px 9px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.card-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
-.card-info{flex:1;min-width:0}
-.card-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-company{font-size:12px;color:var(--text2);margin-top:1px}
-.card-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
-.badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
-.card-body{padding:0 15px 9px;font-size:12px;color:var(--text2)}
-.card-row{display:flex;align-items:center;gap:6px;padding:2px 0}
-.card-row svg{flex-shrink:0;opacity:.45}
-.card-notes{margin:6px 15px;background:var(--surface2);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--text2);line-height:1.5;border-left:3px solid var(--border2)}
-.card-blocked{border-left:4px solid #ef4444}
-.card-top-blocked{background:#fff5f5}
-.block-reason{margin:6px 15px 9px;background:var(--red-bg);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--red);line-height:1.5;border-left:3px solid #fca5a5}
-.block-reason strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;opacity:.7;margin-bottom:2px}
-.visit-log{border-top:1px solid var(--border);padding:9px 15px}
-.vl-title{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
-.visit-entry{display:flex;gap:8px;margin-bottom:6px;font-size:12px}
-.ve-date{color:var(--text3);white-space:nowrap;min-width:54px}
-.ve-note{color:var(--text2);flex:1}
-.card-footer{border-top:1px solid var(--border);padding:8px 11px;display:flex;gap:5px;flex-wrap:wrap}
-.card-footer button{font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:7px;background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif}
-.card-footer button:hover{background:var(--surface2);color:var(--text)}
-.card-footer button.danger{color:var(--red)}
-
-/* ── EMPTY ── */
-.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:13px}
-.empty-kard{text-align:center;font-size:12px;color:var(--text3);padding:18px 8px;border:1px dashed var(--border2);border-radius:var(--r)}
-
-/* ── MODAL ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:200;align-items:center;justify-content:center;padding:1rem}
-.modal-bg.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--rl);border:1px solid var(--border2);width:500px;max-width:100%;max-height:90vh;overflow-y:auto}
-.modal-header{padding:1.2rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between}
-.modal-header h2{font-family:'DM Serif Display',serif;font-size:17px}
-.modal-close{background:none;border:none;font-size:17px;color:var(--text3);cursor:pointer;padding:4px}
-.modal-body{padding:1rem 1.5rem 1.5rem;display:flex;flex-direction:column;gap:13px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.form-group{display:flex;flex-direction:column;gap:4px}
-.form-group label{font-size:12px;color:var(--text2);font-weight:500}
-.form-group input,.form-group select,.form-group textarea{padding:7px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);outline:none;font-family:'DM Sans',sans-serif}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--text2)}
-.form-group textarea{resize:vertical;min-height:65px}
-.form-section-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--border);padding-top:11px;margin-top:2px}
-.modal-footer{padding:.9rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
-.modal-footer button{padding:7px 17px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif}
-.modal-footer .primary{background:var(--text);color:#fff;border-color:var(--text);font-weight:500}
-.modal-footer .primary:hover{opacity:.85}
-
-/* ── DETAIL PANEL ── */
-.panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:140}
-.panel-overlay.open{display:block}
-.detail-panel{position:fixed;right:0;top:0;bottom:0;width:400px;background:var(--surface);border-left:1px solid var(--border);z-index:150;transform:translateX(100%);transition:transform .22s;overflow-y:auto}
-.detail-panel.open{transform:translateX(0)}
-.dp-head{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;position:sticky;top:0;background:var(--surface);z-index:5}
-.dp-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0}
-.dp-nm{font-family:'DM Serif Display',serif;font-size:17px}
-.dp-co{font-size:12px;color:var(--text2)}
-.dp-close{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);padding:4px}
-.dp-body{padding:1.1rem 1.4rem;display:flex;flex-direction:column;gap:14px}
-.dp-sec{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
-.dp-field{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--border)}
-.dp-field .k{color:var(--text2)}
-.dp-field .v{color:var(--text);font-weight:500;text-align:right;max-width:60%;word-break:break-word}
-.dp-note-box{background:var(--surface2);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text2);line-height:1.6}
-.dp-visits{display:flex;flex-direction:column;gap:7px}
-.dp-visit{background:var(--surface2);border-radius:8px;padding:9px 11px}
-.dv-date{font-size:11px;color:var(--text3);margin-bottom:2px}
-.dv-note{font-size:12px;color:var(--text2);line-height:1.5}
-.add-visit-form{display:flex;flex-direction:column;gap:7px}
-.add-visit-form input,.add-visit-form textarea{padding:7px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);outline:none;font-family:'DM Sans',sans-serif}
-.add-visit-form textarea{min-height:55px;resize:vertical}
-.add-visit-form button{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:var(--text);color:#fff;border:none;font-family:'DM Sans',sans-serif}
-
-@media(max-width:680px){
-  body{overflow-x:hidden}
-  .app-header{padding:.85rem 1rem;justify-content:center;text-align:center}
-  .app-title{width:100%;font-size:20px;text-align:center}
-  .app-title em{display:block;margin:2px 0 0 0;font-size:11px}
-  .hstats{display:none}
-  .tabs{padding:0 .75rem;justify-content:center;gap:4px}
-  .tab{padding:10px 12px;font-size:12px;text-align:center}
-  .toolbar{padding:.8rem .9rem;justify-content:center;gap:7px}
-  .toolbar input[type=text],.toolbar select{width:100%;max-width:330px;flex:1 1 100%}
-  .toolbar .spacer{display:none}
-  .toolbar .btn{width:100%;max-width:330px;text-align:center}
-  .content{padding:1rem .85rem;max-width:440px;margin:0 auto;width:100%}
-  .metrics{grid-template-columns:1fr 1fr;gap:8px}
-  .metric{text-align:center;padding:11px 10px}
-  .pipeline{grid-template-columns:1fr;gap:12px;max-width:390px;margin:0 auto}
-  .col-header{margin-left:auto;margin-right:auto;width:100%}
-  .pipe-card{margin-left:auto;margin-right:auto;width:100%}
-  .cards-grid{grid-template-columns:1fr;max-width:390px;margin:0 auto}
-  .client-card{width:100%;margin-left:auto;margin-right:auto}
-  .section-bar{justify-content:center;text-align:center}
-  .detail-panel{width:100%}
-  .form-row{grid-template-columns:1fr}
-  .modal-bg{padding:.75rem;align-items:center}
-  .modal{width:100%;max-width:420px;margin:0 auto}
-  .modal-header,.modal-body,.modal-footer{padding-left:1rem;padding-right:1rem}
-}
-@media(max-width:420px){
-  .content{padding-left:.65rem;padding-right:.65rem}
-  .metrics{grid-template-columns:1fr}
-  .toolbar input[type=text],.toolbar select,.toolbar .btn{max-width:100%}
-  .card-top{padding-left:12px;padding-right:12px}
-  .card-body,.card-notes,.block-reason,.visit-log{margin-left:12px;margin-right:12px;padding-left:9px;padding-right:9px}
-  .card-footer{justify-content:center}
-  .pc-actions{justify-content:center}
-}
-</style>
-</head>
-<body>
-
-<!-- HEADER -->
-<header class="app-header">
-  <div class="app-title">CRM <em>Gestion clients</em></div>
-  <div class="hstats" id="hstats"></div>
-</header>
-
-<!-- TABS -->
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('pipeline')">Pipeline</div>
-  <div class="tab" onclick="switchTab('potentiels')">Clients potentiels</div>
-  <div class="tab" onclick="switchTab('visites')">Déjà visités</div>
-</div>
-
-<!-- TOOLBARS -->
-<div class="toolbar" id="tb-pipeline">
-  <input type="text" id="s-pipe" placeholder="Rechercher…" oninput="renderPipe()">
-  <select id="f-pipe-prio" onchange="renderPipe()">
-    <option value="">Toutes priorités</option>
-    <option value="haute">Haute</option>
-    <option value="moyenne">Moyenne</option>
-    <option value="basse">Basse</option>
-  </select>
-  <div class="spacer"></div>
-  <button class="btn btn-dark" onclick="openModal('pipeline')">+ Ajouter lead</button>
-</div>
-<div class="toolbar" id="tb-potentiels" style="display:none">
-  <input type="text" id="s-pot" placeholder="Rechercher…" oninput="renderPot()">
-  <select id="f-pot-sect" onchange="renderPot()"><option value="">Tous les secteurs</option></select>
-  <select id="f-pot-prio" onchange="renderPot()">
-    <option value="">Toutes priorités</option>
-    <option value="haute">Haute</option>
-    <option value="moyenne">Moyenne</option>
-    <option value="basse">Basse</option>
-  </select>
-  <div class="spacer"></div>
-  <button class="btn btn-dark" onclick="openModal('potentiel')">+ Ajouter client potentiel</button>
-</div>
-<div class="toolbar" id="tb-visites" style="display:none">
-  <input type="text" id="s-vis" placeholder="Rechercher…" oninput="renderVis()">
-  <select id="f-vis-sect" onchange="renderVis()"><option value="">Tous les secteurs</option></select>
-  <select id="f-vis-stat" onchange="renderVis()">
-    <option value="">Tous statuts</option>
-    <option value="ne_pas_retourner">Ne pas retourner</option>
-    <option value="a_recontacter">À recontacter</option>
-    <option value="client_actif">Client actif</option>
-    <option value="perdu">Perdu</option>
-  </select>
-  <div class="spacer"></div>
-  <button class="btn btn-dark" onclick="openModal('visite')">+ Ajouter client visité</button>
-</div>
-
-<!-- PIPELINE -->
-<div class="content" id="view-pipeline">
-  <div class="metrics" id="pipe-metrics"></div>
-  <div class="pipeline" id="pipe-grid"></div>
-</div>
-
-<!-- POTENTIELS -->
-<div class="content" id="view-potentiels" style="display:none">
-  <div class="section-bar"><h2>Clients potentiels</h2><span class="count-pill" id="cnt-pot">0</span></div>
-  <div class="cards-grid" id="grid-pot"></div>
-</div>
-
-<!-- VISITES -->
-<div class="content" id="view-visites" style="display:none">
-  <div class="section-bar"><h2>Clients déjà visités</h2><span class="count-pill" id="cnt-vis">0</span></div>
-  <div class="cards-grid" id="grid-vis"></div>
-</div>
-
-<!-- MODAL -->
-<div class="modal-bg" id="modal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="mtitle">Nouveau lead</h2>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body" id="mbody"></div>
-    <div class="modal-footer">
-      <button onclick="closeModal()">Annuler</button>
-      <button class="primary" onclick="saveRecord()">Enregistrer</button>
-    </div>
-  </div>
-</div>
-
-<!-- PANEL -->
-<div class="panel-overlay" id="poverlay" onclick="closePanel()"></div>
-<div class="detail-panel" id="dpanel">
-  <div class="dp-head" id="dp-head"></div>
-  <div class="dp-body" id="dp-body"></div>
-</div>
-
-<script>
-/* ── CRM SUPABASE PERSISTANT ── */
-const SB_URL='https://dsugwdwjjdmtwnyrukag.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdWd3ZHdqamRtdHdueXJ1a2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY1MjAsImV4cCI6MjA5MzE2MjUyMH0.CU5yDSRgtn6Z_GSJ2IkD7cS8Y_vR4fauY4S-ee-DGek';
-const CRM_ACCESS_TOKEN='__CRM_ACCESS_TOKEN__';
-const crmSb=supabase.createClient(SB_URL,SB_KEY,{global:{headers:CRM_ACCESS_TOKEN&&CRM_ACCESS_TOKEN.indexOf('__CRM_')!==0?{Authorization:'Bearer '+CRM_ACCESS_TOKEN}:{}}});
-
-const STAGES=[
-  {name:"Prospection", hf:"#E6F1FB",ht:"#0C447C",cf:"#B5D4F4",ct:"#0C447C"},
-  {name:"Qualification",hf:"#FAEEDA",ht:"#633806",cf:"#FAC775",ct:"#633806"},
-  {name:"Proposition", hf:"#EEEDFE",ht:"#3C3489",cf:"#CECBF6",ct:"#3C3489"},
-  {name:"Négociation", hf:"#EAF3DE",ht:"#27500A",cf:"#C0DD97",ct:"#27500A"},
-];
-const PRIOS={haute:{l:"Haute",f:"#fee2e2",c:"#7f1d1d"},moyenne:{l:"Moyenne",f:"#fef3c7",c:"#92400e"},basse:{l:"Basse",f:"#d8f3dc",c:"#2d6a4f"}};
-const STATS={ne_pas_retourner:{l:"Ne pas retourner",f:"#fee2e2",c:"#7f1d1d"},a_recontacter:{l:"À recontacter",f:"#fef3c7",c:"#92400e"},client_actif:{l:"Client actif",f:"#d8f3dc",c:"#2d6a4f"},perdu:{l:"Perdu",f:"#f3f4f6",c:"#6b7280"}};
-const SECTEURS=["Restauration","Commerce de détail","Industrie","Construction","Santé","Transport","Agriculture","Services","Technologie","Hôtellerie","Autre"];
-const AVC=[["#dbeafe","#1e3a5f"],["#d8f3dc","#2d6a4f"],["#fef3c7","#92400e"],["#ede9fe","#4c1d95"],["#fce7f3","#831843"],["#e0f2fe","#0c4a6e"]];
-
-let leads=[],potentiels=[],visites=[];
-let editId=null,modalType=null,activeTab="pipeline",detailId=null,detailType=null;
-let crmLoading=false;
-
-/* ── UTILS ── */
-function hashId(id){let s=String(id||'0'),h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
-function av(id){const c=AVC[hashId(id)%AVC.length];return`background:${c[0]};color:${c[1]}`;}
-function ini(n){return String(n||'?').split(" ").filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)||'?';}
-function fmtD(d){if(!d)return"";const p=String(d).split("-");if(p.length!==3)return d;return p[2]+"/"+p[1]+"/"+p[0];}
-function todayStr(){return new Date().toISOString().split("T")[0];}
-function todayLabel(){const t=new Date();const m=["jan","fév","mar","avr","mai","juin","juil","août","sep","oct","nov","déc"];return t.getDate()+" "+m[t.getMonth()];}
-function safe(v){return String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
-function toastMsg(m){console.log(m);}
-
-function mapLead(r){return{id:r.id,nom:r.nom||'',entreprise:r.entreprise||'',email:r.email||'',telephone:r.telephone||'',valeur:Number(r.valeur)||0,priorite:r.priorite||'moyenne',stage:Number(r.stage)||0,date:r.date_label||'',notes:r.notes||''};}
-function mapPot(r){return{id:r.id,nom:r.nom||'',entreprise:r.entreprise||'',secteur:r.secteur||'Autre',telephone:r.telephone||'',email:r.email||'',adresse:r.adresse||'',valeur:Number(r.valeur)||0,priorite:r.priorite||'moyenne',notes:r.notes||'',source:r.source||'',dateAjout:r.date_ajout||''};}
-function mapVis(r){return{id:r.id,nom:r.nom||'',entreprise:r.entreprise||'',secteur:r.secteur||'Autre',telephone:r.telephone||'',email:r.email||'',adresse:r.adresse||'',statut:r.statut||'a_recontacter',raisonBlocage:r.raison_blocage||'',dateVisite:r.date_visite||'',visites:(r.crm_visites_notes||[]).map(n=>({id:n.id,date:n.date_note,note:n.note||''}))};}
-
-async function loadCRMData(){
-  if(crmLoading)return;
-  crmLoading=true;
-  try{
-    const [lr,pr,vr]=await Promise.all([
-      crmSb.from('crm_leads').select('*').order('created_at',{ascending:false}),
-      crmSb.from('crm_potentiels').select('*').order('created_at',{ascending:false}),
-      crmSb.from('crm_visites').select('*, crm_visites_notes(*)').order('created_at',{ascending:false})
-    ]);
-    if(lr.error)throw lr.error;
-    if(pr.error)throw pr.error;
-    if(vr.error)throw vr.error;
-    leads=(lr.data||[]).map(mapLead);
-    potentiels=(pr.data||[]).map(mapPot);
-    visites=(vr.data||[]).map(mapVis);
-    visites.forEach(v=>v.visites.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))));
-    renderAll();
-  }catch(e){
-    console.error(e);
-    document.getElementById('pipe-grid').innerHTML='<div class="empty-state">Erreur de chargement CRM. Vérifiez le SQL Supabase et les permissions admin.</div>';
-  }finally{crmLoading=false;}
-}
-
-/* ── TABS ── */
-function switchTab(t){
-  activeTab=t;
-  ["pipeline","potentiels","visites"].forEach(x=>{
-    document.querySelector(`.tab:nth-child(${["pipeline","potentiels","visites"].indexOf(x)+1})`).classList.toggle("active",x===t);
-    document.getElementById("view-"+x).style.display=x===t?"":"none";
-    document.getElementById("tb-"+x).style.display=x===t?"flex":"none";
-  });
-  closePanel();
-}
-
-function populateSectors(){
-  ["f-pot-sect","f-vis-sect"].forEach(id=>{
-    const el=document.getElementById(id);const cur=el.value;
-    el.innerHTML='<option value="">Tous les secteurs</option>'+SECTEURS.map(s=>`<option value="${safe(s)}">${safe(s)}</option>`).join("");
-    el.value=cur;
-  });
-}
-
-function updateStats(){
-  const pipe_val=leads.reduce((s,l)=>s+(l.valeur||0),0);
-  const actifs=visites.filter(c=>c.statut==="client_actif").length;
-  const blocked=visites.filter(c=>c.statut==="ne_pas_retourner").length;
-  document.getElementById("hstats").innerHTML=`
-    <div class="hstat"><div class="n">${leads.length}</div><div class="l">Pipeline</div></div>
-    <div class="hstat"><div class="n">${potentiels.length}</div><div class="l">Potentiels</div></div>
-    <div class="hstat"><div class="n">${actifs}</div><div class="l">Actifs</div></div>
-    <div class="hstat"><div class="n" style="color:var(--red)">${blocked}</div><div class="l">À éviter</div></div>
-  `;
-}
-
-/* ══════════════ PIPELINE ══════════════ */
-function filteredLeads(){
-  const q=document.getElementById("s-pipe").value.toLowerCase();
-  const p=document.getElementById("f-pipe-prio").value;
-  return leads.filter(l=>(!q||(l.nom+l.entreprise).toLowerCase().includes(q))&&(!p||l.priorite===p));
-}
-function renderPipe(){
-  const data=filteredLeads();
-  const val=data.reduce((s,l)=>s+(l.valeur||0),0);
-  const chauds=data.filter(l=>l.priorite==="haute").length;
-  const negoc=data.filter(l=>l.stage===3).length;
-  document.getElementById("pipe-metrics").innerHTML=`
-    <div class="metric"><div class="ml">Leads actifs</div><div class="mv">${data.length}</div><div class="ms">dans le pipeline</div></div>
-    <div class="metric"><div class="ml">Valeur totale</div><div class="mv">${val}k$</div><div class="ms">estimée</div></div>
-    <div class="metric"><div class="ml">Priorité haute</div><div class="mv">${chauds}</div><div class="ms">à traiter en priorité</div></div>
-    <div class="metric"><div class="ml">En négociation</div><div class="mv">${negoc}</div><div class="ms">presque signés</div></div>
-  `;
-  document.getElementById("pipe-grid").innerHTML=STAGES.map((st,si)=>{
-    const cols=data.filter(l=>l.stage===si);
-    const cards=cols.length?cols.map(l=>pipeCardHTML(l)).join(""):`<div class="empty-kard">Aucun lead</div>`;
-    return`<div>
-      <div class="col-header" style="background:${st.hf}">
-        <span class="col-title" style="color:${st.ht}">${st.name}</span>
-        <span class="col-cnt" style="background:${st.cf};color:${st.ct}">${cols.length}</span>
-      </div>
-      <div class="col-body">${cards}</div>
-    </div>`;
-  }).join("");
-}
-function pipeCardHTML(l){
-  const pr=PRIOS[l.priorite]||PRIOS.moyenne;
-  return`<div class="pipe-card">
-    <div class="pc-top"><div class="pc-av" style="${av(l.id)}">${ini(l.nom)}</div><span class="badge" style="background:${pr.f};color:${pr.c};font-size:10px;padding:2px 8px;border-radius:20px">${pr.l}</span></div>
-    <div class="pc-name">${safe(l.nom)}</div><div class="pc-co">${safe(l.entreprise)}</div><div class="pc-val">${l.valeur}k$</div>
-    <div class="pc-meta">${safe(l.email)} · ${safe(l.date)}</div>${l.notes?`<div style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic">${safe(l.notes)}</div>`:""}
-    <div class="pc-actions">
-      ${l.stage>0?`<button onclick="moveL('${l.id}',-1)">← ${STAGES[l.stage-1].name}</button>`:""}
-      ${l.stage<3?`<button onclick="moveL('${l.id}',1)">→ ${STAGES[l.stage+1].name}</button>`:""}
-      <button onclick="openModal('pipeline','${l.id}')">Modifier</button><button class="danger" onclick="deleteL('${l.id}')">Suppr.</button>
-    </div>
-  </div>`;
-}
-async function moveL(id,dir){const l=leads.find(x=>x.id===id);if(!l)return;l.stage=Math.max(0,Math.min(3,l.stage+dir));renderPipe();const r=await crmSb.from('crm_leads').update({stage:l.stage}).eq('id',id);if(r.error){console.error(r.error);await loadCRMData();}}
-async function deleteL(id){if(!confirm("Supprimer ce lead?"))return;const r=await crmSb.from('crm_leads').delete().eq('id',id);if(r.error){alert(r.error.message);return;}leads=leads.filter(x=>x.id!==id);renderPipe();updateStats();}
-
-/* ══════════════ POTENTIELS ══════════════ */
-function filteredPot(){const q=document.getElementById("s-pot").value.toLowerCase();const s=document.getElementById("f-pot-sect").value;const p=document.getElementById("f-pot-prio").value;return potentiels.filter(c=>(!q||(c.nom+c.entreprise).toLowerCase().includes(q))&&(!s||c.secteur===s)&&(!p||c.priorite===p));}
-function renderPot(){
-  const data=filteredPot();document.getElementById("cnt-pot").textContent=data.length;const g=document.getElementById("grid-pot");
-  if(!data.length){g.innerHTML='<div class="empty-state">Aucun client potentiel trouvé</div>';return;}
-  g.innerHTML=data.map(c=>{const pr=PRIOS[c.priorite]||PRIOS.moyenne;return`<div class="client-card">
-    <div class="card-top"><div class="card-avatar" style="${av(c.id)}">${ini(c.nom)}</div><div class="card-info"><div class="card-name">${safe(c.nom)}</div><div class="card-company">${safe(c.entreprise)}</div><div class="card-badges"><span class="badge" style="background:${pr.f};color:${pr.c}">${pr.l}</span><span class="badge" style="background:var(--surface2);color:var(--text2)">${safe(c.secteur)}</span>${c.valeur?`<span class="badge" style="background:var(--blue-bg);color:var(--blue)">${c.valeur}k$</span>`:""}</div></div></div>
-    <div class="card-body">${c.telephone?`<div class="card-row">${phoneIcon()}${safe(c.telephone)}</div>`:""}${c.email?`<div class="card-row">${mailIcon()}${safe(c.email)}</div>`:""}${c.adresse?`<div class="card-row">${pinIcon()}${safe(c.adresse)}</div>`:""}${c.source?`<div class="card-row">${clockIcon()}Source: ${safe(c.source)}</div>`:""}</div>
-    ${c.notes?`<div class="card-notes">${safe(c.notes)}</div>`:""}
-    <div class="card-footer"><button onclick="openPanel('${c.id}','potentiel')">Voir détails</button><button onclick="openModal('potentiel','${c.id}')">Modifier</button><button onclick="convertToVisited('${c.id}')">Marquer visité</button><button onclick="addToPipeline('${c.id}')">Ajouter au pipeline</button><button class="danger" onclick="deleteP('${c.id}')">Suppr.</button></div>
-  </div>`;}).join("");
-}
-async function deleteP(id){if(!confirm("Supprimer?"))return;const r=await crmSb.from('crm_potentiels').delete().eq('id',id);if(r.error){alert(r.error.message);return;}potentiels=potentiels.filter(x=>x.id!==id);if(detailId===id)closePanel();renderPot();updateStats();}
-async function convertToVisited(id){
-  const rec=potentiels.find(x=>x.id===id);if(!rec)return;const note=prompt("Note de visite (optionnel):")||"";
-  const obj={nom:rec.nom,entreprise:rec.entreprise,telephone:rec.telephone,email:rec.email,adresse:rec.adresse,secteur:rec.secteur,statut:"a_recontacter",raison_blocage:"",date_visite:todayStr()};
-  const ins=await crmSb.from('crm_visites').insert(obj).select('*').single();if(ins.error){alert(ins.error.message);return;}
-  if(note)await crmSb.from('crm_visites_notes').insert({visite_id:ins.data.id,date_note:todayStr(),note});
-  await crmSb.from('crm_potentiels').delete().eq('id',id);
-  switchTab("visites");await loadCRMData();
-}
-async function addToPipeline(id){
-  const rec=potentiels.find(x=>x.id===id);if(!rec)return;
-  const obj={nom:rec.nom,entreprise:rec.entreprise,email:rec.email,telephone:rec.telephone,valeur:rec.valeur||0,priorite:rec.priorite||"moyenne",stage:0,date_label:todayLabel(),notes:rec.notes||""};
-  const ins=await crmSb.from('crm_leads').insert(obj);if(ins.error){alert(ins.error.message);return;}
-  await crmSb.from('crm_potentiels').delete().eq('id',id);
-  switchTab("pipeline");await loadCRMData();
-}
-
-/* ══════════════ VISITES ══════════════ */
-function filteredVis(){const q=document.getElementById("s-vis").value.toLowerCase();const s=document.getElementById("f-vis-sect").value;const st=document.getElementById("f-vis-stat").value;return visites.filter(c=>(!q||(c.nom+c.entreprise).toLowerCase().includes(q))&&(!s||c.secteur===s)&&(!st||c.statut===st));}
-function renderVis(){
-  const data=filteredVis();document.getElementById("cnt-vis").textContent=data.length;const g=document.getElementById("grid-vis");
-  if(!data.length){g.innerHTML='<div class="empty-state">Aucun client visité trouvé</div>';return;}
-  g.innerHTML=data.map(c=>{const st=STATS[c.statut]||STATS.a_recontacter;const blocked=c.statut==="ne_pas_retourner";const lv=c.visites&&c.visites.length?c.visites[0]:null;return`<div class="client-card ${blocked?"card-blocked":""}">
-    <div class="card-top ${blocked?"card-top-blocked":""}"><div class="card-avatar" style="${av(c.id)}">${ini(c.nom)}</div><div class="card-info"><div class="card-name">${safe(c.nom)}</div><div class="card-company">${safe(c.entreprise)}</div><div class="card-badges"><span class="badge" style="background:${st.f};color:${st.c}">${st.l}</span><span class="badge" style="background:var(--surface2);color:var(--text2)">${safe(c.secteur)}</span></div></div></div>
-    <div class="card-body">${c.telephone?`<div class="card-row">${phoneIcon()}${safe(c.telephone)}</div>`:""}${c.adresse?`<div class="card-row">${pinIcon()}${safe(c.adresse)}</div>`:""}${lv?`<div class="card-row">${calIcon()}Dernière visite: ${fmtD(lv.date)}</div>`:""}</div>
-    ${blocked?`<div class="block-reason"><strong>⚠ Ne pas retourner — raison</strong>${safe(c.raisonBlocage)}</div>`:""}
-    ${c.visites&&c.visites.length?`<div class="visit-log"><div class="vl-title">Visites (${c.visites.length})</div>${c.visites.slice(0,2).map(v=>`<div class="visit-entry"><div class="ve-date">${fmtD(v.date)}</div><div class="ve-note">${safe(v.note)}</div></div>`).join("")}${c.visites.length>2?`<div style="font-size:11px;color:var(--text3);margin-top:3px">+${c.visites.length-2} de plus dans les détails</div>`:""}</div>`:""}
-    <div class="card-footer"><button onclick="openPanel('${c.id}','visite')">Voir détails</button><button onclick="openModal('visite','${c.id}')">Modifier</button>${!blocked?`<button onclick="quickVisit('${c.id}')">+ Visite</button>`:""}<button class="danger" onclick="deleteV('${c.id}')">Suppr.</button></div>
-  </div>`;}).join("");
-}
-async function deleteV(id){if(!confirm("Supprimer?"))return;const r=await crmSb.from('crm_visites').delete().eq('id',id);if(r.error){alert(r.error.message);return;}visites=visites.filter(x=>x.id!==id);if(detailId===id)closePanel();renderVis();updateStats();}
-async function quickVisit(id){const note=prompt("Note de visite:");if(!note)return;const r=await crmSb.from('crm_visites_notes').insert({visite_id:id,date_note:todayStr(),note});if(r.error){alert(r.error.message);return;}await crmSb.from('crm_visites').update({date_visite:todayStr()}).eq('id',id);await loadCRMData();if(detailId===id&&detailType==="visite")openPanel(id,"visite");}
-
-/* ── ICONS ── */
-function phoneIcon(){return`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.82 19.79 19.79 0 01.19 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>`;}
-function mailIcon(){return`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`;}
-function pinIcon(){return`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;}
-function clockIcon(){return`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>`;}
-function calIcon(){return`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;}
-
-/* ══════════════ MODAL ══════════════ */
-function openModal(type,id=null){
-  modalType=type;editId=id;const isEdit=id!==null;let rec=null;
-  if(isEdit){if(type==="pipeline")rec=leads.find(x=>x.id===id);else if(type==="potentiel")rec=potentiels.find(x=>x.id===id);else rec=visites.find(x=>x.id===id);}
-  document.getElementById("mtitle").textContent=isEdit?"Modifier":(type==="pipeline"?"Nouveau lead pipeline":type==="potentiel"?"Nouveau client potentiel":"Client visité");
-  const b=document.getElementById("mbody");
-  if(type==="pipeline"){
-    b.innerHTML=`<div class="form-row"><div class="form-group"><label>Nom</label><input id="f-nom" value="${safe(rec?rec.nom:"")}"></div><div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${safe(rec?rec.entreprise:"")}"></div></div><div class="form-row"><div class="form-group"><label>Email</label><input id="f-email" value="${safe(rec?rec.email:"")}"></div><div class="form-group"><label>Téléphone</label><input id="f-tel" value="${safe(rec?rec.telephone:"")}"></div></div><div class="form-row"><div class="form-group"><label>Valeur (k$)</label><input id="f-valeur" type="number" value="${rec?rec.valeur:""}"></div><div class="form-group"><label>Priorité</label><select id="f-priorite"><option value="haute" ${rec&&rec.priorite==="haute"?"selected":""}>Haute</option><option value="moyenne" ${!rec||rec.priorite==="moyenne"?"selected":""}>Moyenne</option><option value="basse" ${rec&&rec.priorite==="basse"?"selected":""}>Basse</option></select></div></div><div class="form-group"><label>Étape</label><select id="f-stage">${STAGES.map((s,i)=>`<option value="${i}" ${rec&&rec.stage===i?"selected":""}>${s.name}</option>`).join("")}</select></div><div class="form-group"><label>Notes</label><textarea id="f-notes">${safe(rec?rec.notes:"")}</textarea></div>`;
-  }else if(type==="potentiel"){
-    b.innerHTML=`<div class="form-row"><div class="form-group"><label>Nom</label><input id="f-nom" value="${safe(rec?rec.nom:"")}"></div><div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${safe(rec?rec.entreprise:"")}"></div></div><div class="form-row"><div class="form-group"><label>Téléphone</label><input id="f-tel" value="${safe(rec?rec.telephone:"")}"></div><div class="form-group"><label>Email</label><input id="f-email" value="${safe(rec?rec.email:"")}"></div></div><div class="form-group"><label>Adresse</label><input id="f-adresse" value="${safe(rec?rec.adresse:"")}"></div><div class="form-row"><div class="form-group"><label>Secteur</label><select id="f-secteur">${SECTEURS.map(s=>`<option value="${safe(s)}" ${rec&&rec.secteur===s?"selected":""}>${safe(s)}</option>`).join("")}</select></div><div class="form-group"><label>Valeur (k$)</label><input id="f-valeur" type="number" value="${rec?rec.valeur:""}"></div></div><div class="form-row"><div class="form-group"><label>Priorité</label><select id="f-priorite"><option value="haute" ${rec&&rec.priorite==="haute"?"selected":""}>Haute</option><option value="moyenne" ${!rec||rec.priorite==="moyenne"?"selected":""}>Moyenne</option><option value="basse" ${rec&&rec.priorite==="basse"?"selected":""}>Basse</option></select></div><div class="form-group"><label>Source</label><input id="f-source" value="${safe(rec?rec.source:"")}"></div></div><div class="form-group"><label>Notes</label><textarea id="f-notes">${safe(rec?rec.notes:"")}</textarea></div>`;
-  }else{
-    b.innerHTML=`<div class="form-row"><div class="form-group"><label>Nom</label><input id="f-nom" value="${safe(rec?rec.nom:"")}"></div><div class="form-group"><label>Entreprise</label><input id="f-entreprise" value="${safe(rec?rec.entreprise:"")}"></div></div><div class="form-row"><div class="form-group"><label>Téléphone</label><input id="f-tel" value="${safe(rec?rec.telephone:"")}"></div><div class="form-group"><label>Email</label><input id="f-email" value="${safe(rec?rec.email:"")}"></div></div><div class="form-group"><label>Adresse</label><input id="f-adresse" value="${safe(rec?rec.adresse:"")}"></div><div class="form-row"><div class="form-group"><label>Secteur</label><select id="f-secteur">${SECTEURS.map(s=>`<option value="${safe(s)}" ${rec&&rec.secteur===s?"selected":""}>${safe(s)}</option>`).join("")}</select></div><div class="form-group"><label>Date visite</label><input id="f-date" type="date" value="${rec?rec.dateVisite:todayStr()}"></div></div><div class="form-group"><label>Statut</label><select id="f-statut" onchange="toggleBlocage(this.value)"><option value="a_recontacter" ${rec&&rec.statut==="a_recontacter"?"selected":""}>À recontacter</option><option value="client_actif" ${rec&&rec.statut==="client_actif"?"selected":""}>Client actif</option><option value="perdu" ${rec&&rec.statut==="perdu"?"selected":""}>Perdu</option><option value="ne_pas_retourner" ${rec&&rec.statut==="ne_pas_retourner"?"selected":""}>Ne pas retourner</option></select></div><div id="fg-blocage" style="${rec&&rec.statut==="ne_pas_retourner"?"":"display:none"}"><div class="form-group"><label>Raison — ne pas retourner</label><textarea id="f-blocage">${safe(rec?rec.raisonBlocage:"")}</textarea></div></div><div class="form-section-label">Note de visite</div><div class="form-group"><textarea id="f-visite-note" placeholder="Résumé de la visite…"></textarea></div>`;
-  }
-  document.getElementById("modal").classList.add("open");
-}
-function toggleBlocage(v){const el=document.getElementById("fg-blocage");if(el)el.style.display=v==="ne_pas_retourner"?"":"none";}
-function closeModal(){document.getElementById("modal").classList.remove("open");}
-
-async function saveRecord(){
-  const nom=document.getElementById("f-nom").value.trim();if(!nom)return;
-  try{
-    if(modalType==="pipeline"){
-      const obj={nom,entreprise:document.getElementById("f-entreprise").value,email:document.getElementById("f-email").value,telephone:document.getElementById("f-tel").value,valeur:parseInt(document.getElementById("f-valeur").value)||0,priorite:document.getElementById("f-priorite").value,stage:parseInt(document.getElementById("f-stage").value),date_label:todayLabel(),notes:document.getElementById("f-notes").value};
-      const r=editId?await crmSb.from('crm_leads').update(obj).eq('id',editId):await crmSb.from('crm_leads').insert(obj);
-      if(r.error)throw r.error;closeModal();await loadCRMData();renderPipe();
-    }else if(modalType==="potentiel"){
-      const obj={nom,entreprise:document.getElementById("f-entreprise").value,telephone:document.getElementById("f-tel").value,email:document.getElementById("f-email").value,adresse:document.getElementById("f-adresse").value,secteur:document.getElementById("f-secteur").value,valeur:parseInt(document.getElementById("f-valeur").value)||0,priorite:document.getElementById("f-priorite").value,source:document.getElementById("f-source").value,notes:document.getElementById("f-notes").value,date_ajout:todayStr()};
-      const r=editId?await crmSb.from('crm_potentiels').update(obj).eq('id',editId):await crmSb.from('crm_potentiels').insert(obj);
-      if(r.error)throw r.error;closeModal();await loadCRMData();renderPot();
-    }else{
-      const statut=document.getElementById("f-statut").value;const note=document.getElementById("f-visite-note").value;const dateV=document.getElementById("f-date").value||todayStr();
-      const obj={nom,entreprise:document.getElementById("f-entreprise").value,telephone:document.getElementById("f-tel").value,email:document.getElementById("f-email").value,adresse:document.getElementById("f-adresse").value,secteur:document.getElementById("f-secteur").value,statut,raison_blocage:statut==="ne_pas_retourner"?(document.getElementById("f-blocage")?document.getElementById("f-blocage").value:""):"",date_visite:dateV};
-      let visiteId=editId;
-      if(editId){const r=await crmSb.from('crm_visites').update(obj).eq('id',editId);if(r.error)throw r.error;}
-      else{const r=await crmSb.from('crm_visites').insert(obj).select('id').single();if(r.error)throw r.error;visiteId=r.data.id;}
-      if(note)await crmSb.from('crm_visites_notes').insert({visite_id:visiteId,date_note:dateV,note});
-      closeModal();await loadCRMData();renderVis();
-    }
-    updateStats();
-  }catch(e){console.error(e);alert(e.message||String(e));}
-}
-
-/* ══════════════ DETAIL PANEL ══════════════ */
-function openPanel(id,type){
-  detailId=id;detailType=type;let rec=null;if(type==="potentiel")rec=potentiels.find(x=>x.id===id);else if(type==="visite")rec=visites.find(x=>x.id===id);if(!rec)return;
-  document.getElementById("dp-head").innerHTML=`<div class="dp-av" style="${av(rec.id)}">${ini(rec.nom)}</div><div><div class="dp-nm">${safe(rec.nom)}</div><div class="dp-co">${safe(rec.entreprise)}</div></div><button class="dp-close" onclick="closePanel()">✕</button>`;
-  let html="";
-  if(type==="potentiel"){
-    const pr=PRIOS[rec.priorite]||PRIOS.moyenne;
-    html+=`<div><div class="dp-sec">Informations</div>${rec.telephone?`<div class="dp-field"><span class="k">Téléphone</span><span class="v">${safe(rec.telephone)}</span></div>`:""}${rec.email?`<div class="dp-field"><span class="k">Email</span><span class="v" style="word-break:break-all">${safe(rec.email)}</span></div>`:""}${rec.adresse?`<div class="dp-field"><span class="k">Adresse</span><span class="v">${safe(rec.adresse)}</span></div>`:""}<div class="dp-field"><span class="k">Secteur</span><span class="v">${safe(rec.secteur)}</span></div><div class="dp-field"><span class="k">Valeur estimée</span><span class="v">${rec.valeur}k$</span></div><div class="dp-field"><span class="k">Priorité</span><span class="v"><span style="background:${pr.f};color:${pr.c};padding:2px 8px;border-radius:20px;font-size:11px">${pr.l}</span></span></div><div class="dp-field"><span class="k">Source</span><span class="v">${safe(rec.source||"—")}</span></div><div class="dp-field"><span class="k">Ajouté le</span><span class="v">${fmtD(rec.dateAjout)}</span></div></div>`;
-    if(rec.notes)html+=`<div><div class="dp-sec">Notes</div><div class="dp-note-box">${safe(rec.notes)}</div></div>`;
-    html+=`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" onclick="convertToVisited('${rec.id}');closePanel()">Marquer visité →</button><button class="btn" onclick="addToPipeline('${rec.id}');closePanel()">Ajouter au pipeline →</button></div>`;
-  }else{
-    const st=STATS[rec.statut]||STATS.a_recontacter;const blocked=rec.statut==="ne_pas_retourner";
-    html+=`<div><div class="dp-sec">Informations</div>${rec.telephone?`<div class="dp-field"><span class="k">Téléphone</span><span class="v">${safe(rec.telephone)}</span></div>`:""}${rec.email?`<div class="dp-field"><span class="k">Email</span><span class="v" style="word-break:break-all">${safe(rec.email)}</span></div>`:""}${rec.adresse?`<div class="dp-field"><span class="k">Adresse</span><span class="v">${safe(rec.adresse)}</span></div>`:""}<div class="dp-field"><span class="k">Secteur</span><span class="v">${safe(rec.secteur)}</span></div><div class="dp-field"><span class="k">Statut</span><span class="v"><span style="background:${st.f};color:${st.c};padding:2px 8px;border-radius:20px;font-size:11px">${st.l}</span></span></div><div class="dp-field"><span class="k">Dernière visite</span><span class="v">${fmtD(rec.dateVisite)||"—"}</span></div></div>`;
-    if(blocked&&rec.raisonBlocage)html+=`<div><div class="dp-sec" style="color:var(--red)">⚠ Ne pas retourner</div><div class="dp-note-box" style="background:var(--red-bg);color:var(--red);border-left:3px solid #fca5a5">${safe(rec.raisonBlocage)}</div></div>`;
-    if(rec.visites&&rec.visites.length)html+=`<div><div class="dp-sec">Historique des visites (${rec.visites.length})</div><div class="dp-visits">${rec.visites.map(v=>`<div class="dp-visit"><div class="dv-date">${fmtD(v.date)}</div><div class="dv-note">${safe(v.note)}</div></div>`).join("")}</div></div>`;
-    if(!blocked)html+=`<div><div class="dp-sec">Ajouter une visite</div><div class="add-visit-form"><input type="date" id="dp-vdate" value="${todayStr()}"><textarea id="dp-vnote" placeholder="Notes de visite…"></textarea><button onclick="saveVisitPanel('${rec.id}')">Enregistrer la visite</button></div></div>`;
-  }
-  document.getElementById("dp-body").innerHTML=html;document.getElementById("dpanel").classList.add("open");document.getElementById("poverlay").classList.add("open");
-}
-async function saveVisitPanel(id){const note=document.getElementById("dp-vnote").value.trim();if(!note)return;const date=document.getElementById("dp-vdate").value||todayStr();const r=await crmSb.from('crm_visites_notes').insert({visite_id:id,date_note:date,note});if(r.error){alert(r.error.message);return;}await crmSb.from('crm_visites').update({date_visite:date}).eq('id',id);await loadCRMData();openPanel(id,"visite");}
-function closePanel(){document.getElementById("dpanel").classList.remove("open");document.getElementById("poverlay").classList.remove("open");detailId=null;}
-document.getElementById("modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
-
-/* ── INIT ── */
-function renderAll(){renderPipe();renderPot();renderVis();updateStats();}
-populateSectors();
-renderAll();
-loadCRMData();
-
-</script>
-</body>
-</html>
-</template>
 
 <script>
 (function(){
@@ -2087,7 +1514,6 @@ function initApp(u){
     Q('psec').style.display=canP()?'':'none';
     Q('tcouts').style.display=canP()?'':'none';
     if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
-    if(Q('tcrm'))Q('tcrm').style.display=role==='admin'?'':'none';
     if(Q('tmistints'))Q('tmistints').style.display=isCompta()?'none':'';
     if(isCompta()){
       ['tajouter','tconversions','taerosol','tcouts'].forEach(function(t){if(Q(t))Q(t).style.display='none';});
@@ -2134,44 +1560,28 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 // TABS
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
-    if(t.dataset.tab==='crm'&&role!=='admin'){toast('CRM réservé aux administrateurs');showView('clients');return;}
     if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();}
     if(t.dataset.tab==='conversions'){initConversions();}
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
     if(t.dataset.tab==='mistints'){loadMistints();}
     if(t.dataset.tab==='aerosol'){loadAerosol();}
-    if(t.dataset.tab==='crm'){loadCRM();}
     showView(t.dataset.tab);
   });
 });
-function loadCRM(){
-  var f=Q('crmFrame'),tpl=Q('crmTemplate');
-  if(!f||!tpl||f.getAttribute('srcdoc'))return;
-  sb.auth.getSession().then(function(r){
-    var token=(r.data&&r.data.session&&r.data.session.access_token)||'';
-    var html=tpl.innerHTML.replace(/__CRM_ACCESS_TOKEN__/g, token);
-    f.setAttribute('srcdoc',html);
-  });
-}
 function showView(name){
   if(isCompta()&&VUES_COMPTA.indexOf(name)<0){
     toast('Accès limité aux Recettes et au Portail');
     name='clients';
   }
-  if(name==='crm'&&role!=='admin'){
-    toast('CRM réservé aux administrateurs');
-    name='clients';
-  }
-  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','crm','mistints','aerosol'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
+  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','mistints','aerosol'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
   if(!Q('v-'+name))name='clients';
-  if(name==='crm')loadCRM();
   Q('v-'+name).classList.add('on');
   // La gestion des utilisateurs a besoin de largeur : on elargit la page sur cet onglet.
   var pg=document.querySelector('.pg');
   if(pg)pg.classList.toggle('pg-large',name==='reglages');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',crm:'crm',mistints:'mistints',aerosol:'aerosol'};
+  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',mistints:'mistints',aerosol:'aerosol'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
