@@ -357,6 +357,22 @@ table.ct tr:last-child td{border-bottom:none}
 .upast.moi{background:var(--blue-l);color:var(--blue)}
 .upast.warn{background:#fdf1dc;color:#a06a12}
 .upast.mod{background:#fdf1dc;color:#a06a12}
+.aerobar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.aeroqs{display:flex;gap:6px;flex-wrap:wrap}
+.aeroq{padding:7px 14px;font-size:13px;font-weight:500;border:0.5px solid var(--bd2);border-radius:var(--r);
+  background:var(--sur);color:var(--tx);cursor:pointer;min-width:42px}
+.aeroq:hover{background:var(--bg2,#f0f2f5)}
+.aeroq.on{background:#3B6D11;color:#fff;border-color:#3B6D11}
+#aero-nb{width:82px;padding:7px 9px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center;background:var(--sur);color:var(--tx)}
+.vgrid{display:grid;grid-template-columns:1.6fr repeat(4,minmax(90px,120px));border-top:0.5px solid var(--bd)}
+.vgrid>div{padding:11px 12px;border-bottom:0.5px solid var(--bd);display:flex;align-items:center;font-size:13px}
+.vgrid .vh{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);border-top:none;padding-top:0;padding-bottom:8px}
+.vgrid .vc{justify-content:center}
+.vgrid .vlbl{font-weight:500}
+.vgrid input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:#1A8FD1}
+.vgrid .vlock input{cursor:not-allowed;opacity:.5}
+.vgrid .vrowhover:hover{background:var(--bg2,#f6f7f9)}
+@media(max-width:760px){.vgrid{grid-template-columns:1.3fr repeat(4,1fr)}.vgrid>div{padding:9px 4px;font-size:12px}}
 @media(max-width:900px){
   .uhead{display:none}
   .user-row{grid-template-columns:1fr;gap:8px;padding:14px 12px;border:0.5px solid var(--bd);margin-bottom:10px}
@@ -1008,6 +1024,20 @@ table.ct tr:last-child td{border-bottom:none}
         <div id="users_list"></div>
       </div>
 
+      <div class="settings-card" id="vis_box" style="display:none;margin-top:14px">
+        <div class="uhdr">
+          <div>
+            <div class="ftit" style="margin-bottom:2px">Visibilité des onglets</div>
+            <div style="font-size:12px;color:var(--tx3)">Ce que chaque rôle voit dans la barre du haut. Prend effet à sa prochaine ouverture de page.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span class="svd" id="vis_svd">Enregistré!</span>
+            <button class="btn btnp" id="vis_save" disabled style="font-size:12px;padding:7px 14px">Enregistrer</button>
+          </div>
+        </div>
+        <div id="vis_grid"></div>
+      </div>
+
       <!-- CONFIG ÉTIQUETTES -->
       <div class="settings-card" style="margin-top:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
@@ -1131,6 +1161,19 @@ table.ct tr:last-child td{border-bottom:none}
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
             <button class="sbtn" id="savebases" style="background:#3B6D11">Sauvegarder les bases</button>
             <span class="svd" id="bsvd">Sauvegarde!</span>
+          </div>
+        </div>
+        <div class="cs">
+          <div class="cst">Canettes aérosol</div>
+          <div class="csd"><b>Décoche</b> les produits qui ne s'encannent pas — tout est encannable par défaut. Il faut aussi que la masse du gallon soit renseignée (colonne <b>g/gal</b> des bases, plus haut).</div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 4px">
+            <div class="fg" style="max-width:190px"><label>Grammes par canette</label><input type="number" id="aero_g_canette" step="1" min="1" placeholder="110"></div>
+            <div class="fg" style="max-width:250px"><label>g par once de colorant (défaut)</label><input type="number" id="aero_g_par_oz" step="0.1" min="0.1" placeholder="33"></div>
+          </div>
+          <div id="aero_prods" style="margin-top:12px"></div>
+          <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
+            <button class="sbtn" id="save_aero" style="background:#3B6D11">Sauvegarder</button>
+            <span class="svd" id="aero_svd">Sauvegarde!</span>
           </div>
         </div>
         <div class="cs">
@@ -1501,7 +1544,367 @@ function firstNameFromProfile(nom,email){
 function roleLabel(r){return r==='admin'?'Admin':r==='comptoir'?'Comptoir':r==='production'?'Production':r==='comptabilite'?'Comptabilité':(r||'Utilisateur');}
 // Comptabilite : acces limite aux Recettes (lecture) et au Portail.
 function isCompta(){return role==='comptabilite';}
-var VUES_COMPTA=['clients','produits','detail','portail'];
+
+/* =====================================================================
+   CANETTES AEROSOL
+   Regle de base : une canette recoit 110 g de peinture — base + colorants,
+   NON catalysee. Le nombre de canettes tirees d'un contenant depend donc de
+   la masse du produit, pas de son volume.
+   Les prix ne changent pas : la canette reste au tarif existant
+   (prix du gallon / 24 + 14,95 $).
+   ===================================================================== */
+var AERO_DEF={g_canette:110,g_par_oz:33};
+var aeroCfg={g_canette:110,g_par_oz:33};
+var produitsEncannables={};
+
+function cleProduitAero(marque,produit){return (marque||'')+'|'+normProd(produit);}
+// Par defaut un produit EST encannable : on ne masque que ce qui est
+// explicitement decoche. Sinon rien n'apparait tant que rien n'est configure.
+function estEncannable(r){
+  if(!r)return false;
+  var v=produitsEncannables[cleProduitAero(r.marque,r.produit)];
+  return v===undefined?true:v;
+}
+function loadAeroCfg(){
+  return sb.from('parametres').select('type,marque,valeur').in('type',['aerosol','encannable']).then(function(res){
+    produitsEncannables={};
+    aeroCfg={g_canette:AERO_DEF.g_canette,g_par_oz:AERO_DEF.g_par_oz};
+    (res.data||[]).forEach(function(x){
+      if(x.type==='aerosol'){var v=parseFloat(x.valeur);if(v>0)aeroCfg[x.marque]=v;}
+      else if(x.type==='encannable')produitsEncannables[x.marque]=(String(x.valeur)==='1');
+    });
+    return aeroCfg;
+  });
+}
+
+// Base correspondant a une recette — meme regle de selection que le calcul des couts.
+function baseDeRecette(r){
+  if(!r)return null;
+  var cands=allBases.filter(function(b){
+    var matchBase=!r.numero_base||(b.numero_base&&b.numero_base.toLowerCase()===r.numero_base.toLowerCase());
+    var matchMarque=!r.marque||b.marque.toLowerCase()===r.marque.toLowerCase();
+    var matchProd=!r.produit||b.produit.toLowerCase()===r.produit.toLowerCase();
+    if(r.numero_base)return matchBase&&matchMarque;
+    return matchProd&&matchMarque;
+  });
+  return cands.filter(function(b){return b.catalyseur_cout_1l||b.catalyseur_cout_1gal;})[0]||cands[0]||null;
+}
+
+// Onces totales d'une ligne de colorant ('10 oz 3/64', '2 oz 1/128'...).
+function ozDeColorant(qtyStr,marque){
+  var parts=String(qtyStr||'0').split(' '),oz=0,f2=0,f3=0;
+  parts.forEach(function(p){
+    p=p.trim();if(!p)return;
+    if(p.indexOf('/48')>=0)f2=parseFloat(p)||0;
+    else if(p.indexOf('/64')>=0)f2=parseFloat(p)||0;
+    else if(p.indexOf('/128')>=0)f3=parseFloat(p)||0;
+    else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
+  });
+  return marque==='Pepin'?(oz+f2/64):(oz+f2/64+f3/128);
+}
+
+// Combien de gallons represente le format enregistre.
+// masse_gallon est par gallon : une recette 5 gallons pese cinq fois plus de base.
+function galEquiv(qty){
+  var q=String(qty||'Gallon');
+  if(q==='3 gallons')return 3;
+  if(q==='5 gallons')return 5;
+  if(q==='Pinte')return 0.25;
+  var L=q.match(/^([\d.]+)\s*L$/i);
+  if(L)return parseFloat(L[1])/3.785411784;
+  return 1;
+}
+
+// Masse en grammes du contenant enregistre pour cette recette.
+// {total, base, colorants:[{nom,g}], manquants:[]}
+function masseRecette(r){
+  var isSyn=r.marque==='Pepin'&&(r.produit||'').toLowerCase().indexOf('synthane')>=0;
+  var isDiso=r.marque==='Disolac';
+  var manquants=[],mBase=0;
+  if(!isSyn&&!isDiso){
+    var b=baseDeRecette(r);
+    if(!b)manquants.push('base introuvable au catalogue');
+    else if(!(parseFloat(b.masse_gallon)>0))
+      manquants.push('masse du gallon non renseignee pour la base '+(b.numero_base||b.produit)+' (onglet Couts et Prix, colonne g/gal)');
+    else mBase=parseFloat(b.masse_gallon)*galEquiv(r.quantite);
+  }
+  var cols=[],tot=mBase,approx=false;
+  (r.colorants||[]).sort(function(a,b2){return (a.ordre||0)-(b2.ordre||0);}).forEach(function(c){
+    var g=0;
+    if((c.unite||'OZ')==='GR'){
+      g=parseFloat(c.quantite)||0;
+    }else{
+      var cp=allCP.filter(function(x){return x.nom.toLowerCase()===(c.nom||'').toLowerCase();})[0];
+      var gParOz=(cp&&parseFloat(cp.poids_gr_gal)>0)?(parseFloat(cp.poids_gr_gal)/128):aeroCfg.g_par_oz;
+      if(!(cp&&parseFloat(cp.poids_gr_gal)>0))approx=true;
+      g=ozDeColorant(c.quantite,r.marque)*gParOz;
+    }
+    if(g>0){cols.push({nom:c.nom,g:g});tot+=g;}
+  });
+  if((isSyn||isDiso)&&!cols.length)manquants.push('aucun composant pese sur cette recette');
+  return{total:tot,base:mBase,colorants:cols,manquants:manquants,approx:approx};
+}
+
+// Ce qu'il faut peser pour n canettes.
+function aPeserPour(r,n){
+  var m=masseRecette(r);
+  if(m.manquants.length||!(m.total>0))return{manquants:m.manquants.length?m.manquants:['masse totale inconnue']};
+  var besoin=n*aeroCfg.g_canette,f=besoin/m.total;
+  return{
+    besoin:besoin,facteur:f,masseTotale:m.total,approx:m.approx,
+    base:m.base*f,
+    colorants:m.colorants.map(function(c){return{nom:c.nom,g:c.g*f};}),
+    maxCanettes:Math.floor(m.total/aeroCfg.g_canette),
+    manquants:[]
+  };
+}
+
+// Fractions du suivi aerosol -> part du contenant encore disponible
+var AERO_FRACTIONS={'1 gal':1,'3/4':0.75,'2/3':2/3,'1/2':0.5,'1/3':1/3,'1/4':0.25,'vide':0};
+function canettesRestantes(r,quantiteRestante){
+  var m=masseRecette(r);
+  if(m.manquants.length||!(m.total>0))return null;
+  var f=AERO_FRACTIONS[quantiteRestante];
+  if(f===undefined)f=1;
+  return Math.floor((m.total*f)/aeroCfg.g_canette);
+}
+function fmtG(g){return (Math.round(g*10)/10).toFixed(1).replace('.',',')+' g';}
+
+// ---- Carte « Canettes aerosol » de la fiche recette ----
+function aeroCarteHTML(r){
+  if(!estEncannable(r))return '';
+  var m=masseRecette(r);
+  var head='<div class="stit">Aérosol</div>';
+  if(m.manquants.length){
+    return head+'<div class="hbox" style="border-color:var(--amber);background:var(--amber-l);color:var(--amber)">'+
+      'Calcul impossible : '+esc(m.manquants.join(' ; '))+'.</div>';
+  }
+  var max=Math.floor(m.total/aeroCfg.g_canette);
+  var choix=[1,2,3,6,12,24].map(function(n){
+    return '<button type="button" class="aeroq" data-n="'+n+'">'+n+'</button>';
+  }).join('');
+  return head+'<div class="pbox">'+
+    '<div class="pbh"><span class="pbt">'+aeroCfg.g_canette+' g de peinture par canette</span>'+
+      '<span style="font-size:11px;color:var(--tx3)">'+esc(libelleQty(r.quantite))+' = '+fmtG(m.total)+
+      (m.approx?' (approx.)':'')+' — donne '+max+' canette'+(max!==1?'s':'')+'</span></div>'+
+    '<div class="aerobar"><span style="font-size:13px;font-weight:500">Combien de canettes ?</span>'+
+      '<div class="aeroqs">'+choix+'</div>'+
+      '<span style="font-size:12px;color:var(--tx3)">ou</span>'+
+      '<input type="number" id="aero-nb" value="1" min="1" max="999" step="1" aria-label="Nombre de canettes">'+
+    '</div><div id="aero-res"></div></div>';
+}
+function aeroRendreResultat(r){
+  var box=Q('aero-res');if(!box)return;
+  var n=parseInt((Q('aero-nb')||{}).value,10)||1;
+  if(n<1)n=1;
+  var res=aPeserPour(r,n);
+  if(res.manquants&&res.manquants.length){box.innerHTML='';return;}
+  var lignes='<tr style="background:var(--bg2,#f6f7f9)"><th style="text-align:left;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">A peser</th>'+
+    '<th style="text-align:right;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">Quantite</th></tr>';
+  if(res.base>0)lignes+='<tr><td style="padding:8px 10px;border-top:0.5px solid var(--bd)"><b>Base</b> '+esc(r.numero_base||'')+'</td>'+
+    '<td style="padding:8px 10px;text-align:right;border-top:0.5px solid var(--bd);font-weight:600">'+fmtG(res.base)+'</td></tr>';
+  res.colorants.forEach(function(c){
+    lignes+='<tr><td style="padding:8px 10px;border-top:0.5px solid var(--bd)">'+esc(c.nom)+'</td>'+
+      '<td style="padding:8px 10px;text-align:right;border-top:0.5px solid var(--bd)">'+fmtG(c.g)+'</td></tr>';
+  });
+  lignes+='<tr><td style="padding:8px 10px;border-top:0.5px solid var(--bd)"><b>Total</b></td>'+
+    '<td style="padding:8px 10px;text-align:right;border-top:0.5px solid var(--bd);font-weight:600">'+fmtG(res.besoin)+'</td></tr>';
+  var html='<table style="width:100%;border-collapse:collapse;font-size:13px;border:0.5px solid var(--bd);border-radius:8px;overflow:hidden">'+lignes+'</table>';
+  if(n>res.maxCanettes){
+    html+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Il faut plus que le contenant enregistre : '+
+      libelleQty(r.quantite)+' ne donne que '+res.maxCanettes+' canette'+(res.maxCanettes!==1?'s':'')+'.</div>';
+  }
+  // Le comptoir voit aussi l'argent ; la production ne voit que la matiere.
+  if(canP()){
+    var p=prixDeRecette(r);
+    if(p){
+      var coutTot=(parseFloat(p.cost_base)||0)+(parseFloat(p.cost_colorant)||0);
+      var coutMat=coutTot*res.facteur;
+      var pv=parseFloat(p.prix_canette||0)*n;
+      html+='<div class="pcards" style="margin-top:12px">'+
+        '<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cout matiere</div><div class="pv" style="color:var(--tx)">'+coutMat.toFixed(2)+' $</div></div>'+
+        (pv>0?'<div class="pc"><div class="pl">Prix de vente</div><div class="pv">'+pv.toFixed(2)+' $</div></div>':'')+
+        '</div>';
+      if(pv>0){
+        html+='<div class="fbox">'+n+' canette'+(n!==1?'s':'')+' a '+parseFloat(p.prix_canette).toFixed(2)+' $ — tarif inchange (prix du gallon / 24 + 14,95 $)</div>';
+        // La formule du prix de canette divise par 24 le prix ENREGISTRE. Sur une
+        // recette 3 ou 5 gallons, ce prix est celui du gros contenant : le tarif
+        // obtenu n'a plus le meme sens. Signale, pas corrige (tarifs inchanges).
+        if(galEquiv(r.quantite)!==1)html+='<div style="font-size:12px;color:var(--amber);margin-top:6px">A verifier : cette recette est enregistree en '+
+          esc(libelleQty(r.quantite))+'. Le prix de canette vient de la formule « prix enregistre / 24 + 14,95 $ », appliquee ici au prix du contenant complet.</div>';
+      }
+    }
+  }
+  if(res.approx)html+='<div style="font-size:11px;color:var(--tx3);margin-top:8px">Poids des colorants estime a '+
+    String(aeroCfg.g_par_oz).replace('.',',')+' g par once. Renseigner le poids au gallon d\'un colorant le rend exact pour lui.</div>';
+  box.innerHTML=html;
+}
+// ---- Reglages : produits encannables ----
+function basesDuProduit(marque,produit){
+  return allBases.filter(function(b){
+    return b.marque===marque && normProd(b.produit)===normProd(produit);
+  });
+}
+function renderAeroProduits(){
+  var box=Q('aero_prods');if(!box)return;
+  if(Q('aero_g_canette'))Q('aero_g_canette').value=aeroCfg.g_canette;
+  if(Q('aero_g_par_oz'))Q('aero_g_par_oz').value=aeroCfg.g_par_oz;
+  var m={};
+  recs.forEach(function(r){
+    if(!r.produit||!r.produit.trim()||r.marque==='Disolac')return;
+    var k=cleProduitAero(r.marque,r.produit);
+    if(!m[k])m[k]={cle:k,marque:r.marque,produit:r.produit.trim(),n:0};
+    m[k].n++;
+  });
+  var keys=Object.keys(m)
+    .sort(function(a,b){return m[a].marque.localeCompare(m[b].marque)||m[b].n-m[a].n;});
+  if(!keys.length){box.innerHTML='<div class="empty" style="padding:14px">Aucun produit.</div>';return;}
+  box.innerHTML=keys.map(function(k){
+    var p=m[k],bs=basesDuProduit(p.marque,p.produit);
+    var pretes=bs.filter(function(b){return parseFloat(b.masse_gallon)>0;}).length;
+    var etat=!bs.length?'<span style="color:var(--tx3)">aucune base au catalogue</span>'
+      :pretes===bs.length?'<span style="color:var(--green)">'+pretes+' base'+(pretes!==1?'s':'')+' prête'+(pretes!==1?'s':'')+'</span>'
+      :'<span style="color:var(--amber)">'+pretes+' / '+bs.length+' bases ont leur masse au gallon</span>';
+    return '<label style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:0.5px solid var(--bd);cursor:pointer;font-size:13px">'+
+      '<input type="checkbox" id="enc_'+esc(k)+'" data-cle="'+esc(k)+'"'+(produitsEncannables[k]===false?'':' checked')+' style="width:16px;height:16px;accent-color:#3B6D11">'+
+      '<span style="flex:1"><b>'+esc(p.produit)+'</b> <span style="color:var(--tx3)">· '+esc(p.marque)+' · '+p.n+' recettes</span></span>'+
+      '<span style="font-size:11px">'+etat+'</span></label>';
+  }).join('');
+}
+function saveAeroCfg(){
+  if(!canP())return;
+  var btn=Q('save_aero');btn.disabled=true;btn.textContent='Sauvegarde...';
+  var rows=[];
+  var gc=parseFloat((Q('aero_g_canette')||{}).value)||AERO_DEF.g_canette;
+  var go=parseFloat((Q('aero_g_par_oz')||{}).value)||AERO_DEF.g_par_oz;
+  rows.push({type:'aerosol',marque:'g_canette',valeur:String(gc)});
+  rows.push({type:'aerosol',marque:'g_par_oz',valeur:String(go)});
+  Q('aero_prods').querySelectorAll('input[type=checkbox]').forEach(function(cb){
+    rows.push({type:'encannable',marque:cb.dataset.cle,valeur:cb.checked?'1':'0'});
+  });
+  sb.from('parametres').upsert(rows,{onConflict:'type,marque'}).then(function(res){
+    btn.disabled=false;btn.textContent='Sauvegarder';
+    if(res.error){toast('Erreur : '+res.error.message,4500);return;}
+    loadAeroCfg().then(function(){
+      renderAeroProduits();
+      var sv=Q('aero_svd');if(sv){sv.style.display='inline-block';setTimeout(function(){sv.style.display='none';},2500);}
+      toast('Reglages aerosol enregistres.');
+    });
+  });
+}
+if(Q('save_aero'))Q('save_aero').addEventListener('click',saveAeroCfg);
+
+function aeroBrancher(r){
+  var inp=Q('aero-nb');if(!inp)return;
+  function marquer(){
+    var n=parseInt(inp.value,10)||0;
+    document.querySelectorAll('.aeroq').forEach(function(b){
+      b.classList.toggle('on',parseInt(b.dataset.n,10)===n);
+    });
+  }
+  inp.addEventListener('input',function(){marquer();aeroRendreResultat(r);});
+  document.querySelectorAll('.aeroq').forEach(function(b){
+    b.addEventListener('click',function(){inp.value=b.dataset.n;marquer();aeroRendreResultat(r);});
+  });
+  marquer();aeroRendreResultat(r);
+}
+
+/* ---- Visibilite des onglets par role -------------------------------------
+   Les valeurs vivent dans `parametres` (type `visibilite_tab`, cle « onglet:role »).
+   Ces lignes existaient deja en base mais aucun code ne les lisait : la visibilite
+   etait ecrite en dur. Quand une case n'a jamais ete enregistree, on retombe sur
+   le comportement d'avant, donc rien ne bouge tant qu'on n'y touche pas. */
+var TABS_VIS=[
+  {id:'clients',lbl:'Recettes',fixe:true},
+  {id:'ajouter',lbl:'+ Ajouter'},
+  {id:'conversions',lbl:'Conversions'},
+  {id:'portail',lbl:'Portail'},
+  {id:'couts',lbl:'Coûts et Prix'},
+  {id:'mistints',lbl:'Mistints'},
+  {id:'aerosol',lbl:'Aérosols'},
+  {id:'reglages',lbl:'Réglages',fixe:true}
+];
+var ROLES_VIS=[{id:'admin',lbl:'Admin'},{id:'comptoir',lbl:'Comptoir'},
+               {id:'comptabilite',lbl:'Comptabilité'},{id:'production',lbl:'Production'}];
+var visTabs={};
+function visDefaut(o,r){
+  if(o==='clients'||o==='portail')return true;
+  if(o==='reglages')return r==='admin';
+  if(o==='couts')return r==='admin'||r==='comptoir';
+  if(r==='comptabilite')return false;
+  return true;
+}
+// Deux cases ne sont jamais modifiables : Recettes (page de repli de showView) et
+// Reglages pour l'admin (sinon plus personne ne peut rouvrir cet ecran).
+function visFigee(o){return o==='clients'||o==='reglages';}
+function tabVisible(o,r){
+  r=r||role;
+  if(o==='clients')return true;
+  if(o==='reglages')return r==='admin';
+  var k=o+':'+r;
+  return Object.prototype.hasOwnProperty.call(visTabs,k)?visTabs[k]:visDefaut(o,r);
+}
+function loadVisTabs(){
+  return sb.from('parametres').select('marque,valeur').eq('type','visibilite_tab').then(function(r){
+    visTabs={};
+    (r.data||[]).forEach(function(x){visTabs[x.marque]=String(x.valeur)==='1';});
+    appliquerVisibiliteTabs();
+    return visTabs;
+  });
+}
+function appliquerVisibiliteTabs(){
+  TABS_VIS.forEach(function(t){
+    var el=document.querySelector('.tab[data-tab="'+t.id+'"]');
+    if(el)el.style.display=tabVisible(t.id,role)?'':'none';
+  });
+  if(Q('psec'))Q('psec').style.display=canP()?'':'none';
+}
+// Les vues sans onglet propre retombent sur celui des recettes.
+function ongletDeVue(v){return (v==='produits'||v==='detail')?'clients':v;}
+
+function renderVisGrid(){
+  var box=Q('vis_grid');if(!box)return;
+  var h='<div class="vgrid"><div class="vh"></div>';
+  ROLES_VIS.forEach(function(r){h+='<div class="vh vc">'+esc(r.lbl)+'</div>';});
+  TABS_VIS.forEach(function(t){
+    h+='<div class="vlbl vrowhover">'+esc(t.lbl)+'</div>';
+    ROLES_VIS.forEach(function(r){
+      var fig=visFigee(t.id),coche=tabVisible(t.id,r.id);
+      var titre=fig?(t.id==='clients'?"Toujours visible : c'est la page de repli de l'application"
+                                     :"Réservé aux admins : sinon plus personne ne peut rouvrir les réglages"):'';
+      h+='<div class="vc vrowhover'+(fig?' vlock':'')+'" title="'+esc(titre)+'">'+
+         '<input type="checkbox" id="vis_'+t.id+'_'+r.id+'"'+(coche?' checked':'')+(fig?' disabled':'')+'></div>';
+    });
+  });
+  box.innerHTML=h+'</div>';
+  TABS_VIS.forEach(function(t){ROLES_VIS.forEach(function(r){
+    var el=Q('vis_'+t.id+'_'+r.id);
+    if(el&&!el.disabled)el.addEventListener('change',function(){if(Q('vis_save'))Q('vis_save').disabled=false;});
+  });});
+  if(Q('vis_save'))Q('vis_save').disabled=true;
+}
+function saveVisTabs(){
+  if(!isAdmin())return;
+  var btn=Q('vis_save');btn.disabled=true;btn.textContent='Enregistrement...';
+  var rows=[];
+  TABS_VIS.forEach(function(t){
+    if(visFigee(t.id))return;
+    ROLES_VIS.forEach(function(r){
+      var el=Q('vis_'+t.id+'_'+r.id);if(!el)return;
+      rows.push({type:'visibilite_tab',marque:t.id+':'+r.id,valeur:el.checked?'1':'0'});
+    });
+  });
+  sb.from('parametres').upsert(rows,{onConflict:'type,marque'}).then(function(res){
+    btn.textContent='Enregistrer';
+    if(res.error){toast('Erreur : '+res.error.message,4500);btn.disabled=false;return;}
+    loadVisTabs().then(function(){
+      renderVisGrid();
+      var sv=Q('vis_svd');if(sv){sv.style.display='inline-block';setTimeout(function(){sv.style.display='none';},2500);}
+      toast('Visibilité mise à jour.');
+    });
+  });
+}
+
 function initApp(u){
   user=u;
   sb.from('profiles').select('role,nom').eq('id',u.id).single().then(function(r){
@@ -1511,14 +1914,8 @@ function initApp(u){
     var pill=Q('rpill');
     pill.textContent=roleLabel(role);
     pill.className='rpill r-'+role;
-    Q('psec').style.display=canP()?'':'none';
-    Q('tcouts').style.display=canP()?'':'none';
-    if(Q('treglages'))Q('treglages').style.display=role==='admin'?'':'none';
-    if(Q('tmistints'))Q('tmistints').style.display=isCompta()?'none':'';
-    if(isCompta()){
-      ['tajouter','tconversions','taerosol','tcouts'].forEach(function(t){if(Q(t))Q(t).style.display='none';});
-      Q('psec').style.display='none';
-    }
+    appliquerVisibiliteTabs();
+    loadVisTabs();
     Q('fdate').value=new Date().toISOString().slice(0,10);
     if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
     Q('login').style.display='none';
@@ -1526,6 +1923,7 @@ function initApp(u){
     loadMarges();
     loadCatalogues().then(function(){loadRecs();});
     loadClients();
+    loadAeroCfg();
     etqFetchFromDb();
     showView('clients');
   });
@@ -1560,7 +1958,7 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 // TABS
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
-    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();}
+    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();loadAeroCfg().then(renderAeroProduits);}
     if(t.dataset.tab==='conversions'){initConversions();}
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
@@ -1570,8 +1968,8 @@ document.querySelectorAll('.tab').forEach(function(t){
   });
 });
 function showView(name){
-  if(isCompta()&&VUES_COMPTA.indexOf(name)<0){
-    toast('Accès limité aux Recettes et au Portail');
+  if(!tabVisible(ongletDeVue(name),role)){
+    toast('Cet onglet ne t\'est pas accessible');
     name='clients';
   }
   ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','mistints','aerosol'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
@@ -1629,7 +2027,8 @@ Q('logoHomeBtn').addEventListener('click',function(){
 var settingsUsers=[];
 function loadReglages(){
   if(Q('admin_settings_box'))Q('admin_settings_box').style.display=isAdmin()?'':'none';
-  if(isAdmin())loadUsersList();
+  if(Q('vis_box'))Q('vis_box').style.display=isAdmin()?'':'none';
+  if(isAdmin()){loadUsersList();loadVisTabs().then(renderVisGrid);}
   renderEtqConfig();
 }
 function loadUsersList(){
@@ -1776,6 +2175,7 @@ document.addEventListener('click',function(e){
   if(!e.target)return;
   if(e.target.id==='create_user_btn')createUserFromSettings();
   if(e.target.id==='toggle_new_user')toggleNewUser();
+  if(e.target.id==='vis_save')saveVisTabs();
   if(e.target.id==='cancel_new_user'){
     ['new_user_email','new_user_nom','new_user_password'].forEach(function(id){if(Q(id))Q(id).value='';});
     toggleNewUser(false);
@@ -2995,7 +3395,8 @@ function openDetail(id){
     return nb;
   }
 
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div>'+(r.notes?'<div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div>':'')+'<div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div></div><div class="stit">Colorants</div>'+colTable+prixHTML;
+  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div>'+(r.notes?'<div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div>':'')+'<div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div></div><div class="stit">Colorants</div>'+colTable+prixHTML+aeroCarteHTML(r);
+  aeroBrancher(r);
   if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(true),Q('detpan').firstChild);}
 
   // Numero TC — toujours tout en haut de la fiche. Attribue par la base de
@@ -4359,8 +4760,11 @@ Q('savebases').addEventListener('click',function(){
   allRows.forEach(function(row){
     var id=row.dataset.id,prod=row.querySelector('.bp').value.trim(),num=row.querySelector('.bn').value.trim()||null,marque=row.querySelector('.bm').value;
     var c1=parseFloat(row.querySelector('.bc1').value)||null,c3=parseFloat(row.querySelector('.bc3').value)||null,c5=parseFloat(row.querySelector('.bc5').value)||null;
+    var mg=row.querySelector('.bmg')?parseFloat(row.querySelector('.bmg').value)||null:null;
     if(!prod||!marque)return;
-    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:c1||c3||c5||0,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5};
+    // masse_gallon : la colonne existait dans l'ecran mais n'etait ni envoyee ni
+    // presente en base — toute saisie etait perdue au rechargement.
+    var data={produit:prod,numero_base:num,marque:marque,cout_gallon:c1||c3||c5||0,cout_1gal:c1,cout_3gal:c3,cout_5gal:c5,masse_gallon:mg};
     if(id)proms.push(sb.from('bases').update(data).eq('id',id));
     else proms.push(sb.from('bases').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;return r;}));
   });
