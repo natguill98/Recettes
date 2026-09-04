@@ -327,11 +327,17 @@ table.ct tr:last-child td{border-bottom:none}
 .settings-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;align-items:start}
 .settings-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px}
 .settings-note{font-size:12px;color:var(--tx2);line-height:1.5;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:10px 12px;margin-top:10px}
-.user-row{display:grid;grid-template-columns:1.2fr 1fr 120px 90px;gap:6px;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--bd)}
+.user-row{display:grid;grid-template-columns:1.1fr 1.4fr 130px auto;gap:6px;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--bd)}
+.user-meta{grid-column:1/-1;font-size:11px;color:var(--tx3);margin-top:-2px}
+.user-acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.user-acts button{padding:6px 10px;font-size:11px;border-radius:var(--r);border:0.5px solid var(--bd2);background:var(--sur);color:var(--tx);cursor:pointer;white-space:nowrap}
+.user-acts button.uprim{background:#1A8FD1;color:#fff;border-color:#1A8FD1;font-weight:500}
+.user-acts button.udel{color:var(--red);border-color:var(--red)}
+.umoi{font-size:10px;background:var(--blue-l);color:var(--blue);padding:1px 6px;border-radius:20px;margin-left:6px}
 .user-row:last-child{border-bottom:none}
 .user-row input,.user-row select{padding:7px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
 .user-row .uemail{font-size:12px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:760px){.settings-grid{grid-template-columns:1fr}.user-row{grid-template-columns:1fr}}
+@media(max-width:760px){.settings-grid{grid-template-columns:1fr}.user-row{grid-template-columns:1fr}.user-acts{justify-content:flex-start}}
 
 @media(max-width:760px){.portal-grid{grid-template-columns:1fr}}
 
@@ -957,7 +963,7 @@ table.ct tr:last-child td{border-bottom:none}
     <div class="view" id="v-reglages">
       <div class="portal-hero">
         <div class="portal-title">Réglages</div>
-        <div class="portal-sub">Modifier l’affichage utilisateur et gérer les accès. La création complète d’un accès de connexion demande une Edge Function sécurisée.</div>
+        <div class="portal-sub">Modifier l’affichage utilisateur et gérer les accès.</div>
       </div>
 
       <div class="settings-grid">
@@ -971,7 +977,7 @@ table.ct tr:last-child td{border-bottom:none}
 
         <div class="settings-card" id="admin_settings_box" style="display:none">
           <div class="ftit">Utilisateurs</div>
-          <div class="settings-note">Admin : vous pouvez modifier le nom affiché et le rôle des profils existants. Pour créer un nouvel accès de connexion sans passer dans Supabase, il faut configurer l’Edge Function <strong>admin-create-user</strong>.</div>
+          <div class="settings-note">Admin : modifie le nom, le courriel de connexion et le rôle de chaque utilisateur, change son mot de passe ou supprime son compte. Les changements prennent effet à sa prochaine connexion.</div>
           <div id="users_list" style="margin-top:12px"></div>
 
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
@@ -2211,35 +2217,94 @@ function loadUsersList(){
   var box=Q('users_list');
   if(!box||!isAdmin())return;
   box.innerHTML='<div class="empty" style="padding:18px">Chargement des utilisateurs...</div>';
-  sb.from('profiles').select('id,nom,role').order('nom',{ascending:true}).then(function(r){
-    if(r.error){console.error(r.error);box.innerHTML='<div class="err" style="display:block">Impossible de lire les profils. Vérifiez les politiques RLS de la table profiles.</div>';return;}
-    settingsUsers=r.data||[];
+  sb.functions.invoke('admin-utilisateurs',{body:{action:'list'}}).then(function(res){
+    var d=res&&res.data;
+    if((res&&res.error)||!d||d.error){
+      box.innerHTML='<div class="err" style="display:block">Impossible de lire la liste : '+
+        esc((d&&d.error)||(res&&res.error&&res.error.message)||'Edge Function admin-utilisateurs injoignable')+'</div>';
+      return;
+    }
+    settingsUsers=d.users||[];
     renderUsersList();
   });
+}
+function fmtConnexion(iso){
+  if(!iso)return 'jamais connecte';
+  var d=new Date(iso);if(isNaN(d))return '';
+  var j=Math.floor((Date.now()-d.getTime())/86400000);
+  var txt=d.toLocaleDateString('fr-CA',{day:'numeric',month:'short',year:'numeric'});
+  if(j<=0)return 'connecte aujourd\'hui';
+  if(j===1)return 'connecte hier';
+  if(j<30)return 'connecte il y a '+j+' jours';
+  return 'derniere connexion : '+txt;
 }
 function renderUsersList(){
   var box=Q('users_list');
   if(!box)return;
-  if(!settingsUsers.length){box.innerHTML='<div class="empty" style="padding:18px">Aucun profil trouvé.</div>';return;}
+  if(!settingsUsers.length){box.innerHTML='<div class="empty" style="padding:18px">Aucun utilisateur trouve.</div>';return;}
   box.innerHTML=settingsUsers.map(function(u){
-    var id=esc(u.id);
+    var id=esc(u.id),rl=u.role||'production';
+    function opt(v,lbl){return '<option value="'+v+'"'+(rl===v?' selected':'')+'>'+lbl+'</option>';}
     return '<div class="user-row">'+
-      '<input id="u_nom_'+id+'" value="'+esc(u.nom||'')+'" placeholder="Nom affiché">'+
-      '<div class="uemail" title="'+id+'">ID: '+id.slice(0,8)+'...</div>'+
-      '<select id="u_role_'+id+'"><option value="production" '+((u.role||'')==='production'?'selected':'')+'>Production</option><option value="comptoir" '+((u.role||'')==='comptoir'?'selected':'')+'>Comptoir</option><option value="comptabilite" '+((u.role||'')==='comptabilite'?'selected':'')+'>Comptabilité</option><option value="admin" '+((u.role||'')==='admin'?'selected':'')+'>Admin</option></select>'+
-      '<button class="btn" onclick="saveUserProfile(\''+id+'\')">Sauver</button>'+
+      '<input id="u_nom_'+id+'" value="'+esc(u.nom||'')+'" placeholder="Nom affiche">'+
+      '<input id="u_mail_'+id+'" value="'+esc(u.courriel||'')+'" placeholder="courriel" type="email" autocomplete="off">'+
+      '<select id="u_role_'+id+'">'+opt('production','Production')+opt('comptoir','Comptoir')+
+        opt('comptabilite','Comptabilite')+opt('admin','Admin')+'</select>'+
+      '<div class="user-acts">'+
+        '<button class="uprim" onclick="saveUserProfile(\''+id+'\')">Enregistrer</button>'+
+        '<button onclick="changerMotDePasse(\''+id+'\')">Mot de passe</button>'+
+        (u.moi?'':'<button class="udel" onclick="supprimerUtilisateur(\''+id+'\')">Supprimer</button>')+
+      '</div>'+
+      '<div class="user-meta">'+esc(fmtConnexion(u.derniere_connexion))+
+        (u.moi?'<span class="umoi">c\'est toi</span>':'')+
+        (u.sans_profil?'<span class="umoi" style="background:var(--amber-l,#fdf1dc);color:var(--amber)">compte sans profil</span>':'')+
+      '</div>'+
       '</div>';
   }).join('');
 }
+function usagerPar(id){return settingsUsers.filter(function(u){return u.id===id;})[0]||{};}
 window.saveUserProfile=function(id){
   if(!isAdmin()){toast('Admin seulement.');return;}
   var nom=(Q('u_nom_'+id)&&Q('u_nom_'+id).value.trim())||'';
+  var mail=(Q('u_mail_'+id)&&Q('u_mail_'+id).value.trim())||'';
   var r=(Q('u_role_'+id)&&Q('u_role_'+id).value)||'production';
   if(!nom){toast('Nom requis.');return;}
-  sb.from('profiles').update({nom:nom,role:r}).eq('id',id).then(function(res){
-    if(res.error){console.error(res.error);toast('Erreur ou non autorisé.');return;}
-    toast('Utilisateur mis à jour.');
-    if(user&&id===user.id){role=r;Q('rpill').textContent=roleLabel(role);Q('rpill').className='rpill r-'+role;Q('uname').textContent=firstNameFromProfile(nom,user.email);}
+  var u=usagerPar(id);
+  if(mail&&mail.toLowerCase()!==(u.courriel||'').toLowerCase()){
+    if(!confirm('Changer le courriel de connexion de « '+(u.courriel||'?')+' » a « '+mail+' » ?\n\nIl devra utiliser ce nouveau courriel pour se connecter.'))return;
+  }
+  sb.functions.invoke('admin-utilisateurs',{body:{action:'update',id:id,nom:nom,role:r,courriel:mail}}).then(function(res){
+    var d=res&&res.data;
+    if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'non autorise'),4500);return;}
+    toast('Utilisateur mis a jour.');
+    if(user&&id===user.id){
+      role=r;Q('rpill').textContent=roleLabel(role);Q('rpill').className='rpill r-'+role;
+      Q('uname').textContent=firstNameFromProfile(nom,user.email);
+    }
+    loadUsersList();
+  });
+};
+window.changerMotDePasse=function(id){
+  if(!isAdmin()){toast('Admin seulement.');return;}
+  var u=usagerPar(id);
+  var mp=prompt('Nouveau mot de passe pour '+(u.nom||u.courriel||'cet utilisateur')+' (8 caracteres minimum) :');
+  if(mp===null)return;
+  mp=mp.trim();
+  if(mp.length<8){toast('8 caracteres minimum.');return;}
+  sb.functions.invoke('admin-utilisateurs',{body:{action:'password',id:id,password:mp}}).then(function(res){
+    var d=res&&res.data;
+    if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'non autorise'),4500);return;}
+    toast('Mot de passe change. Transmets-le a la personne.',4000);
+  });
+};
+window.supprimerUtilisateur=function(id){
+  if(!isAdmin()){toast('Admin seulement.');return;}
+  var u=usagerPar(id),nom=u.nom||u.courriel||'cet utilisateur';
+  if(!confirm('Supprimer definitivement '+nom+' ('+(u.courriel||'')+') ?\n\nSon acces est retire immediatement et le compte ne peut pas etre recree automatiquement. Les recettes et le contenu qu\'il a saisis restent en place.'))return;
+  sb.functions.invoke('admin-utilisateurs',{body:{action:'delete',id:id}}).then(function(res){
+    var d=res&&res.data;
+    if((res&&res.error)||!d||d.error){toast('Erreur : '+((d&&d.error)||'suppression impossible'),5000);return;}
+    toast(nom+' supprime.',3200);
     loadUsersList();
   });
 };
