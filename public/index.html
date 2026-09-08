@@ -60,7 +60,9 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);min-h
 .uname{font-size:12px;color:var(--tx2)}
 .lout{font-size:12px;color:var(--tx2);background:var(--gray-l);border:0.5px solid var(--bd);border-radius:var(--r);padding:4px 10px;cursor:pointer}
 .tabs{display:flex;background:#1a2a3a;padding:0 16px;overflow-x:auto;gap:4px;align-items:center}
-.tab{font-size:13px;padding:7px 16px;color:rgba(255,255,255,0.6);cursor:pointer;border:none;border-radius:20px;margin:6px 0;background:none;white-space:nowrap;font-weight:400;transition:all 0.15s}
+.tab{display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:7px 14px;color:rgba(255,255,255,0.6);cursor:pointer;border:none;border-radius:20px;margin:6px 0;background:none;white-space:nowrap;font-weight:400;transition:all 0.15s}
+.tab svg{width:16px;height:16px;flex:none;display:block}
+@media(max-width:620px){.tab{padding:7px 11px;gap:5px}.tab svg{width:15px;height:15px}}
 .tab.on{background:rgba(255,255,255,0.18);color:#fff;font-weight:500}
 .tab:hover:not(.on){background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85)}
 .tab-right-first{margin-left:auto}
@@ -230,9 +232,9 @@ table.ct tr:last-child td{border-bottom:none}
 .brow select{padding:5px 3px}
 .bhd{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 80px 28px;gap:5px;margin-bottom:4px}
 .bhd span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
-.crow3{display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
+.crow3{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
 .crow3 input{padding:6px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
-.chd2{display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:6px;margin-bottom:4px}
+.chd2{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 28px;gap:6px;margin-bottom:4px}
 .chd2 span{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
 .addbtn{font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px 0;margin-top:4px}
 .pprev{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--r);padding:14px;margin-top:14px;display:none}
@@ -357,12 +359,34 @@ table.ct tr:last-child td{border-bottom:none}
 .upast.moi{background:var(--blue-l);color:var(--blue)}
 .upast.warn{background:#fdf1dc;color:#a06a12}
 .upast.mod{background:#fdf1dc;color:#a06a12}
+.dhd{display:grid;grid-template-columns:120px 150px 1fr 1.4fr 34px;gap:8px;padding:0 0 6px;font-size:10px;
+  font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);border-bottom:0.5px solid var(--bd);margin-top:12px}
+.discrow{display:grid;grid-template-columns:120px 150px 1fr 1.4fr 34px;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--bd)}
+.discrow input,.discrow select{padding:7px 9px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);width:100%;min-width:0}
+@media(max-width:820px){.dhd{display:none}.discrow{grid-template-columns:1fr;gap:6px;padding:12px 0}}
+.disc-box{border-radius:var(--rl);padding:12px 14px;margin:0 0 14px;border:1px solid;border-left-width:4px}
+.disc-tit{font-size:13px;font-weight:700;margin-bottom:6px;letter-spacing:.02em}
+.disc-l{font-size:13px;line-height:1.5}
+.disc-l+.disc-l{margin-top:4px}
+.disc-tag{display:inline-block;font-size:10px;font-weight:600;color:#fff;
+  padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.disc-box.disc-rouge{background:#fdecec;border-color:#e0a0a0;border-left-color:var(--red)}
+.disc-rouge .disc-tit{color:var(--red)} .disc-rouge .disc-l{color:#8a2b2b}
+span.disc-tag.disc-rouge{background:var(--red)}
+.disc-box.disc-orange{background:#fdf4e3;border-color:#e8c98a;border-left-color:#c9860f}
+.disc-orange .disc-tit{color:#a06a12} .disc-orange .disc-l{color:#7a5210}
+span.disc-tag.disc-orange{background:#c9860f}
+.disc-box.disc-bleu{background:#eaf4fb;border-color:#a8cde6;border-left-color:#1A8FD1}
+.disc-bleu .disc-tit{color:#12699b} .disc-bleu .disc-l{color:#155a85}
+span.disc-tag.disc-bleu{background:#1A8FD1}
 .aerobar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .aeroqs{display:flex;gap:6px;flex-wrap:wrap}
-.aeroq{padding:7px 14px;font-size:13px;font-weight:500;border:0.5px solid var(--bd2);border-radius:var(--r);
+.conv-band{background:#3B6D11;color:#fff;font-size:13px;font-weight:600;padding:8px 12px;
+  border-radius:8px 8px 0 0;letter-spacing:.02em}
+.convq,.aeroq{padding:7px 14px;font-size:13px;font-weight:500;border:0.5px solid var(--bd2);border-radius:var(--r);
   background:var(--sur);color:var(--tx);cursor:pointer;min-width:42px}
-.aeroq:hover{background:var(--bg2,#f0f2f5)}
-.aeroq.on{background:#3B6D11;color:#fff;border-color:#3B6D11}
+.convq:hover,.aeroq:hover{background:var(--bg2,#f0f2f5)}
+.convq.on,.aeroq.on{background:#3B6D11;color:#fff;border-color:#3B6D11}
 #aero-nb{width:82px;padding:7px 9px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);text-align:center;background:var(--sur);color:var(--tx)}
 .vgrid{display:grid;grid-template-columns:1.6fr repeat(4,minmax(90px,120px));border-top:0.5px solid var(--bd)}
 .vgrid>div{padding:11px 12px;border-bottom:0.5px solid var(--bd);display:flex;align-items:center;font-size:13px}
@@ -555,15 +579,15 @@ table.ct tr:last-child td{border-bottom:none}
     </div>
   </div>
   <div class="tabs">
-    <button class="tab on" data-tab="clients">Recettes</button>
-    <button class="tab" id="tajouter" data-tab="ajouter">+ Ajouter</button>
-    <button class="tab" id="tconversions" data-tab="conversions">Conversions</button>
-    <button class="tab" data-tab="portail">Portail</button>
-    <button class="tab tab-right-first" data-tab="couts" id="tcouts">Couts et Prix</button>
-    <button class="tab" data-tab="mistints" id="tmistints" style="display:none">Mistints</button>
-    <button class="tab" data-tab="aerosol" id="taerosol">Aérosols</button>
-    <button class="tab" data-tab="reglages" id="treglages" style="display:none">Réglages</button>
-    <button class="tab" data-tab="detail" id="tdetail" style="display:none">Fiche</button>
+    <button class="tab on" data-tab="clients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.6 12.4 11 6a1.7 1.7 0 0 1 2.4 0l4.2 4.2a1.7 1.7 0 0 1 0 2.4l-3.9 3.9a2.6 2.6 0 0 1-3.7 0l-5.4-5.4Z"/><path d="M9.6 7.4 7.2 5"/><path d="M19.9 14.6s1.6 2 1.6 3a1.6 1.6 0 0 1-3.2 0c0-1 1.6-3 1.6-3Z"/></svg><span>Recettes</span></button>
+    <button class="tab" id="tajouter" data-tab="ajouter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 8.2v7.6M8.2 12h7.6"/></svg><span>Ajouter</span></button>
+    <button class="tab" id="tconversions" data-tab="conversions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h13"/><path d="M14 5.5l3 3-3 3"/><path d="M20 15.5H7"/><path d="M10 12.5l-3 3 3 3"/></svg><span>Conversions</span></button>
+    <button class="tab" data-tab="portail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.2 10.8v2.4a1 1 0 0 0 1 1h2.1l5 3.9V5.9l-5 3.9H4.2a1 1 0 0 0-1 1Z"/><path d="M15.4 9a4.4 4.4 0 0 1 0 6"/><path d="M18.4 6.6a8 8 0 0 1 0 10.8"/></svg><span>Portail</span></button>
+    <button class="tab tab-right-first" data-tab="couts" id="tcouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M18.6 14.4a1.5 1.5 0 0 0 .3 1.6l.05.06a1.8 1.8 0 1 1-2.55 2.55l-.06-.05a1.5 1.5 0 0 0-1.6-.3 1.5 1.5 0 0 0-.9 1.37v.16a1.8 1.8 0 1 1-3.6 0v-.08a1.5 1.5 0 0 0-.98-1.37 1.5 1.5 0 0 0-1.6.3l-.06.05a1.8 1.8 0 1 1-2.55-2.55l.05-.06a1.5 1.5 0 0 0 .3-1.6 1.5 1.5 0 0 0-1.37-.9h-.16a1.8 1.8 0 1 1 0-3.6h.08a1.5 1.5 0 0 0 1.37-.98 1.5 1.5 0 0 0-.3-1.6l-.05-.06a1.8 1.8 0 1 1 2.55-2.55l.06.05a1.5 1.5 0 0 0 1.6.3h.07a1.5 1.5 0 0 0 .9-1.37v-.16a1.8 1.8 0 1 1 3.6 0v.08a1.5 1.5 0 0 0 .9 1.37 1.5 1.5 0 0 0 1.6-.3l.06-.05a1.8 1.8 0 1 1 2.55 2.55l-.05.06a1.5 1.5 0 0 0-.3 1.6v.07a1.5 1.5 0 0 0 1.37.9h.16a1.8 1.8 0 1 1 0 3.6h-.08a1.5 1.5 0 0 0-1.37.9Z"/></svg><span>Gestion</span></button>
+    <button class="tab" data-tab="mistints" id="tmistints" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.8 11.6h10.4l-.9 8.7a1.7 1.7 0 0 1-1.7 1.5H9.4a1.7 1.7 0 0 1-1.7-1.5l-.9-8.7Z"/><path d="M8.2 8.6a5 5 0 0 1 8.6 1"/><path d="M17.6 5.6l-.8 4-3.9-.9"/></svg><span>Mistints</span></button>
+    <button class="tab" data-tab="aerosol" id="taerosol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7.6" y="8.4" width="7.4" height="12.4" rx="2"/><path d="M9.6 8.4V5.6a1 1 0 0 1 1-1h1.4a1 1 0 0 1 1 1v2.8"/><path d="M18 5.2h.01M20.6 7.6h.01M18 10.4h.01M21 3h.01"/></svg><span>Aérosols</span></button>
+    <button class="tab" data-tab="reglages" id="treglages" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/><circle cx="9" cy="6.5" r="2"/><circle cx="15.5" cy="12" r="2"/><circle cx="8" cy="17.5" r="2"/></svg><span>Réglages</span></button>
+    <button class="tab" data-tab="detail" id="tdetail" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.4h7.6L19 8.8v11.8H6V3.4Z"/><path d="M13.4 3.4v5.6H19"/></svg><span>Fiche</span></button>
   </div>
   <div class="pg">
 
@@ -1164,12 +1188,27 @@ table.ct tr:last-child td{border-bottom:none}
           </div>
         </div>
         <div class="cs">
+          <div class="cst">Bases et colorants signalés</div>
+          <div class="csd">Une recette qui utilise un de ces codes affiche un bandeau sur sa fiche et une pastille dans les listes. Le <b>niveau</b> choisit la couleur et le ton : bloquant, avertissement ou simple note. Le code d'une base est reconnu même avec son préfixe : <b>1981C</b> attrape <b>435-1981C</b>.</div>
+          <div class="dhd"><span>Code</span><span>Niveau</span><span>Titre de l'avis</span><span>Message</span><span></span></div>
+          <div id="disc_rows"></div>
+          <button class="addbtn" id="disc_add" style="font-weight:600">+ Ajouter un code</button>
+          <div style="display:flex;align-items:center;margin-top:12px;gap:8px">
+            <button class="sbtn" id="disc_save" style="background:#3B6D11">Sauvegarder</button>
+            <span class="svd" id="disc_svd">Sauvegarde!</span>
+          </div>
+        </div>
+        <div class="cs">
           <div class="cst">Canettes aérosol</div>
           <div class="csd"><b>Décoche</b> les produits qui ne s'encannent pas — tout est encannable par défaut. Il faut aussi que la masse du gallon soit renseignée (colonne <b>g/gal</b> des bases, plus haut).</div>
           <div style="display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 4px">
             <div class="fg" style="max-width:190px"><label>Grammes par canette</label><input type="number" id="aero_g_canette" step="1" min="1" placeholder="110"></div>
             <div class="fg" style="max-width:250px"><label>g par once de colorant (défaut)</label><input type="number" id="aero_g_par_oz" step="0.1" min="0.1" placeholder="33"></div>
+            <div class="fg" style="max-width:170px"><label>Frais fixe / canette</label><input type="number" id="aero_frais_base" step="0.01" min="0" placeholder="14.95"></div>
+            <div class="fg" style="max-width:190px"><label>Frais si petite quantité</label><input type="number" id="aero_frais_petit" step="0.01" min="0" placeholder="19.95"></div>
+            <div class="fg" style="max-width:150px"><label>Seuil (canettes)</label><input type="number" id="aero_seuil" step="1" min="1" placeholder="6"></div>
           </div>
+          <div class="csd" style="margin-top:2px">Sous le seuil, la canette se vend <b>peinture + frais de petite quantité</b> ; à partir du seuil, <b>peinture + frais fixe</b>.</div>
           <div id="aero_prods" style="margin-top:12px"></div>
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
             <button class="sbtn" id="save_aero" style="background:#3B6D11">Sauvegarder</button>
@@ -1204,13 +1243,13 @@ table.ct tr:last-child td{border-bottom:none}
           <div class="csd">Entrez le prix au gallon. Le cost colorant se calculera automatiquement ($/gal divise par 128 = $/oz).</div>
 
           <div style="font-size:12px;font-weight:600;color:#3B6D11;margin-bottom:6px">Pepin (NUM / FA / STX)</div>
-          <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span></span></div>
+          <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span>g / oz</span><span></span></div>
           <div id="crows-pepin"></div>
           <button class="addbtn" id="addcol-pepin" style="color:#3B6D11;font-weight:600">+ Ajouter (Pepin)</button>
 
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
             <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px">International / Devoe (GVA)</div>
-            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span></span></div>
+            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span>g / oz</span><span></span></div>
             <div id="crows-inter"></div>
             <button class="addbtn" id="addcol-inter" style="color:var(--blue);font-weight:600">+ Ajouter (Inter/Devoe)</button>
           </div>
@@ -1218,7 +1257,7 @@ table.ct tr:last-child td{border-bottom:none}
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
             <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px">Disolac (PAS) — grammes</div>
             <div class="csd" style="margin-bottom:8px">Disolac se dose uniquement en grammes. Entrez le <strong>$/gr</strong> dans la 2e colonne; le $/gallon est facultatif.</div>
-            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr</span><span></span></div>
+            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr</span><span>g / oz</span><span></span></div>
             <div id="crows-disolac"></div>
             <button class="addbtn" id="addcol-disolac" style="color:var(--gray);font-weight:600">+ Ajouter (Disolac)</button>
           </div>
@@ -1546,6 +1585,264 @@ function roleLabel(r){return r==='admin'?'Admin':r==='comptoir'?'Comptoir':r==='
 function isCompta(){return role==='comptabilite';}
 
 /* =====================================================================
+   BASES ET COLORANTS DISCONTINUES
+   Liste tenue dans `parametres` (type='discontinue', marque=<code>,
+   valeur=<message>). Une recette qui utilise un de ces codes affiche un
+   bandeau rouge en haut de sa fiche : elle ne peut pas etre faite telle quelle.
+   ===================================================================== */
+var discontinues=[];   // [{code, codeNorm, niveau, titre, message}]
+
+// L'avis est entierement modifiable : niveau, titre et message.
+// `valeur` contient un JSON {n,t,m}. Une valeur en texte simple (ancien format)
+// est relue comme un message bloquant, pour ne rien perdre.
+var AVIS_NIVEAUX={
+  bloquant:{lbl:'Bloquant (rouge)',titre:'Recette non realisable',cls:'disc-rouge',tag:'non realisable'},
+  avert:   {lbl:'Avertissement (orange)',titre:'A verifier avant de faire',cls:'disc-orange',tag:'a verifier'},
+  info:    {lbl:'Information (bleu)',titre:'Note',cls:'disc-bleu',tag:'note'}
+};
+function lireAvis(valeur){
+  var d={niveau:'bloquant',titre:'',message:String(valeur||'')};
+  try{
+    var o=JSON.parse(valeur);
+    if(o&&typeof o==='object'){
+      d.niveau=AVIS_NIVEAUX[o.n]?o.n:'bloquant';
+      d.titre=String(o.t||'');
+      d.message=String(o.m||'');
+    }
+  }catch(e){/* ancien format : texte simple */}
+  if(!d.titre)d.titre=AVIS_NIVEAUX[d.niveau].titre;
+  return d;
+}
+function ecrireAvis(niveau,titre,message){
+  return JSON.stringify({n:niveau,t:titre||'',m:message||''});
+}
+function loadDiscontinues(){
+  return sb.from('parametres').select('marque,valeur').eq('type','discontinue').then(function(r){
+    discontinues=(r.data||[]).map(function(x){
+      var a=lireAvis(x.valeur);
+      return{code:x.marque,codeNorm:normProd(x.marque),niveau:a.niveau,titre:a.titre,message:a.message};
+    }).filter(function(d){return d.codeNorm;});
+    return discontinues;
+  });
+}
+// Codes signales utilises par cette recette.
+// Base : recherche « contient », pour attraper les prefixes (435-1981C contient 1981C).
+// Colorant : correspondance exacte sur le nom.
+function discontinuesDeRecette(r){
+  if(!r||!discontinues.length)return [];
+  var base=normProd(r.numero_base||'');
+  var noms=(r.colorants||[]).map(function(c){return normProd(c.nom||'');});
+  var vus={},out=[];
+  discontinues.forEach(function(d){
+    if(vus[d.codeNorm])return;
+    var touche=(base&&base.indexOf(d.codeNorm)>=0)||noms.indexOf(d.codeNorm)>=0;
+    if(touche){vus[d.codeNorm]=1;out.push(d);}
+  });
+  return out;
+}
+// Le niveau le plus severe decide de la couleur du bandeau et de la pastille.
+var ORDRE_NIVEAU={bloquant:3,avert:2,info:1};
+function niveauMax(liste){
+  var n='info';
+  liste.forEach(function(d){if((ORDRE_NIVEAU[d.niveau]||0)>(ORDRE_NIVEAU[n]||0))n=d.niveau;});
+  return n;
+}
+function bandeauDiscontinue(r){
+  var l=discontinuesDeRecette(r);
+  if(!l.length)return '';
+  var nv=niveauMax(l),cfg=AVIS_NIVEAUX[nv]||AVIS_NIVEAUX.bloquant;
+  var premier=l.filter(function(d){return d.niveau===nv;})[0]||l[0];
+  var icone=(nv==='info')?'':'&#9888; ';
+  return '<div class="disc-box '+cfg.cls+'">'+
+    '<div class="disc-tit">'+icone+esc(premier.titre||cfg.titre)+'</div>'+
+    l.map(function(d){return '<div class="disc-l">'+esc(d.message)+'</div>';}).join('')+
+    '</div>';
+}
+function pastilleDiscontinue(r){
+  var l=discontinuesDeRecette(r);
+  if(!l.length)return '';
+  var nv=niveauMax(l),cfg=AVIS_NIVEAUX[nv]||AVIS_NIVEAUX.bloquant;
+  return '<span class="disc-tag '+cfg.cls+'">'+esc(cfg.tag)+'</span>';
+}
+
+
+/* =====================================================================
+   CONVERSION DE FORMAT D'UNE RECETTE
+   Verifie sur les recettes existantes : on ramene chaque colorant en
+   unites de fraction, on multiplie par le rapport des formats, puis on
+   recompose avec la retenue.
+     Pepin          : 1 oz = 48 unites          (colonne 1/48)
+     Inter / Devoe  : 1 oz = 64 unites, plus une demi-unite notee 1/128
+     Synthane, Disolac : tout est en grammes, simple multiplication
+   Exemple valide contre A.D. PEINTURE / GRIS POLYVAL :
+     9 oz 22/48 -> x5 -> 47 oz 14/48, identique a la recette 5 gallons saisie.
+   ===================================================================== */
+// Les formats proposes a la conversion sont ceux offerts pour ce produit.
+
+// Nombre de sous-unites par once, par marque. Pepin compte en 48es (avec
+// des demies observees dans les donnees), Inter en 128es.
+function grilleDe(marque){
+  return marque==='Pepin'?{par:48,pas:0.5,demi:false}:{par:128,pas:1,demi:true};
+}
+// Quantite d'un colorant -> total en sous-unites.
+function unitesDeQuantite(qtyStr,marque){
+  var g=grilleDe(marque),oz=0,f2=0,f3=0;
+  String(qtyStr||'0').split(' ').forEach(function(p){
+    p=p.trim();if(!p)return;
+    if(p.indexOf('/48')>=0)f2=parseFloat(p)||0;
+    else if(p.indexOf('/64')>=0)f2=parseFloat(p)||0;
+    else if(p.indexOf('/128')>=0)f3=parseFloat(p)||0;
+    else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
+  });
+  if(marque==='Pepin')return oz*48+f2;             // 48es
+  return oz*128+f2*2+f3;                            // 128es
+}
+// Total en sous-unites -> notation de la marque.
+function quantiteDepuisUnites(u,marque){
+  if(marque==='Pepin'){
+    u=Math.round(u*2)/2;                            // demi-unite possible
+    var oz=Math.floor(u/48),r=parseFloat((u-oz*48).toFixed(1));
+    var out=[];
+    if(oz>0)out.push(oz+' oz');
+    if(r>0)out.push(r+'/48');
+    return out.length?out.join(' '):'0';
+  }
+  u=Math.round(u);
+  var oz2=Math.floor(u/128),reste=u-oz2*128;
+  var s64=Math.floor(reste/2),s128=reste-s64*2;
+  var o=[];
+  if(oz2>0)o.push(oz2+' oz');
+  if(s64>0)o.push(s64+'/64');
+  if(s128>0)o.push('1/128');
+  return o.length?o.join(' '):'0';
+}
+// Conversion complete d'une recette vers un autre format.
+function convertirRecette(r,formatCible){
+  var src=galEquiv(r.quantite),dst=galEquiv(formatCible);
+  if(!(src>0)||!(dst>0))return null;
+  var f=dst/src,arrondi=false;
+  var lignes=(r.colorants||[]).slice().sort(function(a,b){return (a.ordre||0)-(b.ordre||0);}).map(function(c){
+    if((c.unite||'OZ')==='GR'){
+      var g=Math.round(((parseFloat(c.quantite)||0)*f)*10)/10;
+      return{nom:c.nom,unite:'GR',avant:c.quantite+' g',
+             apres:String(g).replace('.',',')+' g',brut:String(g)};
+    }
+    var u=unitesDeQuantite(c.quantite,r.marque),cible=u*f;
+    var pas=r.marque==='Pepin'?0.5:1;
+    if(Math.abs(cible-Math.round(cible/pas)*pas)>0.001)arrondi=true;
+    var q=quantiteDepuisUnites(cible,r.marque);
+    return{nom:c.nom,unite:'OZ',avant:c.quantite,apres:q,brut:q};
+  });
+  return{facteur:f,lignes:lignes,arrondi:arrondi,format:formatCible};
+}
+
+function convCarteHTML(r){
+  if(!r||!(r.colorants||[]).length)return '';
+  var actuel=r.quantite||'Gallon';
+  var dispo=formatsPour(r.marque,r.produit).filter(function(x){return x!==actuel;});
+  if(!dispo.length)return '';
+  var chips=dispo.map(function(x){
+    return '<button type="button" class="convq" data-fmt="'+esc(x)+'">'+esc(x)+'</button>';
+  }).join('');
+  return '<div class="stit">Convertir le format</div>'+
+    '<div class="pbox"><div class="pbh"><span class="pbt">Recette enregistree en '+esc(libelleQty(actuel))+'</span>'+
+      '<span style="font-size:11px;color:var(--tx3)">affichage seulement, la recette n\'est pas modifiee</span></div>'+
+    '<div class="aerobar"><span style="font-size:13px;font-weight:500">Convertir vers</span>'+
+      '<div class="aeroqs">'+chips+'</div></div>'+
+    '<div id="conv-res"></div></div>';
+}
+function convRendre(r,fmt){
+  var box=Q('conv-res');if(!box)return;
+  if(!fmt){box.innerHTML='';return;}
+  var c=convertirRecette(r,fmt);
+  if(!c){box.innerHTML='';return;}
+  // Une seule colonne de quantites, celle du format demande. Afficher le format
+  // d'origine a cote ferait risquer de peser la mauvaise valeur.
+  var h='<div class="conv-band">Recette en '+esc(libelleQty(fmt))+'</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:14px;border:0.5px solid var(--bd);border-top:none;border-radius:0 0 8px 8px;overflow:hidden">'+
+    '<tr style="background:var(--bg2,#f6f7f9)">'+
+      '<th style="text-align:left;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">Colorant</th>'+
+      '<th style="text-align:right;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">Quantité</th></tr>';
+  c.lignes.forEach(function(l){
+    h+='<tr><td style="padding:9px 10px;border-top:0.5px solid var(--bd);font-weight:500">'+esc(l.nom)+'</td>'+
+       '<td style="padding:9px 10px;text-align:right;border-top:0.5px solid var(--bd);font-weight:700;font-size:15px">'+esc(l.apres)+'</td></tr>';
+  });
+  h+='</table>';
+  if(c.arrondi)h+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Le rapport ne tombe pas juste sur la grille de fractions : certaines valeurs sont arrondies a l\'unite la plus proche.</div>';
+  h+='<button type="button" class="btn btnp" id="conv-nouvelle" style="margin-top:12px;font-size:13px">'+
+     'Enregistrer comme nouvelle recette en '+esc(libelleQty(fmt))+'</button>';
+  box.innerHTML=h;
+  var bt=Q('conv-nouvelle');
+  if(bt)bt.addEventListener('click',function(){nouvelleRecetteDepuisConversion(r,fmt,c);});
+}
+
+// Ouvre le formulaire d'ajout deja rempli avec la recette convertie.
+// Le client est laisse vide : c'est tout ce qui reste a saisir.
+function nouvelleRecetteDepuisConversion(r,fmt,c){
+  if(!canP()){toast('Acces reserve.');return;}
+  isLoading=true;
+  Q('fc').value='';
+  Q('fcoul').value=r.couleur||'';
+  Q('fnum').value=r.numero_couleur||'';
+  Q('fm').value=r.marque||'';
+  Q('fprod').value=r.produit||'';
+  Q('fbase').value=r.numero_base||'';
+  Q('fnotes').value=r.notes||'';
+  Q('fdate').value=new Date().toISOString().slice(0,10);
+  if(r.couleur_hex){updateHex(r.couleur_hex);}else{updateHex('#cccccc');}
+  updateQtyOptions();
+  Q('fqty').value=fmt;                       // le format vise
+  // Les couts changent avec le format : on les laisse se recalculer.
+  ['fcb','fcc','fprixgal','fprixcat'].forEach(function(id){if(Q(id))Q(id).value='';});
+  if(Q('fdateprix'))Q('fdateprix').value=new Date().toISOString().slice(0,10);
+  // La marge negociee du client suit la couleur, pas le format.
+  var p=prixDeRecette(r);
+  if(Q('fmarge')){
+    var vMg=margeVerrou(r);
+    Q('fmarge').value=(p&&p.marge_speciale)||(vMg.source==='prix'?parseFloat(vMg.marge.toFixed(2)):'');
+  }
+  setMargeVerrouUI(!!(Q('fmarge')&&Q('fmarge').value));
+  // Colorants aux quantites converties
+  Q('cform').innerHTML='';
+  var mode=getEditMode(r.marque,r.produit);
+  var chd=Q('cform').previousElementSibling;
+  if(chd){
+    if(mode==='gr'){chd.style.gridTemplateColumns='1fr 70px 28px';chd.innerHTML='<span>Colorant</span><span>Grammes</span><span></span>';}
+    else if(mode==='pepin'){chd.style.gridTemplateColumns='1fr 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/48</span><span></span>';}
+    else{chd.style.gridTemplateColumns='1fr 50px 50px 50px 28px';chd.innerHTML='<span>Colorant</span><span>Oz</span><span>1/64</span><span>1/128</span><span></span>';}
+  }
+  (c.lignes||[]).forEach(function(l){
+    if(mode==='gr'){addCRow(l.nom,l.brut,'');return;}
+    var pf=parseQtyFields(l.brut);
+    if(mode==='pepin')addCRow(l.nom,pf.oz,pf.f48);
+    else addCRow(l.nom,pf.oz,pf.f64,pf.f128);
+  });
+  if(!(c.lignes||[]).length)addCRow();
+  _lastColMode=mode;
+  setTimeout(function(){isLoading=false;autofillBase();calcColTotal();updatePrev();},400);
+  Q('ftit').innerHTML=esc(r.couleur)+' converti en '+esc(libelleQty(fmt))+
+    ' — choisir un client <span class="tctag" style="margin-left:8px">nouveau no TC a la sauvegarde</span>';
+  Q('savebtn').textContent='Sauvegarder la nouvelle recette';
+  delete Q('savebtn').dataset.editid;
+  showView('ajouter');
+  window.scrollTo(0,0);
+  toast('Recette convertie en '+libelleQty(fmt)+' — entrez le client et sauvegardez.',4000);
+}
+function convBrancher(r){
+  var btns=document.querySelectorAll('.convq');
+  if(!btns.length)return;
+  btns.forEach(function(b){
+    b.addEventListener('click',function(){
+      var deja=b.classList.contains('on');
+      document.querySelectorAll('.convq').forEach(function(x){x.classList.remove('on');});
+      if(deja){convRendre(r,null);return;}
+      b.classList.add('on');
+      convRendre(r,b.dataset.fmt);
+    });
+  });
+}
+
+/* =====================================================================
    CANETTES AEROSOL
    Regle de base : une canette recoit 110 g de peinture — base + colorants,
    NON catalysee. Le nombre de canettes tirees d'un contenant depend donc de
@@ -1553,8 +1850,8 @@ function isCompta(){return role==='comptabilite';}
    Les prix ne changent pas : la canette reste au tarif existant
    (prix du gallon / 24 + 14,95 $).
    ===================================================================== */
-var AERO_DEF={g_canette:110,g_par_oz:33};
-var aeroCfg={g_canette:110,g_par_oz:33};
+var AERO_DEF={g_canette:110,g_par_oz:33,frais_base:14.95,frais_petit:19.95,seuil_petit:6};
+var aeroCfg={g_canette:110,g_par_oz:33,frais_base:14.95,frais_petit:19.95,seuil_petit:6};
 var produitsEncannables={};
 
 function cleProduitAero(marque,produit){return (marque||'')+'|'+normProd(produit);}
@@ -1568,7 +1865,8 @@ function estEncannable(r){
 function loadAeroCfg(){
   return sb.from('parametres').select('type,marque,valeur').in('type',['aerosol','encannable']).then(function(res){
     produitsEncannables={};
-    aeroCfg={g_canette:AERO_DEF.g_canette,g_par_oz:AERO_DEF.g_par_oz};
+    aeroCfg={g_canette:AERO_DEF.g_canette,g_par_oz:AERO_DEF.g_par_oz,
+              frais_base:AERO_DEF.frais_base,frais_petit:AERO_DEF.frais_petit,seuil_petit:AERO_DEF.seuil_petit};
     (res.data||[]).forEach(function(x){
       if(x.type==='aerosol'){var v=parseFloat(x.valeur);if(v>0)aeroCfg[x.marque]=v;}
       else if(x.type==='encannable')produitsEncannables[x.marque]=(String(x.valeur)==='1');
@@ -1600,7 +1898,8 @@ function ozDeColorant(qtyStr,marque){
     else if(p.indexOf('/128')>=0)f3=parseFloat(p)||0;
     else if(!isNaN(parseFloat(p)))oz=parseFloat(p);
   });
-  return marque==='Pepin'?(oz+f2/64):(oz+f2/64+f3/128);
+  // Pepin : la colonne est en 48es — verifie sur les recettes 1 gal / 5 gal.
+  return marque==='Pepin'?(oz+f2/48):(oz+f2/64+f3/128);
 }
 
 // Combien de gallons represente le format enregistre.
@@ -1610,6 +1909,8 @@ function galEquiv(qty){
   if(q==='3 gallons')return 3;
   if(q==='5 gallons')return 5;
   if(q==='Pinte')return 0.25;
+  if(q==='2 pintes')return 0.5;
+  if(q==='3 pintes')return 0.75;
   var L=q.match(/^([\d.]+)\s*L$/i);
   if(L)return parseFloat(L[1])/3.785411784;
   return 1;
@@ -1625,7 +1926,7 @@ function masseRecette(r){
     var b=baseDeRecette(r);
     if(!b)manquants.push('base introuvable au catalogue');
     else if(!(parseFloat(b.masse_gallon)>0))
-      manquants.push('masse du gallon non renseignee pour la base '+(b.numero_base||b.produit)+' (onglet Couts et Prix, colonne g/gal)');
+      manquants.push('masse du gallon non renseignee pour la base '+(b.numero_base||b.produit)+' (onglet Gestion, colonne g/gal)');
     else mBase=parseFloat(b.masse_gallon)*galEquiv(r.quantite);
   }
   var cols=[],tot=mBase,approx=false;
@@ -1635,8 +1936,15 @@ function masseRecette(r){
       g=parseFloat(c.quantite)||0;
     }else{
       var cp=allCP.filter(function(x){return x.nom.toLowerCase()===(c.nom||'').toLowerCase();})[0];
-      var gParOz=(cp&&parseFloat(cp.poids_gr_gal)>0)?(parseFloat(cp.poids_gr_gal)/128):aeroCfg.g_par_oz;
-      if(!(cp&&parseFloat(cp.poids_gr_gal)>0))approx=true;
+      // Garde-fou : sur la famille synthane, poids_gr_gal contient une copie
+      // arrondie du cout au gramme (0,02 · 0,04 …), pas un poids. Un gallon de
+      // colorant ne pese pas 0,04 g — on ignore toute valeur invraisemblable.
+      // Poids reel du colorant quand il est renseigne (colonne g/oz de l'ecran
+      // Gestion), sinon la valeur globale. `poids_gr_gal` n'est pas fiable : le
+      // meme champ ecrit le cout au gramme sur la famille synthane.
+      var mgo=cp?parseFloat(cp.masse_gr_oz):NaN;
+      var gParOz=mgo>0?mgo:aeroCfg.g_par_oz;
+      if(!(mgo>0))approx=true;
       g=ozDeColorant(c.quantite,r.marque)*gParOz;
     }
     if(g>0){cols.push({nom:c.nom,g:g});tot+=g;}
@@ -1718,20 +2026,26 @@ function aeroRendreResultat(r){
   if(canP()){
     var p=prixDeRecette(r);
     if(p){
+      // Prix d'une canette = matiere reellement contenue + frais de canette.
+      // Le frais couvre la canette vide, le propulseur et la main-d'oeuvre ;
+      // il est majore sous le seuil, une petite serie coutant plus cher a preparer.
       var coutTot=(parseFloat(p.cost_base)||0)+(parseFloat(p.cost_colorant)||0);
       var coutMat=coutTot*res.facteur;
-      var pv=parseFloat(p.prix_canette||0)*n;
+      var petit=(n<aeroCfg.seuil_petit);
+      var frais=petit?aeroCfg.frais_petit:aeroCfg.frais_base;
+      var pv=coutMat+(frais*n);
+      var unitaire=n>0?pv/n:0;
       html+='<div class="pcards" style="margin-top:12px">'+
         '<div class="pc" style="background:#fff;border:0.5px solid var(--bd)"><div class="pl">Cout matiere</div><div class="pv" style="color:var(--tx)">'+coutMat.toFixed(2)+' $</div></div>'+
-        (pv>0?'<div class="pc"><div class="pl">Prix de vente</div><div class="pv">'+pv.toFixed(2)+' $</div></div>':'')+
+        '<div class="pc"><div class="pl">Prix de vente</div><div class="pv">'+pv.toFixed(2)+' $</div></div>'+
         '</div>';
-      if(pv>0){
-        html+='<div class="fbox">'+n+' canette'+(n!==1?'s':'')+' a '+parseFloat(p.prix_canette).toFixed(2)+' $ — tarif inchange (prix du gallon / 24 + 14,95 $)</div>';
-        // La formule du prix de canette divise par 24 le prix ENREGISTRE. Sur une
-        // recette 3 ou 5 gallons, ce prix est celui du gros contenant : le tarif
-        // obtenu n'a plus le meme sens. Signale, pas corrige (tarifs inchanges).
-        if(galEquiv(r.quantite)!==1)html+='<div style="font-size:12px;color:var(--amber);margin-top:6px">A verifier : cette recette est enregistree en '+
-          esc(libelleQty(r.quantite))+'. Le prix de canette vient de la formule « prix enregistre / 24 + 14,95 $ », appliquee ici au prix du contenant complet.</div>';
+      html+='<div class="fbox">'+n+' canette'+(n!==1?'s':'')+' a '+unitaire.toFixed(2)+' $ = '+
+        (coutMat/n).toFixed(2)+' $ de matiere + '+frais.toFixed(2)+' $ de frais'+
+        (petit?' <b>(moins de '+aeroCfg.seuil_petit+' canettes)</b>':'')+'</div>';
+      if(petit){
+        var uGros=(coutMat/n)+aeroCfg.frais_base;
+        html+='<div style="font-size:12px;color:var(--tx3);margin-top:6px">A '+aeroCfg.seuil_petit+
+          ' canettes et plus : '+uGros.toFixed(2)+' $ chacune.</div>';
       }
     }
   }
@@ -1739,6 +2053,68 @@ function aeroRendreResultat(r){
     String(aeroCfg.g_par_oz).replace('.',',')+' g par once. Renseigner le poids au gallon d\'un colorant le rend exact pour lui.</div>';
   box.innerHTML=html;
 }
+// ---- Reglages : bases et colorants discontinues ----
+function discAddRow(code,niveau,titre,message){
+  var c=Q('disc_rows');if(!c)return;
+  var row=document.createElement('div');row.className='discrow';
+  var a=document.createElement('input');a.type='text';a.className='dcode';a.placeholder='Ex: VKA033';a.value=code||'';
+  var n=document.createElement('select');n.className='dniv';
+  Object.keys(AVIS_NIVEAUX).forEach(function(k){
+    var o=document.createElement('option');o.value=k;o.textContent=AVIS_NIVEAUX[k].lbl;
+    if(k===(niveau||'bloquant'))o.selected=true;
+    n.appendChild(o);
+  });
+  var t=document.createElement('input');t.type='text';t.className='dtit';
+  t.placeholder=AVIS_NIVEAUX[niveau||'bloquant'].titre;t.value=titre||'';
+  var b=document.createElement('input');b.type='text';b.className='dmsg';b.placeholder='Message affiche sur la fiche';b.value=message||'';
+  var x=document.createElement('button');x.className='rm';x.textContent='x';
+  x.addEventListener('click',function(){row.remove();});
+  // Le titre par defaut suit le niveau choisi tant qu'on ne l'a pas ecrit soi-meme.
+  n.addEventListener('change',function(){t.placeholder=AVIS_NIVEAUX[n.value].titre;});
+  row.appendChild(a);row.appendChild(n);row.appendChild(t);row.appendChild(b);row.appendChild(x);
+  c.appendChild(row);
+}
+function renderDiscontinues(){
+  var c=Q('disc_rows');if(!c)return;
+  c.innerHTML='';
+  discontinues.slice().sort(function(x,y){return x.code.localeCompare(y.code,'fr',{numeric:true});})
+    .forEach(function(d){
+      var parDefaut=(AVIS_NIVEAUX[d.niveau]||AVIS_NIVEAUX.bloquant).titre;
+      discAddRow(d.code,d.niveau,d.titre===parDefaut?'':d.titre,d.message);
+    });
+  if(!discontinues.length)discAddRow('','bloquant','','');
+}
+function saveDiscontinues(){
+  if(!canP())return;
+  var btn=Q('disc_save');btn.disabled=true;btn.textContent='Sauvegarde...';
+  var lignes=[];
+  Q('disc_rows').querySelectorAll('.discrow').forEach(function(row){
+    var code=(row.querySelector('.dcode').value||'').trim().toUpperCase();
+    if(!code)return;
+    var niv=row.querySelector('.dniv').value||'bloquant';
+    var tit=(row.querySelector('.dtit').value||'').trim();
+    var msg=(row.querySelector('.dmsg').value||'').trim();
+    lignes.push({type:'discontinue',marque:code,valeur:ecrireAvis(niv,tit,msg||(code+' : a verifier.'))});
+  });
+  var gardes=lignes.map(function(l){return l.marque;});
+  var retires=discontinues.map(function(d){return d.code;}).filter(function(c){return gardes.indexOf(c)<0;});
+  var proms=retires.map(function(c){return sb.from('parametres').delete().eq('type','discontinue').eq('marque',c);});
+  if(lignes.length)proms.push(sb.from('parametres').upsert(lignes,{onConflict:'type,marque'}));
+  Promise.all(proms).then(function(res){
+    btn.disabled=false;btn.textContent='Sauvegarder';
+    var err=(res||[]).filter(function(x){return x&&x.error;})[0];
+    if(err){toast('Erreur : '+err.error.message,4500);return;}
+    loadDiscontinues().then(function(){
+      renderDiscontinues();
+      if(selId)openDetail(selId);
+      var sv=Q('disc_svd');if(sv){sv.style.display='inline-block';setTimeout(function(){sv.style.display='none';},2500);}
+      toast('Avis mis a jour.');
+    });
+  });
+}
+if(Q('disc_add'))Q('disc_add').addEventListener('click',function(){discAddRow('','bloquant','','');});
+if(Q('disc_save'))Q('disc_save').addEventListener('click',saveDiscontinues);
+
 // ---- Reglages : produits encannables ----
 function basesDuProduit(marque,produit){
   return allBases.filter(function(b){
@@ -1749,6 +2125,9 @@ function renderAeroProduits(){
   var box=Q('aero_prods');if(!box)return;
   if(Q('aero_g_canette'))Q('aero_g_canette').value=aeroCfg.g_canette;
   if(Q('aero_g_par_oz'))Q('aero_g_par_oz').value=aeroCfg.g_par_oz;
+  if(Q('aero_frais_base'))Q('aero_frais_base').value=aeroCfg.frais_base;
+  if(Q('aero_frais_petit'))Q('aero_frais_petit').value=aeroCfg.frais_petit;
+  if(Q('aero_seuil'))Q('aero_seuil').value=aeroCfg.seuil_petit;
   var m={};
   recs.forEach(function(r){
     if(!r.produit||!r.produit.trim()||r.marque==='Disolac')return;
@@ -1777,8 +2156,14 @@ function saveAeroCfg(){
   var rows=[];
   var gc=parseFloat((Q('aero_g_canette')||{}).value)||AERO_DEF.g_canette;
   var go=parseFloat((Q('aero_g_par_oz')||{}).value)||AERO_DEF.g_par_oz;
+  var fb=parseFloat((Q('aero_frais_base')||{}).value);if(!(fb>=0))fb=AERO_DEF.frais_base;
+  var fp=parseFloat((Q('aero_frais_petit')||{}).value);if(!(fp>=0))fp=AERO_DEF.frais_petit;
+  var sp=parseInt((Q('aero_seuil')||{}).value,10);if(!(sp>=1))sp=AERO_DEF.seuil_petit;
   rows.push({type:'aerosol',marque:'g_canette',valeur:String(gc)});
   rows.push({type:'aerosol',marque:'g_par_oz',valeur:String(go)});
+  rows.push({type:'aerosol',marque:'frais_base',valeur:String(fb)});
+  rows.push({type:'aerosol',marque:'frais_petit',valeur:String(fp)});
+  rows.push({type:'aerosol',marque:'seuil_petit',valeur:String(sp)});
   Q('aero_prods').querySelectorAll('input[type=checkbox]').forEach(function(cb){
     rows.push({type:'encannable',marque:cb.dataset.cle,valeur:cb.checked?'1':'0'});
   });
@@ -1924,6 +2309,7 @@ function initApp(u){
     loadCatalogues().then(function(){loadRecs();});
     loadClients();
     loadAeroCfg();
+    loadDiscontinues();
     etqFetchFromDb();
     showView('clients');
   });
@@ -1958,7 +2344,7 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 // TABS
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
-    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();loadAeroCfg().then(renderAeroProduits);}
+    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();loadAeroCfg().then(renderAeroProduits);loadDiscontinues().then(renderDiscontinues);}
     if(t.dataset.tab==='conversions'){initConversions();}
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
@@ -3051,7 +3437,7 @@ function renderClients(){
         var sw=r.couleur_hex?'<div class="csw" style="background:'+r.couleur_hex+'"></div>':'';
         var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
         var db2=canP()&&p?dbdg(p.date_prix):'';
-        row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub"><span class="tctag">'+tcOf(r)+'</span> - '+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
+        row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+pastilleDiscontinue(r)+'</div><div class="csub"><span class="tctag">'+tcOf(r)+'</span> - '+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+' - '+(r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
         row.addEventListener('click',(function(rec,navList){return function(){saveSearchScroll();_detailFrom='search';_navList=navList;_navIdx=navList.indexOf(rec.id);openDetail(rec.id);};})(r,searchNavList));
         body.appendChild(row);
       });
@@ -3270,7 +3656,7 @@ function renderProduits(){
       var sw=r.couleur_hex?'<div class="csw" style="background:'+r.couleur_hex+'"></div>':'';
       var pi2=canP()&&p&&p.prix_gallon?'<span style="font-size:12px;font-weight:600;color:var(--amber)">'+parseFloat(p.prix_gallon).toFixed(2)+' $</span>':'';
       var db2=canP()&&p?dbdg(p.date_prix):'';
-      row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+'</div><div class="csub"><span class="tctag">'+tcOf(r)+'</span> - '+(r.numero_couleur?'#'+r.numero_couleur+' - ':'')+( r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
+      row.innerHTML='<div class="cleft">'+sw+'<div class="cinfo"><div class="cname2">'+r.couleur+pastilleDiscontinue(r)+'</div><div class="csub"><span class="tctag">'+tcOf(r)+'</span> - '+(r.numero_couleur?'#'+r.numero_couleur+' - ':'')+( r.quantite||'Gallon')+' - '+r.marque+'</div></div></div><div class="cright">'+pi2+db2+'<span style="color:var(--tx3);font-size:14px;">></span></div>';
       row.addEventListener('click',(function(rec,navList){return function(){saveProdsScroll();_detailFrom='produits';_navList=navList;_navIdx=navList.indexOf(rec.id);openDetail(rec.id);};})(r,prodsNavList));
       body.appendChild(row);
     });
@@ -3395,7 +3781,8 @@ function openDetail(id){
     return nb;
   }
 
-  Q('detpan').innerHTML='<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div>'+(r.notes?'<div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div>':'')+'<div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div></div><div class="stit">Colorants</div>'+colTable+prixHTML+aeroCarteHTML(r);
+  Q('detpan').innerHTML=bandeauDiscontinue(r)+'<div class="dhead"><div class="dhl">'+sw+'<div><div class="dtit">'+r.couleur+'</div><div class="dsub">'+r.client+(r.numero_couleur?' - #'+r.numero_couleur:'')+'</div></div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="bdg '+mcls(r.marque)+'">'+r.marque+'</span><span class="bdg bq">'+(r.quantite||'Gallon')+'</span></div></div>'+(r.notes?'<div class="note-box"><div class="note-label">📝 Notes</div><div class="note-text">'+r.notes+'</div></div>':'')+'<div class="stit">Informations generales</div><div class="igrid"><div><div class="ik">Produit</div><div class="iv">'+(r.produit||'-')+'</div></div><div><div class="ik">Code base</div><div class="iv">'+(r.numero_base||'-')+'</div></div><div><div class="ik">Format</div><div class="iv">'+(r.quantite||'Gallon')+'</div></div><div><div class="ik">Date de creation</div><div class="iv">'+fmtD(r.date_recette)+'</div></div></div><div class="stit">Colorants</div>'+colTable+prixHTML+convCarteHTML(r)+aeroCarteHTML(r);
+  convBrancher(r);
   aeroBrancher(r);
   if(_navList.length>1){Q('detpan').insertBefore(makeNavBar(true),Q('detpan').firstChild);}
 
@@ -4398,20 +4785,35 @@ function coutBasePourQty(found,qty){
   if(found.cout_gallon)return parseFloat(found.cout_gallon);
   return 0;
 }
-function optionsQtyPour(marque,syn){
-  if(marque==='Disolac')return'<option>4 L</option><option>20 L</option><option>200 L</option>';
-  return'<option>Gallon</option><option>3 gallons</option><option>5 gallons</option>'+(syn?'<option>Pinte</option>':'');
+// Formats offerts, par produit. Source unique : le formulaire ET le
+// convertisseur de format s'en servent.
+//   - Synthane : produit a part, se vend a la pinte
+//   - INTERCURE 99NA : seul produit offert en 3 gallons
+//   - tout le reste : 1 gallon ou 5 gallons
+function formatsPour(marque,produit){
+  if(marque==='Disolac')return['4 L','20 L','200 L'];
+  var p=normProd(produit||'');
+  if(marque==='Pepin'&&p.indexOf('synthane')>=0)return['Pinte','2 pintes','3 pintes','Gallon'];
+  if(p.indexOf('99na')>=0)return['3 gallons'];   // seul format, aucune conversion
+  return['Gallon','5 gallons'];
+}
+function optionsQtyPour(marque,syn,produit){
+  return formatsPour(marque,produit).map(function(f){return '<option>'+f+'</option>';}).join('');
 }
 function libelleQty(q){
   if(isQtyMetrique(q))return q;
-  return q==='3 gallons'?'3 gal':q==='5 gallons'?'5 gal':q==='Pinte'?'pinte':'gallon';
+  return q==='3 gallons'?'3 gal':q==='5 gallons'?'5 gal':q==='Pinte'?'pinte':
+         q==='2 pintes'?'2 pintes':q==='3 pintes'?'3 pintes':'gallon';
 }
 function updateQtyOptions(){
   var sel=Q('fqty');if(!sel)return;
   var cur=sel.value,syn=isSynthane();
-  sel.innerHTML=optionsQtyPour(Q('fm').value,syn);
+  sel.innerHTML=optionsQtyPour(Q('fm').value,syn,Q('fprod')?Q('fprod').value:'');
   var found=false;
   for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){found=true;break;}}
+  // Une recette deja enregistree dans un format qui n'est plus offert garde le sien :
+  // on ne veut pas le changer en silence en ouvrant la fiche.
+  if(!found&&cur){var o=document.createElement('option');o.value=cur;o.textContent=cur+' (ancien format)';sel.appendChild(o);found=true;}
   if(found)sel.value=cur;
   var fcb=Q('fg-cb');if(fcb){fcb.style.display=syn?'none':'flex';}
   if(syn){if(Q('fcb'))Q('fcb').value='';}
@@ -4791,10 +5193,10 @@ function renderCP(){
     var fam=familleOf(c2);
     // Pepin et Synthane (STX) partagent la meme section a l'ecran.
     var k=fam==='inter'?'inter':fam==='disolac'?'disolac':'pepin';
-    addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct,k,fam);
+    addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct,k,fam,c2.masse_gr_oz);
   });
 }
-function addCPRow(id,nom,coutGal,poids,section,famille){
+function addCPRow(id,nom,coutGal,poids,section,famille,masse){
   id=id||'';nom=nom||'';coutGal=coutGal||'';poids=poids||'';section=section||'pepin';
   var row=document.createElement('div');row.className='crow3';row.dataset.id=id;
   // La famille reelle est conservee ici: une ligne STX vit dans la section
@@ -4805,14 +5207,17 @@ function addCPRow(id,nom,coutGal,poids,section,famille){
   n.value=nom;
   var g=document.createElement('input');g.type='number';g.className='cpg';g.placeholder='$/gal';g.step='0.01';g.value=coutGal;
   var p=document.createElement('input');p.type='number';p.className='cpp';p.placeholder='0.0000';p.step='0.0001';p.value=poids;
+  // Masse d'une unite de la colonne « oz » (un Y chez Pepin). Sert aux canettes.
+  var mg=document.createElement('input');mg.type='number';mg.className='cpm';mg.placeholder='g/oz';mg.step='0.01';mg.value=masse||'';
+  mg.title='Grammes que pese une unite de la colonne oz. Sert au calcul des canettes aerosol.';
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){pendCol={id:id,row:row};Q('mcol').classList.add('on');});
-  row.appendChild(n);row.appendChild(g);row.appendChild(p);row.appendChild(btn);
+  row.appendChild(n);row.appendChild(g);row.appendChild(p);row.appendChild(mg);row.appendChild(btn);
   var container=Q('crows-'+section);if(container)container.appendChild(row);
 }
-Q('addcol-pepin').addEventListener('click',function(){addCPRow('','','','','pepin');});
-Q('addcol-inter').addEventListener('click',function(){addCPRow('','','','','inter');});
-Q('addcol-disolac').addEventListener('click',function(){addCPRow('','','','','disolac');});
+Q('addcol-pepin').addEventListener('click',function(){addCPRow('','','','','pepin','pepin','');});
+Q('addcol-inter').addEventListener('click',function(){addCPRow('','','','','inter','inter','');});
+Q('addcol-disolac').addEventListener('click',function(){addCPRow('','','','','disolac','disolac','');});
 Q('savecols').addEventListener('click',function(){
   var allRows=[];
   ['crows-pepin','crows-inter','crows-disolac'].forEach(function(id){
@@ -4823,11 +5228,12 @@ Q('savecols').addEventListener('click',function(){
     var row=item.row;
     var id=row.dataset.id,nom=row.querySelector('.cpn').value.trim(),coutGal=parseFloat(row.querySelector('.cpg').value)||null;
     var poids=parseFloat(row.querySelector('.cpp').value)||null;
+    var masse=row.querySelector('.cpm')?parseFloat(row.querySelector('.cpm').value)||null:null;
     if(!nom)return;
     // Meme regle deterministe que le backfill SQL: la section donne la famille,
     // sauf dans la section Pepin ou un code STX bascule en 'synthane'.
     var fam=item.sec==='inter'?'inter':item.sec==='disolac'?'disolac':(nom.toLowerCase().indexOf('stx')>=0?'synthane':'pepin');
-    var data={nom:nom,famille:fam,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids,cout_gr_direct:poids};
+    var data={nom:nom,famille:fam,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids,cout_gr_direct:poids,masse_gr_oz:masse};
     if(id)proms.push(sb.from('colorants_prix').update(data).eq('id',id));
     else proms.push(sb.from('colorants_prix').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;return r;}));
   });
@@ -5590,6 +5996,8 @@ var _sauvRecId=null;
 function qtyFactor(quantite,marque,produit){
   var q=(quantite||'').toLowerCase();
   var isSyn=marque==='Pepin'&&(produit||'').toLowerCase().indexOf('synthane')>=0;
+  if(q.indexOf('3 pinte')>=0)return 0.75;
+  if(q.indexOf('2 pinte')>=0)return 0.5;
   if(q.indexOf('pinte')>=0)return 0.25;
   if(q.indexOf('3 gallon')>=0)return 3;
   if(q.indexOf('5 gallon')>=0)return isSyn?4:5; // règle Synthane: 5gl = 4x, pas 5x
@@ -5833,12 +6241,20 @@ function aeOptionsHtml(current){
 function refreshAerosolWidget(recId){
   var el=Q('ae-widget');if(!el)return;
   var s=aeRecMap[recId];
+  var rec=recs.filter(function(x){return x.id===recId;})[0];
+  var encannable=estEncannable(rec);
+  // Produit decoche dans les reglages : le suivi n'a pas lieu d'etre.
+  // Exception : si la recette est deja au suivi, on laisse de quoi l'en retirer,
+  // sinon la ligne resterait bloquee en base et dans l'onglet Aerosols.
+  if(!encannable&&!s){el.innerHTML='';return;}
   if(!s){
     el.innerHTML='<div class="stit">Stock aérosol</div><button class="btn" style="font-size:13px" onclick="addAerosol(\''+recId+'\',\'1 gal\')">+ Ajouter au suivi (1 gal)</button>';
     return;
   }
   var col=AE_COL[s.quantite_restante]||'#999';
-  el.innerHTML='<div class="stit">Stock aérosol</div><div style="display:flex;align-items:center;gap:10px">'+
+  el.innerHTML='<div class="stit">Stock aérosol</div>'+
+    (encannable?'':'<div style="font-size:12px;color:var(--amber);margin-bottom:8px">Ce produit n\'est plus marque encannable — retire-le du suivi si ce n\'est plus utile.</div>')+
+    '<div style="display:flex;align-items:center;gap:10px">'+
     '<select class="sf" style="border-color:'+col+';color:'+col+';font-weight:600" onchange="updateAerosolQty(\''+recId+'\',this.value)">'+aeOptionsHtml(s.quantite_restante)+'</select>'+
     '<button class="be" style="font-size:12px;padding:4px 10px" onclick="removeAerosol(\''+recId+'\')">Retirer du suivi</button>'+
   '</div>';
