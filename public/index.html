@@ -232,6 +232,12 @@ table.ct tr:last-child td{border-bottom:none}
 .brow select{padding:5px 3px}
 .bhd{display:grid;grid-template-columns:1.5fr 1fr 1fr 70px 70px 70px 80px 28px;gap:5px;margin-bottom:4px}
 .bhd span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
+.rhd{display:grid;grid-template-columns:1.6fr 1fr 90px 90px;gap:6px;margin-bottom:4px}
+.rhd span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
+.rrow{display:grid;grid-template-columns:1.6fr 1fr 90px 90px;gap:6px;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--bd)}
+.rrow input{padding:5px 6px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
+.rrow .rnom{font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .rmq{font-size:11.5px;color:var(--tx3)}
 .crow3{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
 .crow3 input{padding:6px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
 .chd2{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 28px;gap:6px;margin-bottom:4px}
@@ -586,6 +592,7 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
     <button class="tab tab-right-first" data-tab="couts" id="tcouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M18.6 14.4a1.5 1.5 0 0 0 .3 1.6l.05.06a1.8 1.8 0 1 1-2.55 2.55l-.06-.05a1.5 1.5 0 0 0-1.6-.3 1.5 1.5 0 0 0-.9 1.37v.16a1.8 1.8 0 1 1-3.6 0v-.08a1.5 1.5 0 0 0-.98-1.37 1.5 1.5 0 0 0-1.6.3l-.06.05a1.8 1.8 0 1 1-2.55-2.55l.05-.06a1.5 1.5 0 0 0 .3-1.6 1.5 1.5 0 0 0-1.37-.9h-.16a1.8 1.8 0 1 1 0-3.6h.08a1.5 1.5 0 0 0 1.37-.98 1.5 1.5 0 0 0-.3-1.6l-.05-.06a1.8 1.8 0 1 1 2.55-2.55l.06.05a1.5 1.5 0 0 0 1.6.3h.07a1.5 1.5 0 0 0 .9-1.37v-.16a1.8 1.8 0 1 1 3.6 0v.08a1.5 1.5 0 0 0 .9 1.37 1.5 1.5 0 0 0 1.6-.3l.06-.05a1.8 1.8 0 1 1 2.55 2.55l-.05.06a1.5 1.5 0 0 0-.3 1.6v.07a1.5 1.5 0 0 0 1.37.9h.16a1.8 1.8 0 1 1 0 3.6h-.08a1.5 1.5 0 0 0-1.37.9Z"/></svg><span>Gestion</span></button>
     <button class="tab" data-tab="mistints" id="tmistints" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.8 11.6h10.4l-.9 8.7a1.7 1.7 0 0 1-1.7 1.5H9.4a1.7 1.7 0 0 1-1.7-1.5l-.9-8.7Z"/><path d="M8.2 8.6a5 5 0 0 1 8.6 1"/><path d="M17.6 5.6l-.8 4-3.9-.9"/></svg><span>Mistints</span></button>
     <button class="tab" data-tab="aerosol" id="taerosol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7.6" y="8.4" width="7.4" height="12.4" rx="2"/><path d="M9.6 8.4V5.6a1 1 0 0 1 1-1h1.4a1 1 0 0 1 1 1v2.8"/><path d="M18 5.2h.01M20.6 7.6h.01M18 10.4h.01M21 3h.01"/></svg><span>Aérosols</span></button>
+    <button class="tab" data-tab="calc" id="tcalc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.8" width="14" height="18.4" rx="2.4"/><path d="M8.4 6.8h7.2"/><path d="M9 11.4h.01M12 11.4h.01M15 11.4h.01M9 14.6h.01M12 14.6h.01M15 14.6h.01M9 17.8h.01M12 17.8h6.01"/></svg><span>Calculateur</span></button>
     <button class="tab" data-tab="reglages" id="treglages" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/><circle cx="9" cy="6.5" r="2"/><circle cx="15.5" cy="12" r="2"/><circle cx="8" cy="17.5" r="2"/></svg><span>Réglages</span></button>
     <button class="tab" data-tab="detail" id="tdetail" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.4h7.6L19 8.8v11.8H6V3.4Z"/><path d="M13.4 3.4v5.6H19"/></svg><span>Fiche</span></button>
   </div>
@@ -1014,6 +1021,56 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
       </div>
     </div>
 
+    <!-- =========================================================
+         CALCULATEUR DE RENDEMENT (pi2 -> quantite de produit)
+         ========================================================= -->
+    <div class="view" id="v-calc">
+      <div class="portal-hero">
+        <div class="portal-title">Calculateur de rendement</div>
+        <div class="portal-sub">Surface à couvrir + épaisseur visée + perte d’application = quantité de produit à prévoir.</div>
+      </div>
+
+      <div class="cgr">
+        <div class="cs">
+          <div class="cst" style="color:#3B6D11">Projet</div>
+          <div class="csd">Choisis un produit : son rendement et son épaisseur de référence se remplissent tout seuls. Tu peux les corriger ici sans rien changer au catalogue.</div>
+
+          <div class="fg" style="margin-bottom:12px">
+            <label>Produit</label>
+            <select id="rd_produit" style="padding:8px 10px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);width:100%">
+              <option value="">— Saisie manuelle —</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <div class="fg" style="flex:1;min-width:150px"><label>Rendement (pi²/gal)</label><input type="number" id="rd_rend" step="1" min="1" placeholder="Ex: 400"></div>
+            <div class="fg" style="flex:1;min-width:150px"><label>À l’épaisseur de (mils)</label><input type="number" id="rd_mils_ref" step="0.1" min="0.1" placeholder="Ex: 2"></div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <div class="fg" style="flex:1;min-width:150px"><label>Surface du projet (pi²)</label><input type="number" id="rd_surface" step="1" min="0" placeholder="Ex: 2500"></div>
+            <div class="fg" style="flex:1;min-width:150px"><label>Épaisseur visée (mils secs)</label><input type="number" id="rd_mils" step="0.1" min="0.1" placeholder="Ex: 3"></div>
+            <div class="fg" style="flex:1;min-width:130px"><label>Perte (%)</label><input type="number" id="rd_perte" step="1" min="0" max="95" placeholder="15"></div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <button class="convq rdp" data-p="0">0 %</button>
+            <button class="convq rdp" data-p="10">10 % · rouleau</button>
+            <button class="convq rdp" data-p="20">20 % · pistolet conv.</button>
+            <button class="convq rdp" data-p="35">35 % · airless / structure</button>
+          </div>
+
+          <div id="rd_res" style="margin-top:16px"></div>
+
+          <div class="fbox" style="margin-top:14px">
+            Rendement à l’épaisseur visée = rendement de référence × (mils réf. ÷ mils visés).<br>
+            Quantité à prévoir = quantité théorique ÷ (1 − perte). Une perte de 20 % demande donc 1,25 × la quantité théorique.<br>
+            Le rendement est <b>théorique</b> : il ne tient pas compte de la porosité du support ni des reprises.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="view" id="v-reglages">
       <div class="portal-hero">
         <div class="portal-title">Réglages</div>
@@ -1213,6 +1270,16 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
           <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
             <button class="sbtn" id="save_aero" style="background:#3B6D11">Sauvegarder</button>
             <span class="svd" id="aero_svd">Sauvegarde!</span>
+          </div>
+        </div>
+        <div class="cs">
+          <div class="cst">Rendement des produits</div>
+          <div class="csd">Rendement théorique d’un <b>gallon US</b>, et l’épaisseur (mils secs) à laquelle ce chiffre est donné. C’est ce qui alimente l’onglet <b>Calculateur</b> : les deux colonnes vont ensemble, un produit dont l’une des deux est vide n’apparaît pas dans la liste du calculateur (il reste toujours possible d’y saisir un rendement à la main). Les chiffres se prennent sur la fiche technique du produit.</div>
+          <div class="rhd"><span>Produit</span><span>Marque</span><span>pi² / gal</span><span>mils réf.</span></div>
+          <div id="rend_rows"></div>
+          <div style="display:flex;align-items:center;margin-top:14px;gap:8px">
+            <button class="sbtn" id="save_rend" style="background:#3B6D11">Sauvegarder</button>
+            <span class="svd" id="rend_svd">Sauvegarde!</span>
           </div>
         </div>
         <div class="cs">
@@ -2179,6 +2246,204 @@ function saveAeroCfg(){
 }
 if(Q('save_aero'))Q('save_aero').addEventListener('click',saveAeroCfg);
 
+/* =====================================================================
+   RENDEMENT / PI2 — calculateur de quantite
+   Le rendement d'un produit vit dans `parametres`, comme les reglages
+   aerosol : type='rendement' (pi2 couverts par un gallon US) et
+   type='rendement_mils' (l'epaisseur seche a laquelle ce chiffre est
+   donne sur la fiche technique). La cle est "Marque|produit normalise",
+   donc un produit vaut pour toutes ses bases.
+
+   Rendement a l'epaisseur visee = rendement_ref x (mils_ref / mils_vises)
+     -> deux fois plus epais, deux fois moins de surface.
+   Quantite a prevoir = quantite theorique / (1 - perte)
+     -> une perte de 20 % veut dire qu'il n'en reste que 80 % sur le mur,
+        donc 1,25 x la quantite theorique. Ajouter simplement 20 % serait
+        sous-estimer le besoin.
+   ===================================================================== */
+var L_PAR_GAL=3.785411784;
+var RD_PERTE_DEF=15;
+var rendCfg={};
+
+function cleProduitRend(marque,produit){return cleProduitAero(marque,produit);}
+function rdFmt(n,d){
+  d=(d===undefined)?2:d;
+  return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d).replace('.',',');
+}
+
+function loadRendCfg(){
+  return sb.from('parametres').select('type,marque,valeur').in('type',['rendement','rendement_mils']).then(function(res){
+    rendCfg={};
+    (res.data||[]).forEach(function(x){
+      var v=parseFloat(String(x.valeur).replace(',','.'));
+      if(!(v>0))return;
+      if(!rendCfg[x.marque])rendCfg[x.marque]={pi2:0,mils:0};
+      if(x.type==='rendement')rendCfg[x.marque].pi2=v;
+      else rendCfg[x.marque].mils=v;
+    });
+    return rendCfg;
+  });
+}
+
+// Produits distincts vus dans les recettes — toutes marques, Disolac inclus.
+function produitsDistincts(){
+  var m={};
+  recs.forEach(function(r){
+    if(!r.produit||!r.produit.trim()||!r.marque)return;
+    var k=cleProduitRend(r.marque,r.produit);
+    if(!m[k])m[k]={cle:k,marque:r.marque,produit:r.produit.trim(),n:0};
+    m[k].n++;
+  });
+  return Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){
+    return a.marque.localeCompare(b.marque,'fr')||a.produit.localeCompare(b.produit,'fr');
+  });
+}
+
+// ---- Gestion : rendement par produit ----
+function renderRendProduits(){
+  var box=Q('rend_rows');if(!box)return;
+  var list=produitsDistincts();
+  if(!list.length){box.innerHTML='<div class="empty" style="padding:14px">Aucun produit.</div>';return;}
+  box.innerHTML=list.map(function(p){
+    var c=rendCfg[p.cle]||{};
+    return '<div class="rrow">'+
+      '<span class="rnom" title="'+esc(p.produit)+'">'+esc(p.produit)+'</span>'+
+      '<span class="rmq">'+esc(p.marque)+'</span>'+
+      '<input type="number" step="1" min="0" class="rdpi2" data-cle="'+esc(p.cle)+'" placeholder="pi²/gal" value="'+(c.pi2>0?c.pi2:'')+'">'+
+      '<input type="number" step="0.1" min="0" class="rdmils" data-cle="'+esc(p.cle)+'" placeholder="mils" value="'+(c.mils>0?c.mils:'')+'">'+
+      '</div>';
+  }).join('');
+  var ro=!canP();
+  box.querySelectorAll('input').forEach(function(i){i.disabled=ro;});
+  if(Q('save_rend'))Q('save_rend').style.display=ro?'none':'';
+}
+
+function saveRendCfg(){
+  if(!canP())return;
+  var btn=Q('save_rend');btn.disabled=true;btn.textContent='Sauvegarde...';
+  var rows=[],vides=[];
+  Q('rend_rows').querySelectorAll('.rrow').forEach(function(row){
+    var a=row.querySelector('.rdpi2'),b=row.querySelector('.rdmils');
+    if(!a||!b)return;
+    var cle=a.dataset.cle,pi2=parseFloat(a.value),mils=parseFloat(b.value);
+    // Les deux chiffres vont ensemble : sans epaisseur de reference, le
+    // rendement ne veut rien dire et le calculateur ne peut pas l'ajuster.
+    if(pi2>0&&mils>0){
+      rows.push({type:'rendement',marque:cle,valeur:String(pi2)});
+      rows.push({type:'rendement_mils',marque:cle,valeur:String(mils)});
+    }else if(rendCfg[cle]){vides.push(cle);}
+  });
+  var proms=[];
+  if(rows.length)proms.push(sb.from('parametres').upsert(rows,{onConflict:'type,marque'}));
+  vides.forEach(function(cle){
+    proms.push(sb.from('parametres').delete().in('type',['rendement','rendement_mils']).eq('marque',cle));
+  });
+  if(!proms.length)proms.push(Promise.resolve({}));
+  Promise.all(proms).then(function(res){
+    btn.disabled=false;btn.textContent='Sauvegarder';
+    var err=(res||[]).filter(function(x){return x&&x.error;})[0];
+    if(err){toast('Erreur : '+err.error.message,4500);return;}
+    loadRendCfg().then(function(){
+      renderRendProduits();
+      rdRemplirProduits();
+      var sv=Q('rend_svd');if(sv){sv.style.display='inline-block';setTimeout(function(){sv.style.display='none';},2500);}
+      toast('Rendements enregistrés.');
+    });
+  });
+}
+if(Q('save_rend'))Q('save_rend').addEventListener('click',saveRendCfg);
+
+// ---- Onglet Calculateur ----
+function rdRemplirProduits(){
+  var sel=Q('rd_produit');if(!sel)return;
+  var cur=sel.value;
+  var list=produitsDistincts().filter(function(p){
+    var c=rendCfg[p.cle];return c&&c.pi2>0&&c.mils>0;
+  });
+  var h='<option value="">— Saisie manuelle —</option>',mq='';
+  list.forEach(function(p){
+    if(p.marque!==mq){if(mq)h+='</optgroup>';h+='<optgroup label="'+esc(p.marque)+'">';mq=p.marque;}
+    h+='<option value="'+esc(p.cle)+'">'+esc(p.produit)+'</option>';
+  });
+  if(mq)h+='</optgroup>';
+  sel.innerHTML=h;
+  var ok=false;
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){ok=true;break;}}
+  sel.value=ok?cur:'';
+}
+
+function rdProduitChange(){
+  var sel=Q('rd_produit');if(!sel)return;
+  var c=rendCfg[sel.value];
+  if(c&&c.pi2>0){
+    Q('rd_rend').value=c.pi2;
+    Q('rd_mils_ref').value=c.mils;
+    if(!(parseFloat(Q('rd_mils').value)>0))Q('rd_mils').value=c.mils;
+  }
+  rdCalc();
+}
+
+function rdCalc(){
+  var box=Q('rd_res');if(!box)return;
+  function v(id){var e=Q(id);return e?parseFloat(String(e.value).replace(',','.')):NaN;}
+  var rend=v('rd_rend'),mref=v('rd_mils_ref'),mvis=v('rd_mils'),surf=v('rd_surface');
+  var perte=v('rd_perte');if(!(perte>=0))perte=0;if(perte>95)perte=95;
+
+  var manques=[];
+  if(!(rend>0))manques.push('un rendement');
+  if(!(surf>0))manques.push('une surface');
+  if(manques.length){
+    box.innerHTML='<div style="padding:14px;border:0.5px dashed var(--bd2);border-radius:var(--rl);'+
+      'font-size:12.5px;color:var(--tx3);text-align:center">Il manque '+manques.join(' et ')+'.</div>';
+    return;
+  }
+
+  // Ajustement d'epaisseur : seulement si les deux mils sont connus.
+  var ajuste=(mref>0&&mvis>0),rendEff=ajuste?rend*mref/mvis:rend;
+  var galTh=surf/rendEff, gal=galTh/(1-perte/100);
+  var lit=gal*L_PAR_GAL, litTh=galTh*L_PAR_GAL;
+  var galCmd=Math.ceil(gal-0.0001);
+
+  box.innerHTML=
+  '<div style="border:0.5px solid var(--bd);border-radius:var(--rl);overflow:hidden">'+
+    '<div style="background:#3B6D11;color:#fff;padding:14px 16px">'+
+      '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.85">Quantité à prévoir</div>'+
+      '<div style="font-size:28px;font-weight:600;line-height:1.25">'+rdFmt(gal)+' gal</div>'+
+      '<div style="font-size:13px;opacity:.9">'+rdFmt(lit,1)+' L'+(perte>0?' · perte de '+rdFmt(perte,0)+' % incluse':' · sans perte')+'</div>'+
+    '</div>'+
+    '<div style="padding:12px 16px;font-size:12.5px;color:var(--tx2);display:grid;gap:7px">'+
+      '<div style="display:flex;justify-content:space-between;gap:10px"><span>Rendement'+(ajuste?' à '+rdFmt(mvis,1)+' mils':'')+'</span><b style="color:var(--tx)">'+rdFmt(rendEff,0)+' pi²/gal</b></div>'+
+      '<div style="display:flex;justify-content:space-between;gap:10px"><span>Quantité théorique</span><b style="color:var(--tx)">'+rdFmt(galTh)+' gal · '+rdFmt(litTh,1)+' L</b></div>'+
+      '<div style="display:flex;justify-content:space-between;gap:10px"><span>Arrondi au gallon</span><b style="color:var(--tx)">'+galCmd+' gal</b></div>'+
+      (ajuste?'':'<div style="color:var(--amber)">Épaisseur non ajustée : il manque l’épaisseur de référence ou l’épaisseur visée.</div>')+
+    '</div>'+
+  '</div>';
+}
+
+function loadCalc(){
+  var p=Q('rd_perte');
+  if(p&&p.value==='')p.value=RD_PERTE_DEF;
+  rdMarquerPerte();
+  return loadRendCfg().then(function(){rdRemplirProduits();rdCalc();});
+}
+
+if(Q('rd_produit'))Q('rd_produit').addEventListener('change',rdProduitChange);
+['rd_rend','rd_mils_ref','rd_mils','rd_surface','rd_perte'].forEach(function(id){
+  var e=Q(id);if(e)e.addEventListener('input',rdCalc);
+});
+// Les boutons de perte ne sont qu'un raccourci : le champ reste maitre.
+function rdMarquerPerte(){
+  var v=(Q('rd_perte')||{}).value;
+  document.querySelectorAll('.rdp').forEach(function(x){x.classList.toggle('on',String(x.dataset.p)===String(v));});
+}
+document.querySelectorAll('.rdp').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(Q('rd_perte'))Q('rd_perte').value=b.dataset.p;
+    rdMarquerPerte();rdCalc();
+  });
+});
+if(Q('rd_perte'))Q('rd_perte').addEventListener('input',rdMarquerPerte);
+
 function aeroBrancher(r){
   var inp=Q('aero-nb');if(!inp)return;
   function marquer(){
@@ -2207,6 +2472,7 @@ var TABS_VIS=[
   {id:'couts',lbl:'Coûts et Prix'},
   {id:'mistints',lbl:'Mistints'},
   {id:'aerosol',lbl:'Aérosols'},
+  {id:'calc',lbl:'Calculateur'},
   {id:'reglages',lbl:'Réglages',fixe:true}
 ];
 var ROLES_VIS=[{id:'admin',lbl:'Admin'},{id:'comptoir',lbl:'Comptoir'},
@@ -2309,6 +2575,7 @@ function initApp(u){
     loadCatalogues().then(function(){loadRecs();});
     loadClients();
     loadAeroCfg();
+    loadRendCfg();
     loadDiscontinues();
     etqFetchFromDb();
     showView('clients');
@@ -2344,12 +2611,13 @@ sb.auth.getSession().then(function(r){if(r.data&&r.data.session&&r.data.session.
 // TABS
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
-    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();loadAeroCfg().then(renderAeroProduits);loadDiscontinues().then(renderDiscontinues);}
+    if(t.dataset.tab==='couts'&&canP()){loadBases();loadCP();loadCats();if(typeof rcFillFiltres==='function')rcFillFiltres();loadAeroCfg().then(renderAeroProduits);loadRendCfg().then(renderRendProduits);loadDiscontinues().then(renderDiscontinues);}
     if(t.dataset.tab==='conversions'){initConversions();}
     if(t.dataset.tab==='portail'){loadPortail();}
     if(t.dataset.tab==='reglages'){loadReglages();}
     if(t.dataset.tab==='mistints'){loadMistints();}
     if(t.dataset.tab==='aerosol'){loadAerosol();}
+    if(t.dataset.tab==='calc'){loadCalc();}
     showView(t.dataset.tab);
   });
 });
@@ -2358,14 +2626,14 @@ function showView(name){
     toast('Cet onglet ne t\'est pas accessible');
     name='clients';
   }
-  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','mistints','aerosol'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
+  ['clients','produits','detail','ajouter','couts','conversions','portail','reglages','mistints','aerosol','calc'].forEach(function(v){if(Q('v-'+v))Q('v-'+v).classList.remove('on');});
   if(!Q('v-'+name))name='clients';
   Q('v-'+name).classList.add('on');
   // La gestion des utilisateurs a besoin de largeur : on elargit la page sur cet onglet.
   var pg=document.querySelector('.pg');
   if(pg)pg.classList.toggle('pg-large',name==='reglages');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',mistints:'mistints',aerosol:'aerosol'};
+  var m={clients:'clients',produits:'clients',detail:'clients',ajouter:'ajouter',couts:'couts',conversions:'conversions',portail:'portail',reglages:'reglages',mistints:'mistints',aerosol:'aerosol',calc:'calc'};
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.tab===m[name])t.classList.add('on');});
   Q('tdetail').style.display=name==='detail'?'':'none';
 }
