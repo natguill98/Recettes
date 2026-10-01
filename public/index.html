@@ -4739,7 +4739,7 @@ Q('mconfdel').addEventListener('click',function(){
 });
 
 // EDIT
-var editId=null,isLoading=false;
+var editId=null,isLoading=false,editOrig=null;
 function getEditMode(marque,produit){
   var p=(produit||'').toLowerCase();
   if(marque==='Disolac')return'gr';
@@ -4766,7 +4766,8 @@ function openEdit(id){
     setMargeVerrouUI(!!(Q('fmarge')&&Q('fmarge').value));
     if(Q('fprixgal'))Q('fprixgal').value=p.prix_gallon||'';
     if(Q('fprixcat'))Q('fprixcat').value=p.prix_catalyseur||'';
-  }
+    editOrig={cb:parseFloat(p.cost_base||0)||0,cc:ccLoadE,gal:parseFloat(p.prix_gallon||0)||0,date:(Q('fdateprix')&&Q('fdateprix').value)||''};
+  }else{editOrig=null;}
   updateQtyOptions();
   Q('cform').innerHTML='';
   var cols=(r.colorants||[]).sort(function(a,b){return a.ordre-b.ordre;});
@@ -5549,6 +5550,12 @@ function saveEdit(id){
       var synFrais=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0)?17.25:0;
       var tot=cb+cc+synFrais;
       var datePrix=(Q('fdateprix')&&Q('fdateprix').value)?Q('fdateprix').value:new Date().toISOString().slice(0,10);
+      // Si un montant a changé et que la date n'a pas été touchée à la main → date du jour
+      if(editOrig&&Q('fdateprix')&&Q('fdateprix').value===editOrig.date){
+        var galNow=(Q('fprixgal')&&Q('fprixgal').value)?(parseFloat(Q('fprixgal').value)||0):0;
+        var changed=Math.abs(cb-editOrig.cb)>0.005||Math.abs(cc-editOrig.cc)>0.005||Math.abs(galNow-editOrig.gal)>0.005;
+        if(changed)datePrix=new Date().toISOString().slice(0,10);
+      }
       var p2=Promise.resolve();
       if(canP()&&(cc>0||cb>0)){
         var synFe=(marque==='Pepin'&&Q('fprod').value.toLowerCase().indexOf('synthane')>=0);
@@ -5612,6 +5619,7 @@ function saveEdit(id){
 }
 
 function resetForm(){
+  editOrig=null;
   curHex='#cccccc';updateHex('#cccccc');
   margeVerrouUI=false;
   ['fc','fcoul','fnum','fprod','fbase','fnotes','fcb','fcc','fdateprix','fmarge','fprixgal','fprixcat'].forEach(function(id){var el=Q(id);if(el)el.value='';});
