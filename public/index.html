@@ -4937,6 +4937,15 @@ function majMargeHint(){
 
 function autofillBase(){
   var produit=Q('fprod').value.trim(),base=Q('fbase').value.trim(),marque=Q('fm').value,qty=Q('fqty').value;
+  // Synthane : pas de base (tout en grammes + frais fixes) → ne jamais pré-remplir le cost base
+  if(isSynthane()){
+    if(Q('fcb'))Q('fcb').value='';
+    var hs=Q('base-hint');if(hs){hs.textContent='';hs.style.color='';}
+    updatePrev();
+    return;
+  }
+  // Sans produit ni base, on ne devine rien (sinon la 1re base de la marque, ex. 64.10, s'imposait)
+  if(!produit&&!base){var h0=Q('base-hint');if(h0){h0.textContent='';h0.style.color='';}return;}
   var mix=parseMixBase(base);
   if(mix){
     var hm=Q('base-hint'),rm=coutBaseMix(mix,marque,qty);
