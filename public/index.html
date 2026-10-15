@@ -1785,7 +1785,7 @@ function quantiteDepuisUnites(u,marque){
 }
 // Conversion complete d'une recette vers un autre format.
 function convertirRecette(r,formatCible){
-  var src=galEquiv(r.quantite),dst=galEquiv(formatCible);
+  var src=galEquiv(r.quantite,r.produit),dst=galEquiv(formatCible,r.produit);
   if(!(src>0)||!(dst>0))return null;
   var f=dst/src,arrondi=false;
   var lignes=(r.colorants||[]).slice().sort(function(a,b){return (a.ordre||0)-(b.ordre||0);}).map(function(c){
@@ -1835,6 +1835,7 @@ function convRendre(r,fmt){
        '<td style="padding:9px 10px;text-align:right;border-top:0.5px solid var(--bd);font-weight:700;font-size:15px">'+esc(l.apres)+'</td></tr>';
   });
   h+='</table>';
+  if(estNorthane(r.produit)&&(fmt==='5 gallons'||r.quantite==='5 gallons'))h+='<div style="font-size:12px;color:var(--tx3);margin-top:8px">Northane : le 5 gallons est un seau de 14 L, compte comme 4 gallons.</div>';
   if(c.arrondi)h+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Le rapport ne tombe pas juste sur la grille de fractions : certaines valeurs sont arrondies a l\'unite la plus proche.</div>';
   h+='<button type="button" class="btn btnp" id="conv-nouvelle" style="margin-top:12px;font-size:13px">'+
      'Enregistrer comme nouvelle recette en '+esc(libelleQty(fmt))+'</button>';
@@ -1971,10 +1972,12 @@ function ozDeColorant(qtyStr,marque){
 
 // Combien de gallons represente le format enregistre.
 // masse_gallon est par gallon : une recette 5 gallons pese cinq fois plus de base.
-function galEquiv(qty){
+// NORTHANE : le "5 gallons" est un seau de 14 L (pas 18-19 L) -> compte comme 4 gallons.
+function estNorthane(produit){return normProd(produit).indexOf('northane')>=0;}
+function galEquiv(qty,produit){
   var q=String(qty||'Gallon');
   if(q==='3 gallons')return 3;
-  if(q==='5 gallons')return 5;
+  if(q==='5 gallons')return estNorthane(produit)?4:5;
   if(q==='Pinte')return 0.25;
   if(q==='2 pintes')return 0.5;
   if(q==='3 pintes')return 0.75;
@@ -1994,7 +1997,7 @@ function masseRecette(r){
     if(!b)manquants.push('base introuvable au catalogue');
     else if(!(parseFloat(b.masse_gallon)>0))
       manquants.push('masse du gallon non renseignee pour la base '+(b.numero_base||b.produit)+' (onglet Gestion, colonne g/gal)');
-    else mBase=parseFloat(b.masse_gallon)*galEquiv(r.quantite);
+    else mBase=parseFloat(b.masse_gallon)*galEquiv(r.quantite,r.produit);
   }
   var cols=[],tot=mBase,approx=false;
   (r.colorants||[]).sort(function(a,b2){return (a.ordre||0)-(b2.ordre||0);}).forEach(function(c){
@@ -6285,7 +6288,7 @@ function qtyFactor(quantite,marque,produit){
   if(q.indexOf('2 pinte')>=0)return 0.5;
   if(q.indexOf('pinte')>=0)return 0.25;
   if(q.indexOf('3 gallon')>=0)return 3;
-  if(q.indexOf('5 gallon')>=0)return isSyn?4:5; // règle Synthane: 5gl = 4x, pas 5x
+  if(q.indexOf('5 gallon')>=0)return (isSyn||(marque==='Pepin'&&estNorthane(produit)))?4:5; // Synthane et Northane (seau 14 L): 5gl = 4x, pas 5x
   // Formats metriques Disolac, normalises sur le 4 L (= format de reference)
   if(q==='200 l')return 50;
   if(q==='20 l')return 5;
