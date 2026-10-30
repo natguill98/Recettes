@@ -238,9 +238,9 @@ table.ct tr:last-child td{border-bottom:none}
 .rrow input{padding:5px 6px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
 .rrow .rnom{font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rrow .rmq{font-size:11.5px;color:var(--tx3)}
-.crow3{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
+.crow3{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px}
 .crow3 input{padding:6px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--sur);color:var(--tx);min-width:0;width:100%}
-.chd2{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 28px;gap:6px;margin-bottom:4px}
+.chd2{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;gap:6px;margin-bottom:4px}
 .chd2 span{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:500}
 .addbtn{font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px 0;margin-top:4px}
 .pprev{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--r);padding:14px;margin-top:14px;display:none}
@@ -488,7 +488,7 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
 
   #v-couts .chd2,
   #v-couts .crow3{
-    min-width:390px;
+    min-width:450px;
   }
 
   #v-couts .bhd span,
@@ -547,7 +547,7 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
 
   #v-couts .chd2,
   #v-couts .crow3{
-    min-width:360px;
+    min-width:420px;
   }
 
   #v-couts .cst{
@@ -1310,13 +1310,13 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
           <div class="csd">Entrez le prix au gallon. Le cost colorant se calculera automatiquement ($/gal divise par 128 = $/oz).</div>
 
           <div style="font-size:12px;font-weight:600;color:#3B6D11;margin-bottom:6px">Pepin (NUM / FA / STX)</div>
-          <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span>g / oz</span><span></span></div>
+          <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span>g / oz</span><span>Densit&eacute;</span><span></span></div>
           <div id="crows-pepin"></div>
           <button class="addbtn" id="addcol-pepin" style="color:#3B6D11;font-weight:600">+ Ajouter (Pepin)</button>
 
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
             <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px">International / Devoe (GVA)</div>
-            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span>g / oz</span><span></span></div>
+            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr (STX)</span><span>g / oz</span><span>Densit&eacute;</span><span></span></div>
             <div id="crows-inter"></div>
             <button class="addbtn" id="addcol-inter" style="color:var(--blue);font-weight:600">+ Ajouter (Inter/Devoe)</button>
           </div>
@@ -1324,7 +1324,7 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
           <div style="border-top:0.5px solid var(--bd);margin-top:16px;padding-top:16px">
             <div style="font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px">Disolac (PAS) — grammes</div>
             <div class="csd" style="margin-bottom:8px">Disolac se dose uniquement en grammes. Entrez le <strong>$/gr</strong> dans la 2e colonne; le $/gallon est facultatif.</div>
-            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr</span><span>g / oz</span><span></span></div>
+            <div class="chd2"><span>Colorant</span><span>$/gallon</span><span>$/gr</span><span>g / oz</span><span>Densit&eacute;</span><span></span></div>
             <div id="crows-disolac"></div>
             <button class="addbtn" id="addcol-disolac" style="color:var(--gray);font-weight:600">+ Ajouter (Disolac)</button>
           </div>
@@ -1800,7 +1800,39 @@ function convertirRecette(r,formatCible){
     var q=quantiteDepuisUnites(cible,r.marque);
     return{nom:c.nom,unite:'OZ',avant:c.quantite,apres:q,brut:q};
   });
-  return{facteur:f,lignes:lignes,arrondi:arrondi,format:formatCible};
+  var res={facteur:f,lignes:lignes,arrondi:arrondi,format:formatCible};
+  // Synthane (grammes) : la recette doit tenir dans le VOLUME du contenant, pas seulement
+  // au poids. Contenant = 926 mL de peinture par pinte (3,78 L x 0,98 / 4, comme le classeur).
+  if(estSynthane(r.marque,r.produit)&&dst<1&&lignes.length&&lignes.every(function(l){return l.unite==='GR';})){
+    var vol=0,ok=true,manq=[];
+    lignes.forEach(function(l){
+      var d=densiteDe(l.nom),g=parseFloat(l.brut)||0;
+      if(g>0&&!(d>0)){ok=false;manq.push(l.nom);}else if(g>0)vol+=g/d;
+    });
+    var cible=dst*SYN_ML_PAR_GAL;
+    if(!ok){res.volume={inconnu:manq};}
+    else{
+      res.volume={ml:vol,cible:cible,plafonne:false};
+      if(vol>cible+0.5){
+        var k=cible/vol,gAvant=0,gApres=0;
+        lignes.forEach(function(l){
+          var g0=parseFloat(l.brut)||0,g1=Math.round(g0*k*10)/10;
+          gAvant+=g0;gApres+=g1;
+          l.apres=String(g1).replace('.',',')+' g';l.brut=String(g1);
+        });
+        res.volume.plafonne=true;res.volume.retire=gAvant-gApres;res.volume.mlFinal=cible;
+      }
+    }
+  }
+  return res;
+}
+var SYN_ML_PAR_GAL=3780*0.98;  // 3704,4 mL de peinture par gallon
+function estSynthane(marque,produit){return marque==='Pepin'&&normProd(produit||'').indexOf('synthane')>=0;}
+function densiteDe(nom){
+  var n=String(nom||'').trim().toLowerCase();
+  var cp=(typeof allCP!=='undefined'?allCP:[]).filter(function(c){return String(c.nom||'').toLowerCase()===n;})[0];
+  var d=cp?parseFloat(cp.densite):NaN;
+  return d>0?d:0;
 }
 
 function convCarteHTML(r){
@@ -1836,6 +1868,11 @@ function convRendre(r,fmt){
   });
   h+='</table>';
   if(estNorthane(r.produit)&&(fmt==='5 gallons'||r.quantite==='5 gallons'))h+='<div style="font-size:12px;color:var(--tx3);margin-top:8px">Northane : le 5 gallons est un seau de 14 L, compte comme 4 gallons.</div>';
+  if(c.volume){
+    if(c.volume.inconnu)h+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Volume non verifie : densite manquante pour '+esc(c.volume.inconnu.join(', '))+' (Gestion &gt; Couts des colorants).</div>';
+    else if(c.volume.plafonne)h+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Plafonne au volume du contenant : la conversion directe aurait fait '+Math.round(c.volume.ml)+' mL de peinture pour '+Math.round(c.volume.cible)+' mL permis. Quantites reduites proportionnellement (&minus;'+(Math.round(c.volume.retire*10)/10).toString().replace('.',',')+' g) &mdash; la teinte ne change pas.</div>';
+    else h+='<div style="font-size:12px;color:var(--tx3);margin-top:8px">Volume : '+Math.round(c.volume.ml)+' mL sur '+Math.round(c.volume.cible)+' mL permis.</div>';
+  }
   if(c.arrondi)h+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Le rapport ne tombe pas juste sur la grille de fractions : certaines valeurs sont arrondies a l\'unite la plus proche.</div>';
   h+='<button type="button" class="btn btnp" id="conv-nouvelle" style="margin-top:12px;font-size:13px">'+
      'Enregistrer comme nouvelle recette en '+esc(libelleQty(fmt))+'</button>';
@@ -5229,6 +5266,31 @@ function addCRow(nom,oz,f2,f3){
   }
   Q('cform').appendChild(row);
 }
+// Synthane : volume de peinture de la recette (somme g / densite) contre le contenant.
+function majVolumeSyn(mode){
+  var el=Q('vol-syn');
+  if(!el){
+    var cf=Q('cform');if(!cf||!cf.parentNode)return;
+    el=document.createElement('div');el.id='vol-syn';el.style.cssText='font-size:12px;margin-top:6px';
+    cf.parentNode.insertBefore(el,cf.nextSibling);
+  }
+  var syn=Q('fm')&&Q('fprod')&&estSynthane(Q('fm').value,Q('fprod').value);
+  if(!syn||mode!=='gr'){el.style.display='none';return;}
+  var vol=0,manq=[],g=0;
+  Q('cform').querySelectorAll('.cr').forEach(function(row){
+    var n=row.querySelector('.cn'),q=row.querySelector('.cq');if(!n||!q)return;
+    var gr=parseFloat(String(q.value).replace(',','.'))||0;if(!(gr>0))return;
+    var d=densiteDe(n.value);g+=gr;
+    if(d>0)vol+=gr/d;else manq.push(n.value.trim());
+  });
+  if(!g){el.style.display='none';return;}
+  var cap=galEquiv(Q('fqty')?Q('fqty').value:'Gallon',Q('fprod').value)*SYN_ML_PAR_GAL;
+  el.style.display='';
+  if(manq.length){el.style.color='var(--amber)';el.textContent='Volume non verifie : densite manquante pour '+manq.join(', ')+'.';return;}
+  var diff=Math.round(vol-cap);
+  if(diff>0){el.style.color='var(--red)';el.textContent='Volume '+Math.round(vol)+' mL : depasse le contenant de '+diff+' mL (max '+Math.round(cap)+' mL). Reduire les quantites proportionnellement.';}
+  else{el.style.color='var(--tx3)';el.textContent='Volume '+Math.round(vol)+' mL sur '+Math.round(cap)+' mL permis.';}
+}
 function calcColTotal(){
   if(!canP())return;
   var tot=0,mode=getColMode(),sansPrix=[];
@@ -5258,6 +5320,7 @@ function calcColTotal(){
       tot+=(oz+(f64/64)+(f128/128))*(coutGal/126);
     }
   });
+  majVolumeSyn(mode);
   var cc=Q('fcc'),hint=Q('col-hint');
   if(cc&&tot>0){
     cc.value=tot.toFixed(2);
@@ -5477,10 +5540,10 @@ function renderCP(){
     var fam=familleOf(c2);
     // Pepin et Synthane (STX) partagent la meme section a l'ecran.
     var k=fam==='inter'?'inter':fam==='disolac'?'disolac':'pepin';
-    addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct,k,fam,c2.masse_gr_oz);
+    addCPRow(c2.id,c2.nom,c2.cout_gallon,c2.cout_gr_direct,k,fam,c2.masse_gr_oz,c2.densite);
   });
 }
-function addCPRow(id,nom,coutGal,poids,section,famille,masse){
+function addCPRow(id,nom,coutGal,poids,section,famille,masse,densite){
   id=id||'';nom=nom||'';coutGal=coutGal||'';poids=poids||'';section=section||'pepin';
   var row=document.createElement('div');row.className='crow3';row.dataset.id=id;
   // La famille reelle est conservee ici: une ligne STX vit dans la section
@@ -5494,14 +5557,17 @@ function addCPRow(id,nom,coutGal,poids,section,famille,masse){
   // Masse d'une unite de la colonne « oz » (un Y chez Pepin). Sert aux canettes.
   var mg=document.createElement('input');mg.type='number';mg.className='cpm';mg.placeholder='g/oz';mg.step='0.01';mg.value=masse||'';
   mg.title='Grammes que pese une unite de la colonne oz. Sert au calcul des canettes aerosol.';
+  // Densite (g/mL) : sert a plafonner le volume d'une recette convertie (pinte = 926 mL de peinture).
+  var dn=document.createElement('input');dn.type='number';dn.className='cpd';dn.placeholder='g/mL';dn.step='0.0001';dn.value=densite||'';
+  dn.title='Densite en g/mL. Sert a verifier que la recette tient dans le contenant (pinte, gallon).';
   var btn=document.createElement('button');btn.className='rm';btn.textContent='x';
   btn.addEventListener('click',function(){pendCol={id:id,row:row};Q('mcol').classList.add('on');});
-  row.appendChild(n);row.appendChild(g);row.appendChild(p);row.appendChild(mg);row.appendChild(btn);
+  row.appendChild(n);row.appendChild(g);row.appendChild(p);row.appendChild(mg);row.appendChild(dn);row.appendChild(btn);
   var container=Q('crows-'+section);if(container)container.appendChild(row);
 }
-Q('addcol-pepin').addEventListener('click',function(){addCPRow('','','','','pepin','pepin','');});
-Q('addcol-inter').addEventListener('click',function(){addCPRow('','','','','inter','inter','');});
-Q('addcol-disolac').addEventListener('click',function(){addCPRow('','','','','disolac','disolac','');});
+Q('addcol-pepin').addEventListener('click',function(){addCPRow('','','','','pepin','pepin','','');});
+Q('addcol-inter').addEventListener('click',function(){addCPRow('','','','','inter','inter','','');});
+Q('addcol-disolac').addEventListener('click',function(){addCPRow('','','','','disolac','disolac','','');});
 Q('savecols').addEventListener('click',function(){
   var allRows=[];
   ['crows-pepin','crows-inter','crows-disolac'].forEach(function(id){
@@ -5513,11 +5579,12 @@ Q('savecols').addEventListener('click',function(){
     var id=row.dataset.id,nom=row.querySelector('.cpn').value.trim(),coutGal=parseFloat(row.querySelector('.cpg').value)||null;
     var poids=parseFloat(row.querySelector('.cpp').value)||null;
     var masse=row.querySelector('.cpm')?parseFloat(row.querySelector('.cpm').value)||null:null;
+    var dens=row.querySelector('.cpd')?parseFloat(row.querySelector('.cpd').value)||null:null;
     if(!nom)return;
     // Meme regle deterministe que le backfill SQL: la section donne la famille,
     // sauf dans la section Pepin ou un code STX bascule en 'synthane'.
     var fam=item.sec==='inter'?'inter':item.sec==='disolac'?'disolac':(nom.toLowerCase().indexOf('stx')>=0?'synthane':'pepin');
-    var data={nom:nom,famille:fam,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids,cout_gr_direct:poids,masse_gr_oz:masse};
+    var data={nom:nom,famille:fam,cout_gallon:coutGal,cout_oz:coutGal?coutGal/128:null,poids_gr_gal:poids,cout_gr_direct:poids,masse_gr_oz:masse,densite:dens};
     if(id)proms.push(sb.from('colorants_prix').update(data).eq('id',id));
     else proms.push(sb.from('colorants_prix').insert(data).select().single().then(function(r){if(r.data)row.dataset.id=r.data.id;return r;}));
   });
