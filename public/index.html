@@ -885,8 +885,7 @@ span.disc-tag.disc-bleu{background:#1A8FD1}
         <div class="cal-agenda cal-agenda-m" id="cal_agenda"></div>
 
         <div class="cal-leg">
-          <span><i class="cal-sw conge"></i> Congé accepté</span>
-          <span><i class="cal-sw att"></i> En attente d'approbation</span>
+          <span><i class="cal-sw conge"></i> Congé</span>
           <span><i class="cal-sw" style="background:var(--gray-l);border-color:var(--gray)"></i> Férié</span>
           <span><i class="cal-sw" style="background:var(--blue-l);border-color:var(--blue)"></i> Vacances construction</span>
           <span><i class="cal-sw" style="background:#F7EAF9;border-color:#7A3E86"></i> Fête</span>
@@ -2902,8 +2901,8 @@ function normalizePortalRow(x){
 }
 function isAdmin(){return role==='admin';}
 function isPortalAuteur(x){return user&&x&&x.created_by===user.id;}
-function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente');}
-function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&x.statut==='en_attente')||(!portailUseDb&&user&&x.auteur_email===user.email&&x.statut==='en_attente');}
+function canEditPortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&(x.statut==='en_attente'||x.categorie==='demande_conge'));}
+function canDeletePortal(x){x=normalizePortalRow(x);return isAdmin()||(isPortalAuteur(x)&&(x.statut==='en_attente'||x.categorie==='demande_conge'))||(!portailUseDb&&user&&x.auteur_email===user.email&&(x.statut==='en_attente'||x.categorie==='demande_conge'));}
 function canSeePortal(x){
   x=normalizePortalRow(x);
   if(x.categorie!=='demande_conge')return true;
@@ -2929,7 +2928,7 @@ function loadPortail(){
 }
 // --- Calendrier : constantes et helpers ---
 var CAL_MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-var CAL_DOWS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+var CAL_DOWS=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 var calY=(new Date()).getFullYear(),calM=(new Date()).getMonth(),calMoi=false,calSel=null,
     calFeries=true,calFetes=true;
 
@@ -3303,7 +3302,7 @@ function renderCal(){
   });
 
   var todayK=calKey(new Date());
-  var shift=(new Date(calY,calM,1).getDay()+6)%7;
+  var shift=new Date(calY,calM,1).getDay(); // semaine du dimanche au samedi
   var html='',nMois=0;
   for(var i=0;i<42;i++){
     var d=new Date(calY,calM,1-shift+i);
@@ -3321,9 +3320,9 @@ function renderCal(){
         (msg?'<span class="cal-ev-m">'+esc(msg)+'</span>':'')+'</button>';
     }).join('');
     var fer=ferByDay[k],ferHtml='';
-    // Sur une plage longue, le nom n'est répété qu'au début et à chaque lundi :
+    // Sur une plage longue, le nom n'est répété qu'au début et à chaque dimanche :
     // les autres jours gardent la teinte, sans crier la même étiquette 14 fois.
-    if(fer&&!out&&(k===fer.d1||d.getDay()===1))
+    if(fer&&!out&&(k===fer.d1||d.getDay()===0))
       ferHtml='<div class="cal-fer'+(fer.type==='constr'?' constr':'')+'" title="'+esc(fer.nom)+'">'+
               esc(fer.type==='constr'?'Construction':fer.nom)+'</div>';
     else if(fer&&!out)ferHtml='<div class="cal-fer'+(fer.type==='constr'?' constr':'')+
@@ -3444,7 +3443,8 @@ function savePortail(){
     auteur:(isAdmin()&&ptPour)?ptPour:monNom(),
     role_auteur:(isAdmin()&&ptPour&&ptPour!==monNom())?'':(role||''),
     created_by:user?user.id:null,
-    statut:'en_attente',
+    // Congés : publiés directement, sans approbation. Les autres communications restent en attente.
+    statut:(cat==='demande_conge')?'accepte':'en_attente',
     important:false,
     actif:true
   };
@@ -3459,7 +3459,7 @@ function savePortail(){
         return;
       }
       clearPortailForm();
-      toast('Communication publiée en attente.');
+      toast(cat==='demande_conge'?'Congé publié.':'Communication publiée en attente.');
       loadPortail();
     });
   }else{
