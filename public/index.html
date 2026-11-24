@@ -1866,7 +1866,7 @@ function convRendre(r,fmt){
        '<td style="padding:9px 10px;text-align:right;border-top:0.5px solid var(--bd);font-weight:700;font-size:15px">'+esc(l.apres)+'</td></tr>';
   });
   h+='</table>';
-  if(estNorthane(r.produit)&&(fmt==='5 gallons'||r.quantite==='5 gallons'))h+='<div style="font-size:12px;color:var(--tx3);margin-top:8px">Northane : le 5 gallons est un seau de 14 L, compte comme 4 gallons.</div>';
+  if(est5gal4x(r.produit)&&(fmt==='5 gallons'||r.quantite==='5 gallons'))h+='<div style="font-size:12px;color:var(--tx3);margin-top:8px">'+(estNorthane(r.produit)?'Northane':'Devthane 349')+' : le 5 gallons compte comme 4 gallons.</div>';
   if(c.volume){
     if(c.volume.inconnu)h+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Volume non verifie : densite manquante pour '+esc(c.volume.inconnu.join(', '))+' (Gestion &gt; Couts des colorants).</div>';
     else if(c.volume.plafonne)h+='<div style="font-size:12px;color:var(--amber);margin-top:8px">Plafonne au volume du contenant : la conversion directe aurait fait '+Math.round(c.volume.ml)+' mL de peinture pour '+Math.round(c.volume.cible)+' mL permis. Quantites reduites proportionnellement (&minus;'+(Math.round(c.volume.retire*10)/10).toString().replace('.',',')+' g) &mdash; la teinte ne change pas.</div>';
@@ -2010,12 +2010,14 @@ function ozDeColorant(qtyStr,marque){
 // masse_gallon est par gallon : une recette 5 gallons pese cinq fois plus de base.
 // NORTHANE : le "5 gallons" est un seau de 14 L (pas 18-19 L) -> compte comme 4 gallons.
 function estNorthane(produit){return normProd(produit).indexOf('northane')>=0;}
+// Produits dont le "5 gallons" compte comme 4 gallons : NORTHANE et DEVTHANE 349 (International).
+function est5gal4x(produit){var n=normProd(produit);return n.indexOf('northane')>=0||n.indexOf('devthane349')>=0;}
 // NORTHANE : le Part B (catalyseur) n'est jamais affiche. Les donnees restent en base.
 function cacheCatalyseur(r){return !!r&&r.marque==='Pepin'&&estNorthane(r.produit);}
 function galEquiv(qty,produit){
   var q=String(qty||'Gallon');
   if(q==='3 gallons')return 3;
-  if(q==='5 gallons')return estNorthane(produit)?4:5;
+  if(q==='5 gallons')return est5gal4x(produit)?4:5;
   if(q==='Pinte')return 0.25;
   if(q==='2 pintes')return 0.5;
   if(q==='3 pintes')return 0.75;
@@ -6361,7 +6363,7 @@ function qtyFactor(quantite,marque,produit){
   if(q.indexOf('2 pinte')>=0)return 0.5;
   if(q.indexOf('pinte')>=0)return 0.25;
   if(q.indexOf('3 gallon')>=0)return 3;
-  if(q.indexOf('5 gallon')>=0)return (isSyn||(marque==='Pepin'&&estNorthane(produit)))?4:5; // Synthane et Northane (seau 14 L): 5gl = 4x, pas 5x
+  if(q.indexOf('5 gallon')>=0)return (isSyn||est5gal4x(produit))?4:5; // Synthane, Northane et Devthane 349: 5gl = 4x, pas 5x
   // Formats metriques Disolac, normalises sur le 4 L (= format de reference)
   if(q==='200 l')return 50;
   if(q==='20 l')return 5;
